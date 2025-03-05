@@ -49,6 +49,9 @@ interface MatrixTerminalProps {
 export const MatrixTerminal = ({ onUserInput }: MatrixTerminalProps) => {
   const [userInput, setUserInput] = useState('');
   const [history, setHistory] = useState<string[]>([]);
+  const [inputHistory, setInputHistory] = useState<string[]>([]);
+  const [inputHistoryIndex, setInputHistoryIndex] = useState(-1);
+
 
   const [isSystemTyping, setIsSystemTyping] = useState(true);
   const { connect } = useConnectModal();
@@ -63,7 +66,7 @@ export const MatrixTerminal = ({ onUserInput }: MatrixTerminalProps) => {
         connect({client});
     }
     if (activeAccount) {
-        setText(`Knock, knock, ${activeAccount.address}`);
+        setText(`Wake up, ${activeAccount.address}`);
         setIsSystemTyping(true);
     }
   }, [activeAccount]);
@@ -78,8 +81,30 @@ export const MatrixTerminal = ({ onUserInput }: MatrixTerminalProps) => {
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (!isSystemTyping) {
+        if (e.key === 'ArrowUp') {
+            console.log(inputHistoryIndex, inputHistory);
+
+            if (inputHistory[inputHistoryIndex + 1]) {
+                setUserInput(inputHistory[inputHistoryIndex + 1]);
+                setInputHistoryIndex(prev => prev + 1);
+            }
+          return;
+        }
+        if (e.key === 'ArrowDown') {
+            console.log(inputHistoryIndex);
+            if (inputHistory[inputHistoryIndex - 1]) {
+                setUserInput(inputHistory[inputHistoryIndex - 1]);
+                setInputHistoryIndex(prev => prev - 1);
+            } else {
+                setUserInput('');
+                setInputHistoryIndex(-1);
+            }
+          return;
+        }
         if (e.key === 'Enter') {
-          setHistory(prev => [...prev, userInput]);
+          setHistory(prev => [...prev, `>${userInput}`]);
+          setInputHistory(prev => [userInput, ...prev]);
+          setInputHistoryIndex(-1);
           setUserInput('');
           handleInput(userInput);
         } else if (e.key === 'Backspace') {
@@ -93,6 +118,7 @@ export const MatrixTerminal = ({ onUserInput }: MatrixTerminalProps) => {
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [isSystemTyping, userInput, onUserInput]);
+
 
   const handleInput = async (input: string) => {
     const result = await onUserInput?.(input);
