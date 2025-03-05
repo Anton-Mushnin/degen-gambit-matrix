@@ -398,3 +398,26 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# Vite
+dist
+dist-ssr
+*.local
+
+# React & TypeScript
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+
+# Prettier
+.prettierignore
+.prettierrc
+.prettier.cache
+
+# Editor directories and files
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sw?
