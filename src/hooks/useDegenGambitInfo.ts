@@ -3,10 +3,10 @@ import { useCallback, useMemo } from "react";
 import { getPublicClient } from '@wagmi/core';
 
 // You'll need to import your contract ABI
-import { degenGambitABI } from '../ABIs/DegenGambit.abi.ts';
-import { multicall } from '@wagmi/core';
+
 import { g7Testnet, wagmiConfig } from '../config/index.ts';
 import { formatEther } from 'viem';
+import { getDegenGambitInfo } from '../utils/degenGambit.ts';
 
 type DegenGambitInfo = {
   blocksToAct: number;
@@ -84,48 +84,6 @@ export function useDegenGambitInfo(contractAddress: string) {
     error,
   };
 } 
-
-const getDegenGambitInfo = async (contractAddress: string) => {
-    const contract = {
-        address: contractAddress,
-        abi: degenGambitABI,
-      } as const
-      
-      const result = await multicall(wagmiConfig, {
-        contracts: [
-          {
-            ...contract,
-            functionName: 'BlocksToAct',
-          },
-          {
-            ...contract,
-            functionName: 'CostToRespin',
-          },
-          {
-            ...contract,
-            functionName: 'CostToSpin',
-          },
-          {
-            ...contract,
-            functionName: 'MajorGambitPrize',
-          },
-          {
-            ...contract,
-            functionName: 'MinorGambitPrize',
-          },
-          {
-            ...contract,
-            functionName: 'prizes',
-          },
-          {
-            ...contract,
-            functionName: 'symbol',
-          },
-        ],
-      })
-      return result
-    }
-
 
     	// Selector: 11cceaf6
 const prizeDescriptions = [
