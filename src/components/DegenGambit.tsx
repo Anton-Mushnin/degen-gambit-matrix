@@ -45,7 +45,14 @@ const DegenGambit = () => {
                         `Spin result: ${spinResult}`,
                     ];
             default:
-                return "Invalid command";
+                return [                    "Available commands:",
+                    "  spin     - Spin the wheel",
+                    "  balance  - Check your native and gambit token balances",
+                    "  getsome  - Visit getsome.game7.io to get some tokens",
+                    "  info     - Show game parameters and costs",
+                    "  prizes   - Display current prize pool",
+                    "  streaks  - View your daily and weekly streaks",
+                ];
         }
     }
 
