@@ -1,0 +1,25 @@
+.inputLine {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: start;
+    font-family: monospace;
+    margin-top: 4px;
+}
+
+.inputText {
+    color: #a1eeb5;
+    text-shadow: 0 0 10px #0dda9f;
+}
+
+.history {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    justify-content: start;
+}
+
+.pre {
+    color: #a1eeb5;
+    margin: 4px 0;
+}
