@@ -1,5 +1,5 @@
 import { http, createConfig } from '@wagmi/core'
-import { type Chain } from 'viem'
+import { defineChain, type Chain } from 'viem'
 
 
 export const thirdwebClientId = import.meta.env.VITE_THIRDWEB_CLIENT_ID
@@ -47,3 +47,21 @@ export const wagmiConfig = createConfig({
 })
 
 export const contractAddress = import.meta.env.VITE_CONTRACT_ADDRESS
+
+export const viemG7Testnet = defineChain({
+  id: wagmiConfig.chains[0].id,
+  name: wagmiConfig.chains[0].name,
+  nativeCurrency: wagmiConfig.chains[0].nativeCurrency,
+  blockExplorers: wagmiConfig.chains[0].blockExplorers,
+  rpcUrls: wagmiConfig.chains[0].rpcUrls,
+})
+
+
+export const thirdWebG7Testnet = {
+    id: wagmiConfig.chains[0].id,
+    name: wagmiConfig.chains[0].name,
+    rpc: wagmiConfig.chains[0].rpcUrls["default"].http[0],
+    nativeCurrency: wagmiConfig.chains[0].nativeCurrency,
+    blockExplorers: wagmiConfig.chains[0].blockExplorers,
+    testnet: true,
+}
