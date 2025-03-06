@@ -398,3 +398,46 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# Vite
+dist
+dist-ssr
+*.local
+
+# React & TypeScript
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+
+# Prettier
+.prettierignore
+.prettierrc
+.prettier.cache
+
+# Editor directories and files
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sw?
+
+# macOS system files
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# macOS directories
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
