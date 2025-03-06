@@ -6,7 +6,6 @@ import { useActiveAccount, useConnectModal } from 'thirdweb/react';
 import { TerminalOutput } from './TerminalOutput';
 import styles from './MatrixTerminal.module.css';
 import RandomNumbers from './RandomNumbers';
-import { numbers } from '../config/symbols';
 
 
 const color = '#a1eeb5';
@@ -46,11 +45,12 @@ const Cursor = styled.span`
 
 interface MatrixTerminalProps {
   onUserInput?: (input: string) => Promise<{output: string[], outcome?: bigint[]}>;
+  numbers: number[];
 }
 
 
 
-export const MatrixTerminal = ({ onUserInput }: MatrixTerminalProps) => {
+export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) => {
   const [userInput, setUserInput] = useState('');
   const [history, setHistory] = useState<string[]>([]);
   const [inputHistory, setInputHistory] = useState<string[]>([]);

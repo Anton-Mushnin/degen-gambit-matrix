@@ -11,7 +11,7 @@ const DegenGambit = () => {
     const activeAccount = useActiveAccount();
     const activeWallet = useActiveWallet();
     const client = createThirdwebClient({ clientId: thirdwebClientId });
-    const [isSpinning, setIsSpinning] = useState(false);
+    const [userNumbers, setUserNumbers] = useState<number[]>(numbers);
 
 
     const handleInput = async (input: string) => {
@@ -46,18 +46,31 @@ const DegenGambit = () => {
                     if (!activeAccount || !activeWallet) {
                         return {output: ["No account selected"]};
                     }
-                    setIsSpinning(true);
-                    const spinResult = await spin(contractAddress, false, activeAccount, client, activeWallet);
-                    setIsSpinning(false);
+                    const spinResult = await spin(contractAddress, false, activeAccount, client);
                     return {
                         output: [spinResult.description],
                         outcome: spinResult.outcome?.slice(0, 3),
                     };
                     case "symbols": {
-                        return {output: ["Minor symbols:", numbers.slice(1, 15).join(', '), "Major symbols:",   numbers.slice(-3).join(', ')]};
+                        return {output: ["Minor symbols:", userNumbers.slice(1, 15).join(', '), "Major symbols:",   userNumbers.slice(-3).join(', ')]};
+                    }
+                    case input.match(/^set \d+ \d+$/)?.input: {
+                        const [_, indexStr, numberStr] = input.split(' ');
+                        const index = parseInt(indexStr);
+                        const number = parseInt(numberStr);
+                        
+                        if (index < 0 || index >= userNumbers.length) {
+                            return {output: [`Invalid index. Must be between 0 and ${userNumbers.length - 1}`]};
+                        }
+                        
+                        const newNumbers = [...userNumbers];
+                        newNumbers[index] = number;
+                        setUserNumbers(newNumbers);
+                        return {output: ["Minor symbols:", newNumbers.slice(1, 15).join(', '), "Major symbols:",   newNumbers.slice(-3).join(', ')]};
                     }
             default:
-                return {output: [                    "Available commands:",
+                return {output: [
+                    "Available commands:",
                     "  spin     - Spin the wheel",
                     "  balance  - Check your native and gambit token balances",
                     "  getsome  - Visit getsome.game7.io to get some tokens",
@@ -65,6 +78,7 @@ const DegenGambit = () => {
                     "  prizes   - Display current prize pool",
                     "  streaks  - View your daily and weekly streaks",
                     "  symbols  - Display minor and major symbols",
+                    "  set      - Set symbol at index (set <1-based index> <number>)",
                     "  clear    - Clear the terminal (⌘K or Ctrl+K)",
                 ],
             };
@@ -73,7 +87,7 @@ const DegenGambit = () => {
 
     return (
         <div>
-            <MatrixTerminal onUserInput={handleInput} />
+            <MatrixTerminal onUserInput={handleInput} numbers={userNumbers} />
         </div>
     )
 }
