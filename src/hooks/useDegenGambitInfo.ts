@@ -8,17 +8,6 @@ import { g7Testnet, wagmiConfig } from '../config/index.ts';
 import { formatEther } from 'viem';
 import { getDegenGambitInfo } from '../utils/degenGambit.ts';
 
-type DegenGambitInfo = {
-  blocksToAct: number;
-  costToRespin: number;
-  costToSpin: number;
-  majorGambitPrize: number;
-  minorGambitPrize: number;
-  prizes: {
-    prizesAmount: number[];
-    typeOfPrize: number[];
-  };
-};
 
 const calculateAverageBlockTime = async () => {
   const publicClient = getPublicClient(wagmiConfig);

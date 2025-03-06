@@ -3,7 +3,7 @@ import { getPublicClient } from '@wagmi/core'
 import { degenGambitABI } from '../ABIs/DegenGambit.abi.ts';
 import { multicall } from '@wagmi/core';
 import { createPublicClient, formatUnits, http } from 'viem';
-import { Account, Wallet } from 'thirdweb/wallets';
+import { Account } from 'thirdweb/wallets';
 import { waitForReceipt } from 'thirdweb/transaction';
 import { prepareContractCall, sendTransaction } from 'thirdweb/transaction';
 import { viemAdapter } from 'thirdweb/adapters/viem';
@@ -139,7 +139,7 @@ export const getDegenGambitInfo = async (contractAddress: string) => {
     }
 
 
-    export const spin = async (contractAddress: string, boost: boolean, account: Account, client: ThirdwebClient, wallet: Wallet) => {
+    export const spin = async (contractAddress: string, boost: boolean, account: Account, client: ThirdwebClient) => {
         const viemContract = {
             address: contractAddress,
             abi: degenGambitABI,
