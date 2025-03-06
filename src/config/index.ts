@@ -17,7 +17,6 @@ export const TESTNET = {
     },
   }
 
-  const nodeBalancerTestnet = `https://nb.moonstream.to/nb/game7-testnet/jsonrpc/7d3d4cb1-1228-48da-b5b6-ea3f37a43c90`;
 
 
 export const g7Testnet = {
@@ -57,11 +56,13 @@ export const viemG7Testnet = defineChain({
 })
 
 
+
 export const thirdWebG7Testnet = {
-    id: wagmiConfig.chains[0].id,
-    name: wagmiConfig.chains[0].name,
-    rpc: wagmiConfig.chains[0].rpcUrls["default"].http[0],
-    nativeCurrency: wagmiConfig.chains[0].nativeCurrency,
-    blockExplorers: wagmiConfig.chains[0].blockExplorers,
-    testnet: true,
+  ...viemG7Testnet,
+  rpc: viemG7Testnet.rpcUrls["default"].http[0],
+  blockExplorers: [{
+      name: "Game7",
+      url: viemG7Testnet.blockExplorers.default.url
+  }],
+  testnet: true
 }

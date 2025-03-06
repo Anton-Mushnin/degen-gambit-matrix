@@ -1,8 +1,8 @@
-import { thirdwebClientId } from '../config';
+import { thirdwebClientId, thirdWebG7Testnet } from '../config';
 import { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { createThirdwebClient } from 'thirdweb';
-import { useActiveAccount, useConnectModal } from 'thirdweb/react';
+import { useActiveAccount, useActiveWallet, useConnectModal } from 'thirdweb/react';
 import { TerminalOutput } from './TerminalOutput';
 import styles from './MatrixTerminal.module.css';
 import RandomNumbers from './RandomNumbers';
@@ -60,6 +60,7 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
   const [isSystemTyping, setIsSystemTyping] = useState(true);
   const { connect } = useConnectModal();
   const activeAccount = useActiveAccount();
+  const activeWallet = useActiveWallet();
   const client = createThirdwebClient({ clientId: thirdwebClientId });
   const [text, setText] = useState('');
   const [isSpinning, setIsSpinning] = useState(false);
@@ -86,6 +87,15 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
         setIsSystemTyping(true);
     }
   }, [activeAccount]);
+
+  useEffect(() => {
+    if (activeWallet) {
+      const chain = activeWallet.getChain();
+      if (chain?.id !== thirdWebG7Testnet.id) {
+        activeWallet.switchChain(thirdWebG7Testnet as any)
+      }
+    }
+  }, [activeWallet]);
 
 
 
