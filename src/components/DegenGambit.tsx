@@ -65,6 +65,7 @@ const DegenGambit = () => {
                     "  prizes   - Display current prize pool",
                     "  streaks  - View your daily and weekly streaks",
                     "  symbols  - Display minor and major symbols",
+                    "  clear    - Clear the terminal (⌘K or Ctrl+K)",
                 ],
             };
         }

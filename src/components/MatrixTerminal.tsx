@@ -103,6 +103,11 @@ export const MatrixTerminal = ({ onUserInput }: MatrixTerminalProps) => {
     const handleKeyPress = (e: KeyboardEvent) => {
         e.stopPropagation();
       if (!isSystemTyping) {
+        if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+          e.preventDefault(); 
+          setHistory([]);
+          return;
+        }
         if (e.key === 'ArrowUp') {
             if (inputHistory[inputHistoryIndex + 1]) {
                 setUserInput(inputHistory[inputHistoryIndex + 1]);
@@ -140,6 +145,10 @@ export const MatrixTerminal = ({ onUserInput }: MatrixTerminalProps) => {
 
 
   const handleInput = async (input: string) => {
+    if (input === 'clear') {
+      setHistory([]);
+      return;
+    }
 
     if (input === 'spin') {
       setIsSpinning(true);
