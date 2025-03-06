@@ -5,10 +5,10 @@ import styles from './MatrixTerminal.module.css';
 
 const RandomNumbers = ({result, duration}: {result?: string, duration?: number}) => {
     const [text, setText] = useState('');
-    const intervalIdRef = useRef<NodeJS.Timeout | null>(null);
+    const intervalIdRef = useRef<any | null>(null);
 
     useEffect(() => {
-        let timer: NodeJS.Timeout | null = null;
+        let timer: any | null = null;
         if (result && duration) {
             timer = setTimeout(() => {
             setText(result); 
