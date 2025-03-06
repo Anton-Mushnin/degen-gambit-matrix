@@ -202,7 +202,7 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
 
         {!isSystemTyping && !isSpinning && outcome.length === 0 && (
             <div className={styles.inputLine}>
-                <div className={styles.inputText}>{userInput.replace(/ /g, '\u00A0')}</div>
+                <div className={styles.inputText}>{`> ${userInput}`.replace(/ /g, '\u00A0')}</div>
                 <Cursor>█</Cursor>
             </div>
         )}
