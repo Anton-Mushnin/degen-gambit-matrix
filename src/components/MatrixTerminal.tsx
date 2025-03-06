@@ -1,10 +1,12 @@
 import { thirdwebClientId } from '../config';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { createThirdwebClient } from 'thirdweb';
 import { useActiveAccount, useConnectModal } from 'thirdweb/react';
 import { TerminalOutput } from './TerminalOutput';
 import styles from './MatrixTerminal.module.css';
+import RandomNumbers from './RandomNumbers';
+import { numbers } from '../config/symbols';
 
 
 const color = '#a1eeb5';
@@ -13,19 +15,21 @@ const glow = '#0dda9f';
 
 const Container = styled.div`
     background-color:rgb(15, 15, 15);
-    font-family: 'Courier New', Courier, monospace;
+    font-family: 'NimbusMono', 'Courier New', Courier, monospace;
     box-sizing: border-box;
 
     display: flex;
     flex-direction: column;
     align-items: start;
     justify-content: start;
-    height: 100vh;
-    width: 100vw;
+    min-height: 100vh;
+    width: calc(100vw - 10px);
+    max-height: 100vh;
     padding: 40px;
     gap: 0px;
     color: ${color};
-    text-shadow: 0 0 10px ${glow};
+    text-shadow: 0 0 12px ${glow};
+    font-size: 16px;
 `;
 
 
@@ -41,7 +45,7 @@ const Cursor = styled.span`
 `;
 
 interface MatrixTerminalProps {
-  onUserInput?: (input: string) => Promise<string[]>;
+  onUserInput?: (input: string) => Promise<{output: string[], outcome?: bigint[]}>;
 }
 
 
@@ -58,8 +62,20 @@ export const MatrixTerminal = ({ onUserInput }: MatrixTerminalProps) => {
   const activeAccount = useActiveAccount();
   const client = createThirdwebClient({ clientId: thirdwebClientId });
   const [text, setText] = useState('');
+  const [isSpinning, setIsSpinning] = useState(false);
 
   const [rerenderKey, setRerenderKey] = useState(0);
+  const [outcome, setOutcome] = useState<string[]>([]);
+
+  // Add ref for the container
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Add scroll to bottom effect when history changes
+  useEffect(() => {
+    if (containerRef.current) {
+      containerRef.current.scrollTop = containerRef.current.scrollHeight;
+    }
+  }, [history, isSystemTyping, isSpinning, outcome]);
 
   useEffect(() => {
     if (!activeAccount) {
@@ -71,15 +87,21 @@ export const MatrixTerminal = ({ onUserInput }: MatrixTerminalProps) => {
     }
   }, [activeAccount]);
 
+
+
   useEffect(() => {
+
     if (!isSystemTyping) {
       setHistory(prev => [...prev, text]);
+    } else {
+
     }
   }, [isSystemTyping]);
 
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
+        e.stopPropagation();
       if (!isSystemTyping) {
         if (e.key === 'ArrowUp') {
             console.log(inputHistoryIndex, inputHistory);
@@ -121,17 +143,37 @@ export const MatrixTerminal = ({ onUserInput }: MatrixTerminalProps) => {
 
 
   const handleInput = async (input: string) => {
-    const result = await onUserInput?.(input);
-    if (result) {
-      setText(result.join('\n'));
-      setIsSystemTyping(true);
+
+    if (input === 'spin') {
+      setIsSpinning(true);
+    }
+    try {
+        const result = await onUserInput?.(input);
+        if (result?.output && !result.outcome) {
+            setText(result.output.join('\n'));
+            setIsSystemTyping(true);
+        } else if (result?.outcome) {
+            const _outcome = result.outcome.map(item => numbers[Number(item)].toString());
+            setOutcome(_outcome);
+            setTimeout(() => {
+                setHistory(prev => [...prev, _outcome.join(' ')]);
+                setText(result.output.join('\n'));
+                setIsSystemTyping(true);
+                setOutcome([]);
+            }, 8000);
+        }
+    } catch (e: any) {
+        setText(e.message)
+        setIsSystemTyping(true);
+    } finally {
+        setIsSpinning(false);
     }
   }
 
 
 
   return (
-    <Container >
+    <Container ref={containerRef}>
         <div className={styles.history}>
             {history.map((input, index) => (
                 <pre key={index} className={styles.pre}>
@@ -140,14 +182,29 @@ export const MatrixTerminal = ({ onUserInput }: MatrixTerminalProps) => {
             ))}
         </div>
 
-        {!isSystemTyping ? (
+        {!isSystemTyping && !isSpinning && outcome.length === 0 && (
             <div className={styles.inputLine}>
                 <div className={styles.inputText}>{userInput}</div>
                 <Cursor>█</Cursor>
             </div>
-        ) : (
+        )}
+        {isSystemTyping && (
             <div onClick={() => setRerenderKey(rerenderKey + 1)}>
                 <TerminalOutput text={text} key={rerenderKey} setIsSystemTyping={setIsSystemTyping} />
+            </div>
+        )}
+        {isSpinning && (
+            <div className={styles.spinningContainer}>
+                <RandomNumbers />
+                <RandomNumbers />
+                <RandomNumbers />
+            </div>
+        )}
+        {outcome.length > 0 && (
+            <div className={styles.spinningContainer}>
+                {outcome.map((item, index) => (
+                    <RandomNumbers key={index} result={item} duration={2000 + index * 2000} />
+                ))}
             </div>
         )}
     </Container>

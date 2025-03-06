@@ -3,7 +3,7 @@
     flex-direction: row;
     align-items: center;
     justify-content: start;
-    font-family: monospace;
+    font-family: 'NimbusMono', 'Courier New', Courier, monospace;
     margin-top: 4px;
 }
 
@@ -22,4 +22,15 @@
 .pre {
     color: #a1eeb5;
     margin: 4px 0;
+    font-family: 'NimbusMono', 'Courier New', Courier, monospace;
+}
+
+.spinningContainer {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: start;
+    color: #a1eeb5;
+    text-shadow: 0 0 10px #0dda9f;
+    gap: 10px;
 }
