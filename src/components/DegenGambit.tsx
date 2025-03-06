@@ -52,7 +52,7 @@ const DegenGambit = () => {
                         outcome: spinResult.outcome?.slice(0, 3),
                     };
                     case "symbols": {
-                        return {output: ["Minor symbols:", userNumbers.slice(1, 15).join(', '), "Major symbols:",   userNumbers.slice(-3).join(', ')]};
+                        return {output: ["Minor symbols:", userNumbers.slice(1, 16).join(', '), "Major symbols:",   userNumbers.slice(-3).join(', ')]};
                     }
                     case input.match(/^set \d+ \d+$/)?.input: {
                         const [_, indexStr, numberStr] = input.split(' ');
@@ -66,7 +66,7 @@ const DegenGambit = () => {
                         const newNumbers = [...userNumbers];
                         newNumbers[index] = number;
                         setUserNumbers(newNumbers);
-                        return {output: ["Minor symbols:", newNumbers.slice(1, 15).join(', '), "Major symbols:",   newNumbers.slice(-3).join(', ')]};
+                        return {output: ["Minor symbols:", newNumbers.slice(1, 16).join(', '), "Major symbols:",   newNumbers.slice(-3).join(', ')]};
                     }
             default:
                 return {output: [

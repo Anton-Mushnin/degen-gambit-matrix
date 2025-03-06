@@ -247,6 +247,7 @@ export const getDegenGambitInfo = async (contractAddress: string) => {
           await waitForReceipt(transactionResult);
 
           let outcome;
+          let retries = 0;
           while (!outcome) {
             try {
                 outcome = await publicClient.readContract({
@@ -255,8 +256,12 @@ export const getDegenGambitInfo = async (contractAddress: string) => {
                     args: [degenAddress],
                 })
             } catch (error: any) {
-                if (!error.message.includes('WaitForTick()')) {
+                if (!error.message.includes('WaitForTick()') && !error.message.includes('InvalidBlockNumber') && !error.message.includes('0xd5dc642d')) {
                     return {description: error.message}
+                }
+                retries += 1;
+                if (retries > 30) {
+                    return {description: "Something went wrong. Please try again."}
                 }
                 await new Promise(resolve => setTimeout(resolve, 1000));
             }
