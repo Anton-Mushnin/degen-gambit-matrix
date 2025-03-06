@@ -238,9 +238,6 @@ export const getDegenGambitInfo = async (contractAddress: string) => {
             value: spinCost,
           });
 
-          console.log(tx)
-          console.log('spinning')
-
         const transactionResult = await sendTransaction({
             transaction: tx,
             account,

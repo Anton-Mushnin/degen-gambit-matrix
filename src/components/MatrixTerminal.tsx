@@ -104,8 +104,6 @@ export const MatrixTerminal = ({ onUserInput }: MatrixTerminalProps) => {
         e.stopPropagation();
       if (!isSystemTyping) {
         if (e.key === 'ArrowUp') {
-            console.log(inputHistoryIndex, inputHistory);
-
             if (inputHistory[inputHistoryIndex + 1]) {
                 setUserInput(inputHistory[inputHistoryIndex + 1]);
                 setInputHistoryIndex(prev => prev + 1);
@@ -113,7 +111,6 @@ export const MatrixTerminal = ({ onUserInput }: MatrixTerminalProps) => {
           return;
         }
         if (e.key === 'ArrowDown') {
-            console.log(inputHistoryIndex);
             if (inputHistory[inputHistoryIndex - 1]) {
                 setUserInput(inputHistory[inputHistoryIndex - 1]);
                 setInputHistoryIndex(prev => prev - 1);
