@@ -127,7 +127,9 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
         }
         if (e.key === 'Enter') {
           setHistory(prev => [...prev, `>${userInput}`]);
-          setInputHistory(prev => [userInput, ...prev]);
+          if (userInput) {
+            setInputHistory(prev => [userInput, ...prev]);
+          }
           setInputHistoryIndex(-1);
           setUserInput('');
           handleInput(userInput);
