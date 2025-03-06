@@ -150,12 +150,30 @@ export const getDegenGambitInfo = async (contractAddress: string) => {
             chain: wagmiConfig.chains[0],
             transport: http()
           })
-          
-          const spinCost = await publicClient.readContract({
-            ...viemContract, 
-            functionName: 'spinCost',
-            args: [degenAddress],
+
+          const result = await multicall(wagmiConfig, {
+            contracts: [
+              {
+                ...viemContract,
+                functionName: 'symbol',
+              },
+              {
+                ...viemContract,
+                functionName: 'decimals',
+              },
+              {
+                ...viemContract,
+                functionName: 'spinCost',
+                args: [degenAddress],
+              },
+            ],
           })
+          const [
+            symbol,
+            decimals,
+            spinCost,
+          ] = result.map((item: any) => item.result);
+
 
           const contract = viemAdapter.contract.fromViem({
             viemContract: viemContract,
@@ -241,12 +259,14 @@ export const getDegenGambitInfo = async (contractAddress: string) => {
                 })
             } catch (error: any) {
                 if (!error.message.includes('WaitForTick()')) {
-                    return 'error'
+                    return {description: error.message}
                 }
                 await new Promise(resolve => setTimeout(resolve, 1000));
             }
           }
-        return outcome[4]
-
-
+        return {description: Number(outcome[4]) > 0 
+            ? `You won ${formatUnits(outcome[4], decimals)} ${Number(outcome[5]) === 1 ? wagmiConfig.chains[0].nativeCurrency.symbol : symbol}` 
+            : `The Matrix has you...`,
+            outcome,
+          }
     }
