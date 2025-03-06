@@ -1,5 +1,5 @@
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'NimbusMono', 'Courier New', Courier, monospace;
   line-height: 1.5;
   font-weight: 400;
 
@@ -11,6 +11,9 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  width: 100vw;
+  background-color: rgb(15, 15, 15);
+  overflow-y: auto;
 }
 
 a {
