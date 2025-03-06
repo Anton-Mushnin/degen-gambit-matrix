@@ -25,7 +25,7 @@ export const g7Testnet = {
   name: 'g7 sepolia',
   nativeCurrency: { name: 'TG7T', symbol: 'TG7T', decimals: 18 },
   rpcUrls: {
-    default: { http: [nodeBalancerTestnet] },
+    default: { http: ['https://testnet-rpc.game7.io'] },
   },
   blockExplorers: {
     default: { name: 'Game7', url: 'https://testnet.game7.io' },
