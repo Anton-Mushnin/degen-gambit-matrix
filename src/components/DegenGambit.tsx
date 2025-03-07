@@ -234,127 +234,6 @@ const DegenGambit = () => {
                     ].filter(Boolean) as string[],
                 };
             }
-            case "respin": {
-                if (!activeAccount || !activeWallet) {
-                    return {output: ["No account selected"]};
-                }
-                
-                // Make sure there's a pending outcome
-                if (!pendingOutcome) {
-                    return {output: ["No pending spin to respin. Spin first!"]};
-                }
-                
-                // Check if the outcome has expired
-                if (pendingOutcome.isExpired) {
-                    // Clean up the expired state
-                    setPendingOutcome(null);
-                    
-                    return {output: ["Time's up! The deadline to respin has passed. Please spin again."]};
-                }
-                
-                // Execute the respin
-                const respinResult = await respin(contractAddress, false, activeAccount, client);
-                
-                // Store the result in our consolidated outcome state
-                if (respinResult.pendingAcceptance) {
-                    // Convert to our SpinOutcome type
-                    const outcome: SpinOutcome = {
-                        description: respinResult.description || '',
-                        outcome: respinResult.outcome,
-                        prize: respinResult.prize || '0',
-                        prizeType: respinResult.prizeType || 0,
-                        blockInfo: {
-                            currentBlock: typeof respinResult.blockInfo?.currentBlock === 'bigint' 
-                                ? respinResult.blockInfo.currentBlock 
-                                : BigInt(respinResult.blockInfo?.currentBlock || 0),
-                            blockDeadline: respinResult.blockInfo?.blockDeadline || 0,
-                            blocksRemaining: Number(respinResult.blockInfo?.blocksRemaining || 0),
-                            blocksToAct: Number(respinResult.blockInfo?.blocksToAct || 0)
-                        },
-                        costToRespin: respinResult.costToRespin || '0',
-                        needsAcceptance: true,
-                        isRespin: true // Mark as a respin
-                    };
-                    
-                    // Update state with the new outcome
-                    setPendingOutcome(outcome);
-                }
-                
-                // Format and return output - same logic for both spin and respin
-                // For respins, prefix the description with "RESPIN: "
-                const result = {...respinResult};
-                if (result.description) {
-                    result.description = "RESPIN: " + result.description;
-                }
-                
-                // Create a normalized version of result that matches the SpinResult interface
-                const normalizedResult: SpinResult = {
-                    ...result,
-                    blockInfo: result.blockInfo ? {
-                        blocksRemaining: Number(result.blockInfo.blocksRemaining || 0),
-                        currentBlock: typeof result.blockInfo.currentBlock === 'bigint' 
-                            ? result.blockInfo.currentBlock 
-                            : result.blockInfo.currentBlock !== undefined 
-                                ? BigInt(result.blockInfo.currentBlock) 
-                                : undefined,
-                        blockDeadline: typeof result.blockInfo.blockDeadline === 'bigint'
-                            ? result.blockInfo.blockDeadline
-                            : result.blockInfo.blockDeadline !== undefined
-                                ? Number(result.blockInfo.blockDeadline)
-                                : undefined,
-                        blocksToAct: typeof result.blockInfo.blocksToAct === 'number'
-                            ? result.blockInfo.blocksToAct
-                            : result.blockInfo.blocksToAct !== undefined
-                                ? Number(result.blockInfo.blocksToAct)
-                                : null,
-                        lastSpinBlock: typeof result.blockInfo.lastSpinBlock === 'bigint'
-                            ? result.blockInfo.lastSpinBlock
-                            : result.blockInfo.lastSpinBlock !== undefined
-                                ? Number(result.blockInfo.lastSpinBlock)
-                                : undefined,
-                        costToRespin: null
-                    } : null
-                };
-                
-                return formatSpinOutput(normalizedResult);
-            }
-            case "status": {
-                if (pendingOutcome) {
-                    // Check if expired
-                    if (pendingOutcome.isExpired) {
-                        return {
-                            output: [
-                                "=== EXPIRED OUTCOME ===",
-                                pendingOutcome.description,
-                                "The time to act on this outcome has expired.",
-                                "Please spin again to continue playing.",
-                                "======================"
-                            ],
-                            outcome: pendingOutcome.outcome?.slice(0, 3),
-                        };
-                    }
-                    
-                    // Active pending outcome
-                    const spinType = pendingOutcome.isRespin ? "RESPIN" : "SPIN";
-                    const statusPrize = Number(pendingOutcome.prize);
-                    
-                    // Just return simple status text directly without any fancy formatting
-                    return {
-                        output: [
-                            `=== PENDING ${spinType} STATUS ===`,
-                            pendingOutcome.description,
-                            `Prize: ${pendingOutcome.prize} ${pendingOutcome.prizeType === 1 ? wagmiConfig.chains[0].nativeCurrency.symbol : 'GAMBIT'}`,
-                            `Respin cost: ${pendingOutcome.costToRespin} ${wagmiConfig.chains[0].nativeCurrency.symbol}`,
-                            "",
-                            `Type 'accept' to claim${statusPrize > 0 ? ' prize' : ''} or 'respin' to try again`,
-                            "==========================="
-                        ],
-                        outcome: pendingOutcome.outcome?.slice(0, 3),
-                    };
-                } else {
-                    return {output: ["No pending outcome. Type 'spin' to play!"]};
-                }
-            }
             case "symbols": {
                 return {output: ["Minor symbols:", userNumbers.slice(1, 16).join(', '), "Major symbols:", userNumbers.slice(-3).join(', ')]};
             }
@@ -378,8 +257,6 @@ const DegenGambit = () => {
                     "Game Flow:",
                     "  spin     - Spin the wheel",
                     "  accept   - Accept the current spin outcome (claim prize)",
-                    "  respin   - Respin with a discount (instead of accepting)",
-                    "  status   - Check status of pending spin",
                     "",
                     "Information:",
                     "  balance  - Check your native and gambit token balances",
