@@ -34,3 +34,40 @@
     text-shadow: 0 0 10px #0dda9f;
     gap: 10px;
 }
+
+/* Shake animation for minor symbols */
+@keyframes shake {
+    0% { transform: translateX(0); }
+    10% { transform: translateX(-5px); }
+    20% { transform: translateX(5px); }
+    30% { transform: translateX(-5px); }
+    40% { transform: translateX(5px); }
+    50% { transform: translateX(-5px); }
+    60% { transform: translateX(5px); }
+    70% { transform: translateX(-5px); }
+    80% { transform: translateX(5px); }
+    90% { transform: translateX(-5px); }
+    100% { transform: translateX(0); }
+}
+
+.shake {
+    animation: shake 0.8s ease-in-out;
+}
+
+/* Blink animation for major symbols */
+@keyframes blink {
+    0% { color: #a1eeb5; text-shadow: 0 0 10px #0dda9f; }
+    25% { color: white; text-shadow: 0 0 20px white; }
+    50% { color: #a1eeb5; text-shadow: 0 0 10px #0dda9f; }
+    75% { color: white; text-shadow: 0 0 20px white; }
+    100% { color: #a1eeb5; text-shadow: 0 0 10px #0dda9f; }
+}
+
+.blink {
+    animation: blink 1s ease-in-out;
+}
+
+/* Combined shake and blink for major symbols */
+.shakeBlink {
+    animation: shake 0.8s ease-in-out, blink 1s ease-in-out;
+}
