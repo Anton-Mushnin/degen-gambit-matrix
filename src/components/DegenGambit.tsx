@@ -151,7 +151,7 @@ const DegenGambit = () => {
                     setBlocksRemaining(respinResult.blockInfo?.blocksRemaining || null);
                 }
                 
-                const timerLine = respinResult.blockInfo 
+                const respinTimerLine = respinResult.blockInfo 
                     ? `⏱️ Time remaining: ${blocksRemaining || respinResult.blockInfo.blocksRemaining || '?'} blocks`
                     : '';
                 
@@ -159,7 +159,7 @@ const DegenGambit = () => {
                     output: [
                         respinResult.description,
                         respinResult.actionNeeded || '',
-                        timerLine,
+                        respinTimerLine,
                     ].filter(line => line),
                     outcome: respinResult.outcome?.slice(0, 3),
                 };
@@ -222,7 +222,7 @@ const DegenGambit = () => {
 
     // Create a more visible status bar with action information
     const statusBarText = pendingSpinResult 
-        ? `⏱️ ${blocksRemaining || '?'} blocks remaining | Prize: ${pendingSpinResult.prize} | Type 'accept' to claim or 'respin' to try again`
+        ? `⏱️ ${blocksRemaining || '?'} blocks remaining | Prize: ${pendingSpinResult.prize} ${pendingSpinResult.prizeType === 1 ? wagmiConfig.chains[0].nativeCurrency.symbol : 'GAMBIT'} | Type 'accept' to claim or 'respin' to try again`
         : undefined;
         
     return (
