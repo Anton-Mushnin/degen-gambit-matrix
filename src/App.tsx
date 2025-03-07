@@ -7,7 +7,7 @@ function App() {
 
 
   return (
-    <div>
+    <div style={{paddingBottom: '30px'}}>
       <ThirdwebProvider>
         <DegenGambit />
       </ThirdwebProvider>

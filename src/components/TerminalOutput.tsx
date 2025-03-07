@@ -35,7 +35,7 @@ export const TerminalOutput = ({ text, typingSpeed = 20, setIsSystemTyping }: Ma
       const timer = setTimeout(() => {
         setDisplayedText(prev => prev + text[currentIndex]);
         setCurrentIndex(prev => prev + 1);
-      }, Math.max(10, typingSpeed - 30 * (text.length / 500)));
+      }, text[currentIndex] === ' ' ? 200 : Math.floor(Math.random() * (120 - 50) + 50));
 
       return () => clearTimeout(timer);
     } else {
