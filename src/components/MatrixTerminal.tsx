@@ -117,11 +117,17 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
     setIsProcessing(true)
     try {
         const result = await onUserInput?.(input);
+        const notTerminalPhrases = ['Wake up', 'The Matrix', 'Prize'];
+
         if (result?.output && !result.outcome) {
             const outputText = result.output.join('\n');
-            if (outputText) {  // Only set text if there's actual output
+            if (outputText) { 
+              if (notTerminalPhrases.some((str) => outputText.startsWith(str))) {
                 setText(outputText);
                 setIsSystemTyping(true);
+              } else {
+                setHistory(prev => [...prev, outputText])
+              }
             }
         } else if (result?.outcome) {
             const outcomeValues = result.outcome.map(item => numbers[Number(item)].toString());
@@ -129,9 +135,13 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
             setTimeout(() => {
                 setHistory(prev => [...prev, outcomeValues.join(' ')]);
                 const outputText = result.output.join('\n');
-                if (outputText) {  // Only set text if there's actual output
+                if (outputText) { 
+                  if (notTerminalPhrases.some((str) => outputText.startsWith(str))) {
                     setText(outputText);
                     setIsSystemTyping(true);
+                  } else {
+                    setHistory(prev => [...prev, outputText])
+                  }
                 }
                 setOutcome([]);
             }, 8000);
@@ -205,7 +215,7 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
 
         {!isSystemTyping && !isSpinning && outcome.length === 0 && !isProcessing && (
             <div className={styles.inputLine}>
-                <div className={styles.inputText}>{`> ${userInput}`.replace(/ /g, '\u00A0')}</div>
+                <div className={styles.inputText}>{`>${userInput}`.replace(/ /g, '\u00A0')}</div>
                 <Cursor>█</Cursor>
             </div>
         )}
