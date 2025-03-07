@@ -149,10 +149,9 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
                 setOutcome([]);
             }, 8000);
         }
-    } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        setText(errorMessage);
-        setIsSystemTyping(true);
+    } catch (error: any) {
+        const errorMessage = error.message ?? String(error);
+        setHistory(prev => [...prev, errorMessage])
     } finally {
         setIsSpinning(false);
         setIsProcessing(false);
