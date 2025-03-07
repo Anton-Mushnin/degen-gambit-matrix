@@ -1,7 +1,7 @@
 import { MatrixTerminal } from "./MatrixTerminal";
 import { useDegenGambitInfo } from '../hooks/useDegenGambitInfo';
 import { contractAddress, thirdwebClientId, wagmiConfig } from '../config';
-import { getStreaks, getBalances, spin, accept, respin } from "../utils/degenGambit";
+import { getStreaks, getBalances, spin, accept } from "../utils/degenGambit";
 import { useActiveAccount, useActiveWallet } from "thirdweb/react";
 import { createThirdwebClient } from "thirdweb";
 import { useState } from "react";
