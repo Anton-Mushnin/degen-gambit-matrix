@@ -364,6 +364,13 @@ export const spin = async (contractAddress: string, boost: boolean, account: Acc
   
   // Get current block info with fresh data
   const blockInfo = await getBlockInfo(contractAddress, degenAddress, true);
+  
+  // IMPORTANT: Override the blocks remaining immediately after a spin
+  // The chain might not have fully updated, so we set it to the maximum
+  if (blockInfo) {
+    blockInfo.blocksRemaining = blockInfo.blocksToAct;
+    console.log("Setting initial blocks remaining to max:", blockInfo.blocksToAct);
+  }
 
   // After spin is confirmed, check the outcome
   let outcome;

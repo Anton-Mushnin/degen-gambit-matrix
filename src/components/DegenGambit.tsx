@@ -191,17 +191,22 @@ const DegenGambit = () => {
                 
                 // Store the result in our consolidated outcome state
                 if (spinResult.pendingAcceptance) {
+                    // For a new spin, ensure we have a proper blocks remaining value
+                    // The contract should provide blocksToAct as the initial time window
+                    const initialBlocksRemaining = spinResult.blockInfo?.blocksToAct || 
+                                            contractInfo?.data?.blocksToAct || 20; // fallback to 20 blocks
+                    
                     // Convert to our SpinOutcome type
                     const outcome: SpinOutcome = {
                         description: spinResult.description,
                         outcome: spinResult.outcome,
                         prize: spinResult.prize || '0',
                         prizeType: spinResult.prizeType || 0,
-                        blockInfo: spinResult.blockInfo || {
-                            currentBlock: BigInt(0),
-                            blockDeadline: BigInt(0),
-                            blocksRemaining: 0,
-                            blocksToAct: 0
+                        blockInfo: {
+                            currentBlock: spinResult.blockInfo?.currentBlock || BigInt(0),
+                            blockDeadline: spinResult.blockInfo?.blockDeadline || BigInt(0),
+                            blocksRemaining: initialBlocksRemaining, // Use our calculated value
+                            blocksToAct: spinResult.blockInfo?.blocksToAct || 0
                         },
                         costToRespin: spinResult.costToRespin || '0',
                         needsAcceptance: true,
@@ -211,11 +216,10 @@ const DegenGambit = () => {
                     // Update state with the new outcome
                     setPendingOutcome(outcome);
                     
-                    // Also update the blocks remaining separately 
-                    if (spinResult.blockInfo) {
-                        setBlocksRemaining(spinResult.blockInfo.blocksRemaining);
-                        setIsExpired(false); // Reset expired state with new outcome
-                    }
+                    // IMPORTANT: Always set a valid blocks remaining value after a spin
+                    console.log(`Setting initial blocks remaining to: ${initialBlocksRemaining}`);
+                    setBlocksRemaining(initialBlocksRemaining);
+                    setIsExpired(false); // Reset expired state with new outcome
                 }
                 
                 
@@ -331,17 +335,22 @@ const DegenGambit = () => {
                 
                 // Store the result in our consolidated outcome state
                 if (respinResult.pendingAcceptance) {
+                    // For a respin, ensure we have a proper blocks remaining value
+                    // The contract should provide blocksToAct as the initial time window
+                    const initialBlocksRemaining = respinResult.blockInfo?.blocksToAct || 
+                                            contractInfo?.data?.blocksToAct || 20; // fallback to 20 blocks
+                    
                     // Convert to our SpinOutcome type
                     const outcome: SpinOutcome = {
                         description: respinResult.description,
                         outcome: respinResult.outcome,
                         prize: respinResult.prize || '0',
                         prizeType: respinResult.prizeType || 0,
-                        blockInfo: respinResult.blockInfo || {
-                            currentBlock: BigInt(0),
-                            blockDeadline: BigInt(0),
-                            blocksRemaining: 0,
-                            blocksToAct: 0
+                        blockInfo: {
+                            currentBlock: respinResult.blockInfo?.currentBlock || BigInt(0),
+                            blockDeadline: respinResult.blockInfo?.blockDeadline || BigInt(0),
+                            blocksRemaining: initialBlocksRemaining, // Use our calculated value
+                            blocksToAct: respinResult.blockInfo?.blocksToAct || 0
                         },
                         costToRespin: respinResult.costToRespin || '0',
                         needsAcceptance: true,
@@ -351,11 +360,10 @@ const DegenGambit = () => {
                     // Update state with the new outcome
                     setPendingOutcome(outcome);
                     
-                    // Also update the blocks remaining separately 
-                    if (respinResult.blockInfo) {
-                        setBlocksRemaining(respinResult.blockInfo.blocksRemaining);
-                        setIsExpired(false); // Reset expired state with new outcome
-                    }
+                    // IMPORTANT: Always set a valid blocks remaining value after a respin
+                    console.log(`Setting initial blocks remaining to: ${initialBlocksRemaining}`);
+                    setBlocksRemaining(initialBlocksRemaining);
+                    setIsExpired(false); // Reset expired state with new outcome
                 }
                 
                 
