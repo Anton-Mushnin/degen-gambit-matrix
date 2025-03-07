@@ -55,102 +55,15 @@ const DegenGambit = () => {
 
     // Single consolidated state for any pending outcome (initial spin or respin)
     const [pendingOutcome, setPendingOutcome] = useState<SpinOutcome | null>(null);
-    const [blocksRemaining, setBlocksRemaining] = useState<number | null>(null);
-    const [isExpired, setIsExpired] = useState(false);
-    const blockTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-    // Track last spin deadline info
-    const lastSpinInfoRef = useRef({
-        lastSpinBlock: null as number | null,
-        blockDeadline: null as number | null,
-        blocksToAct: null as number | null
-    });
     
-    // Initial block info fetch when component mounts
-    useEffect(() => {
-        async function fetchInitialBlockInfo() {
-            if (activeAccount) {
-                const blockInfo = await getBlockInfo(contractAddress, activeAccount.address, true);
-                console.log("Initial block info:", blockInfo);
-            }
-        }
-        
-        fetchInitialBlockInfo();
-    }, [activeAccount]);
-    
-    const updateBlocksRemaining = useCallback(async () => {
-        if (!activeAccount || !pendingOutcome) return;
-        
-        try {
-            // Always force a refresh to ensure we get the latest data
-            const blockInfo = await getBlockInfo(contractAddress, activeAccount.address, true);
-            if (blockInfo) {
-                // Make sure we log the data we're seeing
-                console.log(`TIMER UPDATE: Current block=${blockInfo.currentBlock}, Deadline=${blockInfo.blockDeadline}, Remaining=${blockInfo.blocksRemaining}`);
-                
-                // Update state immediately with the calculated value
-                setBlocksRemaining(Number(blockInfo.blocksRemaining));
-                
-                // Always update the spin info for reference
-                lastSpinInfoRef.current = {
-                    lastSpinBlock: Number(blockInfo.lastSpinBlock),
-                    blockDeadline: Number(blockInfo.blockDeadline),
-                    blocksToAct: Number(blockInfo.blocksToAct)
-                };
-                
-                if (blockInfo.blocksRemaining <= 0) {
-                    console.log("TIMER EXPIRED!");
-                    setIsExpired(true);
-                    
-                    if (blockTimerRef.current) {
-                        clearInterval(blockTimerRef.current);
-                        blockTimerRef.current = null;
-                    }
-                    
-                    setPendingOutcome(prev => {
-                        if (!prev) return null;
-                        return {
-                            ...prev,
-                            isExpired: true
-                        };
-                    });
-                }
-            } else {
-                console.error("No block info returned, something went wrong");
-            }
-        } catch (error) {
-            console.error("Failed to update block info:", error);
-        }
-    }, [activeAccount, pendingOutcome]);
-    
-    useEffect(() => {
-        if (pendingOutcome && activeAccount && !isExpired) {
-            console.log("Starting block countdown timer");
-            updateBlocksRemaining();
-            blockTimerRef.current = setInterval(updateBlocksRemaining, 15000);
-            
-            return () => {
-                console.log("Stopping block countdown timer");
-                if (blockTimerRef.current) {
-                    clearInterval(blockTimerRef.current);
-                    blockTimerRef.current = null;
-                }
-            };
-        }
-    }, [pendingOutcome, activeAccount, isExpired, updateBlocksRemaining]);
-    
-    const formatSpinOutput = (result: SpinResult, currentBlocksRemaining: number | null) => {
+    const formatSpinOutput = (result: SpinResult) => {
         const prize = Number(result.prize || 0);
         const prizeText = prize > 0 
             ? `Prize: ${result.prize} ${result.prizeType === 1 ? wagmiConfig.chains[0].nativeCurrency.symbol : 'GAMBIT'}`
             : '';
             
-        // Make sure we always have a value - default to 0 if nothing else is available
-        const displayBlocks = currentBlocksRemaining !== null ? currentBlocksRemaining : 
-                             (result.blockInfo?.blocksRemaining !== undefined ? result.blockInfo.blocksRemaining : 0);
-        const timerLine = `Time remaining: ${displayBlocks} blocks`;
         const actionText = `Type 'accept' to claim${prize > 0 ? ' prize' : ''} or 'respin' to try again (cost: ${result.costToRespin})`;
         
-        // Ensure the result has the correct blockInfo structure before passing to formatSpinOutput
         const normalizedResult: SpinResult = {
             ...result,
             blockInfo: result.blockInfo ? {
@@ -171,9 +84,8 @@ const DegenGambit = () => {
             output: [
                 normalizedResult.description,
                 prizeText,
-                timerLine,
                 actionText
-            ].filter(Boolean) as string[], // Filter out empty lines and cast to string[]
+            ].filter(Boolean) as string[],
             outcome: normalizedResult.outcome ? [...normalizedResult.outcome].slice(0, 3) : undefined,
         };
     };
@@ -221,11 +133,6 @@ const DegenGambit = () => {
                 
                 // Store the result in our consolidated outcome state
                 if (spinResult.pendingAcceptance) {
-                    // For a new spin, ensure we have a proper blocks remaining value
-                    // The contract should provide blocksToAct as the initial time window
-                    const initialBlocksRemaining = spinResult.blockInfo?.blocksToAct || 
-                                            contractInfo?.data?.blocksToAct || 20; // fallback to 20 blocks
-                    
                     // Convert to our SpinOutcome type
                     const outcome: SpinOutcome = {
                         description: spinResult.description || '',
@@ -237,7 +144,7 @@ const DegenGambit = () => {
                                 ? spinResult.blockInfo.currentBlock 
                                 : BigInt(spinResult.blockInfo?.currentBlock || 0),
                             blockDeadline: spinResult.blockInfo?.blockDeadline || 0,
-                            blocksRemaining: Number(initialBlocksRemaining), // Use our calculated value
+                            blocksRemaining: Number(spinResult.blockInfo?.blocksRemaining || 0),
                             blocksToAct: Number(spinResult.blockInfo?.blocksToAct || 0)
                         },
                         costToRespin: spinResult.costToRespin || '0',
@@ -247,11 +154,6 @@ const DegenGambit = () => {
                     
                     // Update state with the new outcome
                     setPendingOutcome(outcome);
-                    
-                    // IMPORTANT: Always set a valid blocks remaining value after a spin
-                    console.log(`Setting initial blocks remaining to: ${initialBlocksRemaining}`);
-                    setBlocksRemaining(Number(initialBlocksRemaining));
-                    setIsExpired(false); // Reset expired state with new outcome
                 }
                 
                 // Create a normalized version of spinResult that matches the SpinResult interface
@@ -284,7 +186,7 @@ const DegenGambit = () => {
                 };
                 
                 // Format and return output - same logic for both spin and respin
-                return formatSpinOutput(normalizedSpinResult, blocksRemaining);
+                return formatSpinOutput(normalizedSpinResult);
             }
             case "accept": {
                 if (!activeAccount || !activeWallet) {
@@ -296,24 +198,10 @@ const DegenGambit = () => {
                     return {output: ["Nothing to accept. Spin first!"]};
                 }
                 
-                // Check if the outcome has expired - use both our dedicated isExpired state and the one in pendingOutcome
-                if (isExpired || pendingOutcome.isExpired) {
+                // Check if the outcome has expired
+                if (pendingOutcome.isExpired) {
                     // Clean up the expired state
                     setPendingOutcome(null);
-                    setBlocksRemaining(null);
-                    setIsExpired(false);
-                    
-                    // Reset local spin info reference
-                    lastSpinInfoRef.current = {
-                        lastSpinBlock: null as number | null,
-                        blockDeadline: null as number | null,
-                        blocksToAct: null as number | null
-                    };
-                    
-                    if (blockTimerRef.current) {
-                        clearInterval(blockTimerRef.current);
-                        blockTimerRef.current = null;
-                    }
                     
                     return {output: ["Time's up! The deadline to accept has passed. Please spin again."]};
                 }
@@ -324,20 +212,6 @@ const DegenGambit = () => {
                 // Clear the pending outcome if acceptance was successful
                 if (acceptResult.success) {
                     setPendingOutcome(null);
-                    setBlocksRemaining(null);
-                    setIsExpired(false);
-                    
-                    // Reset local spin info reference
-                    lastSpinInfoRef.current = {
-                        lastSpinBlock: null as number | null,
-                        blockDeadline: null as number | null,
-                        blocksToAct: null as number | null
-                    };
-                    
-                    if (blockTimerRef.current) {
-                        clearInterval(blockTimerRef.current);
-                        blockTimerRef.current = null;
-                    }
                     
                     const spinType = pendingOutcome.isRespin ? "RESPIN" : "SPIN";
                     
@@ -370,24 +244,10 @@ const DegenGambit = () => {
                     return {output: ["No pending spin to respin. Spin first!"]};
                 }
                 
-                // Check if the outcome has expired - use both our dedicated isExpired state and the one in pendingOutcome
-                if (isExpired || pendingOutcome.isExpired) {
+                // Check if the outcome has expired
+                if (pendingOutcome.isExpired) {
                     // Clean up the expired state
                     setPendingOutcome(null);
-                    setBlocksRemaining(null);
-                    setIsExpired(false);
-                    
-                    // Reset local spin info reference
-                    lastSpinInfoRef.current = {
-                        lastSpinBlock: null as number | null,
-                        blockDeadline: null as number | null,
-                        blocksToAct: null as number | null
-                    };
-                    
-                    if (blockTimerRef.current) {
-                        clearInterval(blockTimerRef.current);
-                        blockTimerRef.current = null;
-                    }
                     
                     return {output: ["Time's up! The deadline to respin has passed. Please spin again."]};
                 }
@@ -397,11 +257,6 @@ const DegenGambit = () => {
                 
                 // Store the result in our consolidated outcome state
                 if (respinResult.pendingAcceptance) {
-                    // For a respin, ensure we have a proper blocks remaining value
-                    // The contract should provide blocksToAct as the initial time window
-                    const initialBlocksRemaining = respinResult.blockInfo?.blocksToAct || 
-                                            contractInfo?.data?.blocksToAct || 20; // fallback to 20 blocks
-                    
                     // Convert to our SpinOutcome type
                     const outcome: SpinOutcome = {
                         description: respinResult.description || '',
@@ -413,7 +268,7 @@ const DegenGambit = () => {
                                 ? respinResult.blockInfo.currentBlock 
                                 : BigInt(respinResult.blockInfo?.currentBlock || 0),
                             blockDeadline: respinResult.blockInfo?.blockDeadline || 0,
-                            blocksRemaining: Number(initialBlocksRemaining), // Use our calculated value
+                            blocksRemaining: Number(respinResult.blockInfo?.blocksRemaining || 0),
                             blocksToAct: Number(respinResult.blockInfo?.blocksToAct || 0)
                         },
                         costToRespin: respinResult.costToRespin || '0',
@@ -423,11 +278,6 @@ const DegenGambit = () => {
                     
                     // Update state with the new outcome
                     setPendingOutcome(outcome);
-                    
-                    // IMPORTANT: Always set a valid blocks remaining value after a respin
-                    console.log(`Setting initial blocks remaining to: ${initialBlocksRemaining}`);
-                    setBlocksRemaining(Number(initialBlocksRemaining));
-                    setIsExpired(false); // Reset expired state with new outcome
                 }
                 
                 // Format and return output - same logic for both spin and respin
@@ -466,25 +316,12 @@ const DegenGambit = () => {
                     } : null
                 };
                 
-                return formatSpinOutput(normalizedResult, blocksRemaining);
+                return formatSpinOutput(normalizedResult);
             }
             case "status": {
                 if (pendingOutcome) {
-                    // For status command, force a complete refresh including LastSpinBlock
-                    const blockInfo = await getBlockInfo(contractAddress, activeAccount?.address || "", true);
-                    if (blockInfo) {
-                        setBlocksRemaining(Number(blockInfo.blocksRemaining));
-                        
-                        // Update our local reference
-                        lastSpinInfoRef.current = {
-                            lastSpinBlock: Number(blockInfo.lastSpinBlock),
-                            blockDeadline: Number(blockInfo.blockDeadline),
-                            blocksToAct: Number(blockInfo.blocksToAct)
-                        };
-                    }
-                    
                     // Check if expired
-                    if (isExpired || pendingOutcome.isExpired) {
+                    if (pendingOutcome.isExpired) {
                         return {
                             output: [
                                 "=== EXPIRED OUTCOME ===",
@@ -507,9 +344,7 @@ const DegenGambit = () => {
                             `=== PENDING ${spinType} STATUS ===`,
                             pendingOutcome.description,
                             `Prize: ${pendingOutcome.prize} ${pendingOutcome.prizeType === 1 ? wagmiConfig.chains[0].nativeCurrency.symbol : 'GAMBIT'}`,
-                            `Time remaining: ${blocksRemaining !== null ? blocksRemaining : 0} blocks`,
                             `Respin cost: ${pendingOutcome.costToRespin} ${wagmiConfig.chains[0].nativeCurrency.symbol}`,
-                            `Block deadline: ${pendingOutcome.blockInfo?.blockDeadline} (current: ${pendingOutcome.blockInfo?.currentBlock})`,
                             "",
                             `Type 'accept' to claim${statusPrize > 0 ? ' prize' : ''} or 'respin' to try again`,
                             "==========================="

@@ -44,10 +44,9 @@ const Cursor = styled.span`
 interface MatrixTerminalProps {
   onUserInput?: (input: string) => Promise<{output: string[], outcome?: bigint[]}>;
   numbers: number[];
-  statusBar?: string; // Optional status bar text to show at the bottom
 }
 
-export const MatrixTerminal = ({ onUserInput, numbers, statusBar }: MatrixTerminalProps) => {
+export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) => {
   const [userInput, setUserInput] = useState('');
   const [history, setHistory] = useState<string[]>([]);
   const [inputHistory, setInputHistory] = useState<string[]>([]);
@@ -67,6 +66,9 @@ export const MatrixTerminal = ({ onUserInput, numbers, statusBar }: MatrixTermin
   // Add ref for the container
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Track if we've shown the welcome message
+  const [welcomeShown, setWelcomeShown] = useState(false);
+
   // Add scroll to bottom effect when history changes
   useEffect(() => {
     if (containerRef.current) {
@@ -78,11 +80,12 @@ export const MatrixTerminal = ({ onUserInput, numbers, statusBar }: MatrixTermin
     if (!activeAccount) {
         connect({client});
     }
-    if (activeAccount) {
+    if (activeAccount && !welcomeShown) {
         setText(`Wake up, ${activeAccount.address}`);
         setIsSystemTyping(true);
+        setWelcomeShown(true);
     }
-  }, [activeAccount, connect, client]);
+  }, [activeAccount, connect, client, welcomeShown]);
 
   useEffect(() => {
     if (activeWallet) {
@@ -94,8 +97,10 @@ export const MatrixTerminal = ({ onUserInput, numbers, statusBar }: MatrixTermin
   }, [activeWallet]);
 
   useEffect(() => {
-    if (!isSystemTyping) {
+    if (!isSystemTyping && text) {
       setHistory(prev => [...prev, text]);
+      // Clear the text after adding it to history to prevent re-adding
+      setText('');
     }
   }, [isSystemTyping, text]);
 
@@ -111,15 +116,21 @@ export const MatrixTerminal = ({ onUserInput, numbers, statusBar }: MatrixTermin
     try {
         const result = await onUserInput?.(input);
         if (result?.output && !result.outcome) {
-            setText(result.output.join('\n'));
-            setIsSystemTyping(true);
+            const outputText = result.output.join('\n');
+            if (outputText) {  // Only set text if there's actual output
+                setText(outputText);
+                setIsSystemTyping(true);
+            }
         } else if (result?.outcome) {
             const outcomeValues = result.outcome.map(item => numbers[Number(item)].toString());
             setOutcome(outcomeValues);
             setTimeout(() => {
                 setHistory(prev => [...prev, outcomeValues.join(' ')]);
-                setText(result.output.join('\n'));
-                setIsSystemTyping(true);
+                const outputText = result.output.join('\n');
+                if (outputText) {  // Only set text if there's actual output
+                    setText(outputText);
+                    setIsSystemTyping(true);
+                }
                 setOutcome([]);
             }, 8000);
         }
@@ -212,13 +223,6 @@ export const MatrixTerminal = ({ onUserInput, numbers, statusBar }: MatrixTermin
                 {outcome.map((item, index) => (
                     <RandomNumbers key={index} result={item} duration={2000 + index * 2000} />
                 ))}
-            </div>
-        )}
-        
-        {/* Status bar at the bottom of the screen */}
-        {statusBar && (
-            <div className={styles.statusBar}>
-                {statusBar}
             </div>
         )}
     </Container>

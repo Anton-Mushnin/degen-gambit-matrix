@@ -409,7 +409,7 @@ export const spin = async (contractAddress: string, boost: boolean, account: Acc
 
   return {
     description: actionText,
-    actionNeeded: `Type 'accept' to claim or 'respin' to try again (${blockInfo?.blocksRemaining || '?'} blocks remaining)`,
+    actionNeeded: `Type 'accept' to claim or 'respin' to try again`,
     outcome,
     blockInfo,
     pendingAcceptance: true,
