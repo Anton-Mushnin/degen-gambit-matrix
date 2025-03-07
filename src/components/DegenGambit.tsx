@@ -100,15 +100,24 @@ const DegenGambit = () => {
                     setBlocksRemaining(spinResult.blockInfo?.blocksRemaining || null);
                 }
                 
+                // Extract prize information for better display
+                const prize = Number(spinResult.prize);
+                const prizeText = prize > 0 
+                    ? `Prize: ${spinResult.prize} ${spinResult.prizeType === 1 ? wagmiConfig.chains[0].nativeCurrency.symbol : 'GAMBIT'}`
+                    : '';
+                    
                 const timerLine = spinResult.blockInfo 
                     ? `⏱️ Time remaining: ${blocksRemaining || spinResult.blockInfo.blocksRemaining || '?'} blocks`
                     : '';
                 
+                const actionText = `Type 'accept' to claim${prize > 0 ? ' prize' : ''} or 'respin' to try again (cost: ${spinResult.costToRespin})`;
+                
                 return {
                     output: [
                         spinResult.description,
-                        spinResult.actionNeeded || '',
+                        prizeText,
                         timerLine,
+                        actionText
                     ].filter(line => line), // Filter out empty lines
                     outcome: spinResult.outcome?.slice(0, 3),
                 };
@@ -128,10 +137,24 @@ const DegenGambit = () => {
                         clearInterval(blockTimerRef.current);
                         blockTimerRef.current = null;
                     }
+                    
+                    return {
+                        output: [
+                            "=== OUTCOME ACCEPTED ===",
+                            acceptResult.description,
+                            "Transaction confirmed. Spin settled successfully!",
+                            "======================",
+                        ],
+                    };
                 }
                 
                 return {
-                    output: [acceptResult.description],
+                    output: [
+                        "=== ACCEPTANCE FAILED ===",
+                        acceptResult.description,
+                        acceptResult.error ? `Error: ${acceptResult.error}` : '',
+                        "======================"
+                    ].filter(line => line),
                 };
             case "respin":
                 if (!activeAccount || !activeWallet) {
@@ -151,15 +174,24 @@ const DegenGambit = () => {
                     setBlocksRemaining(respinResult.blockInfo?.blocksRemaining || null);
                 }
                 
+                // Extract prize information for better display
+                const respinPrize = Number(respinResult.prize);
+                const respinPrizeText = respinPrize > 0 
+                    ? `Prize: ${respinResult.prize} ${respinResult.prizeType === 1 ? wagmiConfig.chains[0].nativeCurrency.symbol : 'GAMBIT'}`
+                    : '';
+                    
                 const respinTimerLine = respinResult.blockInfo 
                     ? `⏱️ Time remaining: ${blocksRemaining || respinResult.blockInfo.blocksRemaining || '?'} blocks`
                     : '';
                 
+                const respinActionText = `Type 'accept' to claim${respinPrize > 0 ? ' prize' : ''} or 'respin' to try again (cost: ${respinResult.costToRespin})`;
+                
                 return {
                     output: [
                         respinResult.description,
-                        respinResult.actionNeeded || '',
+                        respinPrizeText,
                         respinTimerLine,
+                        respinActionText
                     ].filter(line => line),
                     outcome: respinResult.outcome?.slice(0, 3),
                 };
@@ -169,15 +201,19 @@ const DegenGambit = () => {
                     
                     // Create a more prominent timer display with formatting
                     const timerDisplay = `⏱️ Time remaining: ${blocksRemaining || '?'} blocks`;
+                    const statusPrize = Number(pendingSpinResult.prize);
                     
                     return {
                         output: [
-                            "Pending spin:",
+                            "=== PENDING SPIN STATUS ===",
                             pendingSpinResult.description,
                             `Prize: ${pendingSpinResult.prize} ${pendingSpinResult.prizeType === 1 ? wagmiConfig.chains[0].nativeCurrency.symbol : 'GAMBIT'}`,
                             timerDisplay,
-                            `Respin cost: ${pendingSpinResult.costToRespin}`,
-                            "Type 'accept' to claim or 'respin' to try again"
+                            `Respin cost: ${pendingSpinResult.costToRespin} ${wagmiConfig.chains[0].nativeCurrency.symbol}`,
+                            `Block deadline: ${pendingSpinResult.blockInfo?.blockDeadline} (current: ${pendingSpinResult.blockInfo?.currentBlock})`,
+                            "",
+                            `Type 'accept' to claim${statusPrize > 0 ? ' prize' : ''} or 'respin' to try again`,
+                            "==========================="
                         ],
                         outcome: pendingSpinResult.outcome?.slice(0, 3),
                     };
@@ -202,35 +238,36 @@ const DegenGambit = () => {
             }
             default:
                 return {output: [
-                    "Available commands:",
+                    "=== DEGEN GAMBIT COMMANDS ===",
+                    "Game Flow:",
                     "  spin     - Spin the wheel",
                     "  accept   - Accept the current spin outcome (claim prize)",
                     "  respin   - Respin with a discount (instead of accepting)",
                     "  status   - Check status of pending spin",
+                    "",
+                    "Information:",
                     "  balance  - Check your native and gambit token balances",
-                    "  getsome  - Visit getsome.game7.io to get some tokens",
                     "  info     - Show game parameters and costs",
                     "  prizes   - Display current prize pool",
                     "  streaks  - View your daily and weekly streaks",
                     "  symbols  - Display minor and major symbols",
+                    "",
+                    "Other:",
+                    "  getsome  - Visit getsome.game7.io to get some tokens",
                     "  set      - Set symbol at index (set <1-based index> <number>)",
                     "  clear    - Clear the terminal (⌘K or Ctrl+K)",
+                    "=============================",
                 ],
             };
         }
     }
 
-    // Create a more visible status bar with action information
-    const statusBarText = pendingSpinResult 
-        ? `⏱️ ${blocksRemaining || '?'} blocks remaining | Prize: ${pendingSpinResult.prize} ${pendingSpinResult.prizeType === 1 ? wagmiConfig.chains[0].nativeCurrency.symbol : 'GAMBIT'} | Type 'accept' to claim or 'respin' to try again`
-        : undefined;
-        
+    // No separate status bar - information will be in command output
     return (
         <div>
             <MatrixTerminal 
                 onUserInput={handleInput} 
-                numbers={userNumbers} 
-                statusBar={statusBarText}
+                numbers={userNumbers}
             />
         </div>
     )
