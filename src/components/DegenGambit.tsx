@@ -57,24 +57,37 @@ const DegenGambit = () => {
         blocksToAct: null
     });
     
+    // Initial block info fetch when component mounts
+    useEffect(() => {
+        async function fetchInitialBlockInfo() {
+            if (activeAccount) {
+                const blockInfo = await getBlockInfo(contractAddress, activeAccount.address, true);
+                console.log("Initial block info:", blockInfo);
+            }
+        }
+        
+        fetchInitialBlockInfo();
+    }, [activeAccount]);
+    
     const updateBlocksRemaining = async () => {
         if (!activeAccount || !pendingOutcome) return;
         
         try {
-            // Get only the current block, not calling LastSpinBlock unnecessarily
-            const blockInfo = await getBlockInfo(contractAddress, activeAccount.address);
+            // Always force a refresh to ensure we get the latest data
+            const blockInfo = await getBlockInfo(contractAddress, activeAccount.address, true);
             if (blockInfo) {
-                console.log(`UPDATING TIMER: ${blockInfo.blocksRemaining} blocks remaining`);
+                // Make sure we log the data we're seeing
+                console.log(`TIMER UPDATE: Current block=${blockInfo.currentBlock}, Deadline=${blockInfo.blockDeadline}, Remaining=${blockInfo.blocksRemaining}`);
+                
+                // Update state immediately with the calculated value
                 setBlocksRemaining(blockInfo.blocksRemaining);
                 
-                // Store the spin info for local calculations
-                if (lastSpinInfoRef.current.lastSpinBlock === null) {
-                    lastSpinInfoRef.current = {
-                        lastSpinBlock: blockInfo.lastSpinBlock,
-                        blockDeadline: blockInfo.blockDeadline,
-                        blocksToAct: blockInfo.blocksToAct
-                    };
-                }
+                // Always update the spin info for reference
+                lastSpinInfoRef.current = {
+                    lastSpinBlock: blockInfo.lastSpinBlock,
+                    blockDeadline: blockInfo.blockDeadline,
+                    blocksToAct: blockInfo.blocksToAct
+                };
                 
                 if (blockInfo.blocksRemaining <= 0) {
                     console.log("TIMER EXPIRED!");
@@ -93,6 +106,8 @@ const DegenGambit = () => {
                         };
                     });
                 }
+            } else {
+                console.error("No block info returned, something went wrong");
             }
         } catch (error) {
             console.error("Failed to update block info:", error);
@@ -121,7 +136,10 @@ const DegenGambit = () => {
             ? `Prize: ${result.prize} ${result.prizeType === 1 ? wagmiConfig.chains[0].nativeCurrency.symbol : 'GAMBIT'}`
             : '';
             
-        const timerLine = `Time remaining: ${currentBlocksRemaining !== null ? currentBlocksRemaining : result.blockInfo?.blocksRemaining || '?'} blocks`;
+        // Make sure we always have a value - default to 0 if nothing else is available
+        const displayBlocks = currentBlocksRemaining !== null ? currentBlocksRemaining : 
+                             (result.blockInfo?.blocksRemaining !== undefined ? result.blockInfo.blocksRemaining : 0);
+        const timerLine = `Time remaining: ${displayBlocks} blocks`;
         const actionText = `Type 'accept' to claim${prize > 0 ? ' prize' : ''} or 'respin' to try again (cost: ${result.costToRespin})`;
         
         return {
@@ -387,7 +405,7 @@ const DegenGambit = () => {
                             `=== PENDING ${spinType} STATUS ===`,
                             pendingOutcome.description,
                             `Prize: ${pendingOutcome.prize} ${pendingOutcome.prizeType === 1 ? wagmiConfig.chains[0].nativeCurrency.symbol : 'GAMBIT'}`,
-                            `Time remaining: ${blocksRemaining !== null ? blocksRemaining : pendingOutcome.blockInfo?.blocksRemaining || '?'} blocks`,
+                            `Time remaining: ${blocksRemaining !== null ? blocksRemaining : 0} blocks`,
                             `Respin cost: ${pendingOutcome.costToRespin} ${wagmiConfig.chains[0].nativeCurrency.symbol}`,
                             `Block deadline: ${pendingOutcome.blockInfo?.blockDeadline} (current: ${pendingOutcome.blockInfo?.currentBlock})`,
                             "",

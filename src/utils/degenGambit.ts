@@ -150,24 +150,29 @@ let CONTRACT_CONSTANTS = {
 // Block tracking
 let lastCheckedTimestamp = 0;
 let cachedBlockNumber = BigInt(0);
-let blockListeners = [];
 
-// Efficient block number updating
+// Direct RPC call to get the latest block number - no caching, just get the block every time
 async function getLatestBlockNumber(client) {
-  const now = Date.now();
-  // Only query for new blocks every 10 seconds max
-  if (now - lastCheckedTimestamp > 10000) {
+  try {
+    // Directly use the client's built-in method which is more reliable
+    const blockNum = await client.getBlockNumber();
+    console.log(`CURRENT BLOCK: ${blockNum}`);
+    return blockNum;
+  } catch (err) {
+    console.error("Failed to get latest block:", err);
+    
+    // As a fallback, try direct RPC call
     try {
-      cachedBlockNumber = await client.getBlockNumber();
-      lastCheckedTimestamp = now;
-      console.log(`NEW BLOCK: ${cachedBlockNumber}`);
-      // Notify any listeners about the new block
-      blockListeners.forEach(listener => listener(cachedBlockNumber));
-    } catch (err) {
-      console.error("Failed to get latest block:", err);
+      const result = await client.transport.request({
+        method: 'eth_blockNumber',
+        params: []
+      });
+      return BigInt(result);
+    } catch (innerErr) {
+      console.error("Fallback also failed:", innerErr);
+      return BigInt(0); // Return 0 as last resort
     }
   }
-  return cachedBlockNumber;
 }
 
 // Load contract constants once
