@@ -9,6 +9,11 @@ import { prepareContractCall, sendTransaction } from 'thirdweb/transaction';
 import { viemAdapter } from 'thirdweb/adapters/viem';
 import { ThirdwebClient } from 'thirdweb';
 
+// Define a more specific type for multicall results that matches the actual return type
+type WagmiMulticallSuccessResult<T> = {
+  status: "success";
+  result: T;
+};
 
 export const getBalances = async (contractAddress: string, degenAddress: string) => {
     const nativeBalance = await getPublicClient(wagmiConfig).getBalance({
@@ -35,26 +40,36 @@ export const getBalances = async (contractAddress: string, degenAddress: string)
             },
         ],
       })
+      
+      // Filter for successful results only using a type guard that matches the actual return type
+      const successResults = balanceInfo.filter(
+        (item): item is WagmiMulticallSuccessResult<bigint | string | number> => 
+          item.status === "success" && item.result !== undefined
+      );
+      
+      if (successResults.length < 3) {
+        throw new Error("Failed to get balance information");
+      }
+      
       const [
         balance,
         symbol,
         decimals,
-      ] = balanceInfo.map((item: any) => item.result);
+      ] = successResults.map(item => item.result);
 
       return {
-        balance: formatUnits(balance, decimals),
+        balance: formatUnits(balance as bigint, decimals as number),
         nativeBalance: formatUnits(nativeBalance, wagmiConfig.chains[0].nativeCurrency.decimals),
         symbol,
       }
 }
-
 
 export const getStreaks = async (contractAddress: string, degenAddress: string) => {
     const contract = {
         address: contractAddress,
         abi: degenGambitABI,
       } as const
-      const streaksInfo = await multicall(wagmiConfig, {
+      const streakInfo = await multicall(wagmiConfig, {
         contracts: [
             {
                 ...contract,
@@ -66,34 +81,29 @@ export const getStreaks = async (contractAddress: string, degenAddress: string) 
                 functionName: 'CurrentWeeklyStreakLength',
                 args: [degenAddress],
             },
-            {
-                ...contract,
-                functionName: 'LastStreakDay',
-                args: [degenAddress],
-            },
-            {
-                ...contract,
-                functionName: 'LastStreakWeek',
-                args: [degenAddress],
-            },
         ],
       })
+      
+      // Filter for successful results only using a type guard that matches the actual return type
+      const successResults = streakInfo.filter(
+        (item): item is WagmiMulticallSuccessResult<bigint> => 
+          item.status === "success" && item.result !== undefined
+      );
+      
+      if (successResults.length < 2) {
+        throw new Error("Failed to get streak information");
+      }
+      
       const [
         dailyStreak,
         weeklyStreak,
-        lastStreakDay,
-        lastStreakWeek,
-      ] = streaksInfo.map((item: any) => item.result);
+      ] = successResults.map(item => item.result);
 
       return {
         dailyStreak: Number(dailyStreak),
         weeklyStreak: Number(weeklyStreak),
-        lastStreakDay: Number(lastStreakDay),
-        lastStreakWeek: Number(lastStreakWeek),
       }
 }
-
-
 
 export const getDegenGambitInfo = async (contractAddress: string) => {
     const contract = {
@@ -141,42 +151,22 @@ export const getDegenGambitInfo = async (contractAddress: string) => {
 
     // Helper function to get the current block number and calculate blocks remaining
 // Contract constants - loaded once and cached
-let CONTRACT_CONSTANTS = {
+let CONTRACT_CONSTANTS: {
+  blocksToAct: number | null;
+  costToRespin: bigint | null;
+  loaded: boolean;
+} = {
   blocksToAct: null,
   costToRespin: null,
   loaded: false
 };
 
-// Block tracking
-let lastCheckedTimestamp = 0;
-let cachedBlockNumber = BigInt(0);
-
-// Direct RPC call to get the latest block number - no caching, just get the block every time
-async function getLatestBlockNumber(client) {
-  try {
-    // Directly use the client's built-in method which is more reliable
-    const blockNum = await client.getBlockNumber();
-    console.log(`CURRENT BLOCK: ${blockNum}`);
-    return blockNum;
-  } catch (err) {
-    console.error("Failed to get latest block:", err);
-    
-    // As a fallback, try direct RPC call
-    try {
-      const result = await client.transport.request({
-        method: 'eth_blockNumber',
-        params: []
-      });
-      return BigInt(result);
-    } catch (innerErr) {
-      console.error("Fallback also failed:", innerErr);
-      return BigInt(0); // Return 0 as last resort
-    }
-  }
-}
+// Remove unused variables
+// const lastCheckedTimestamp = 0;
+// const cachedBlockNumber = BigInt(0);
 
 // Load contract constants once
-async function loadContractConstants(contractAddress) {
+async function loadContractConstants(contractAddress: string): Promise<typeof CONTRACT_CONSTANTS> {
   if (CONTRACT_CONSTANTS.loaded) return CONTRACT_CONSTANTS;
   
   const publicClient = getPublicClient(wagmiConfig);
@@ -214,10 +204,10 @@ async function loadContractConstants(contractAddress) {
 }
 
 // Cache of last spin blocks by account
-let LAST_SPIN_BLOCKS = {};
+const LAST_SPIN_BLOCKS: Record<string, number> = {};
 
 // Get LastSpinBlock for a specific account - only needed after spin/respin
-async function getLastSpinBlock(contractAddress, account, forceRefresh = false) {
+async function getLastSpinBlock(contractAddress: string, account: string, forceRefresh = false): Promise<number | null> {
   // Use cached value if available and not forcing refresh
   if (!forceRefresh && LAST_SPIN_BLOCKS[account] !== undefined) {
     return LAST_SPIN_BLOCKS[account];
@@ -270,25 +260,31 @@ export const getBlockInfo = async (contractAddress: string, account: string, for
     if (lastSpinBlock === null) return null;
     
     // Get current block - the only value we need to check frequently
-    const currentBlock = await getLatestBlockNumber(getPublicClient(wagmiConfig));
+    const publicClient = getPublicClient(wagmiConfig);
+    const currentBlock = await publicClient.getBlockNumber();
     
     // Calculate time remaining
-    const blockDeadline = lastSpinBlock + constants.blocksToAct;
-    const blocksRemaining = blockDeadline > currentBlock ? Number(blockDeadline - currentBlock) : 0;
+    const blockDeadline = lastSpinBlock + (constants.blocksToAct || 0);
+    const blocksRemaining = blockDeadline > currentBlock 
+      ? Number(blockDeadline) - Number(currentBlock) 
+      : 0;
     
     // Only log when values actually change
     if (forceRefresh) {
       console.log(`BLOCK INFO: Current=${currentBlock}, Last=${lastSpinBlock}, Deadline=${blockDeadline}, Remaining=${blocksRemaining}`);
     }
     
-    return {
+    // Replace any with proper types
+    const blockInfo: Record<string, number | bigint> = {
       currentBlock,
-      blocksToAct: constants.blocksToAct,
       lastSpinBlock,
-      blockDeadline: Number(blockDeadline),
+      blockDeadline,
+      blocksToAct: constants.blocksToAct || 0,
       blocksRemaining,
-      costToRespin: constants.costToRespin,
+      costToRespin: constants.costToRespin || BigInt(0)
     };
+    
+    return blockInfo;
   } catch (error) {
     console.error("Error getting block info:", error);
     return null;
@@ -328,7 +324,7 @@ export const spin = async (contractAddress: string, boost: boolean, account: Acc
     symbol,
     decimals,
     spinCost,
-  ] = result.map((item: any) => item.result);
+  ] = result.filter(item => item.status === "success").map(item => item.result);
 
   const contract = viemAdapter.contract.fromViem({
     viemContract: viemContract,
@@ -349,7 +345,7 @@ export const spin = async (contractAddress: string, boost: boolean, account: Acc
     contract,
     method: "spin",
     params: [boost],
-    value: spinCost,
+    value: typeof spinCost === 'bigint' ? spinCost : BigInt(0),
   });
 
   const transactionResult = await sendTransaction({
@@ -373,7 +369,7 @@ export const spin = async (contractAddress: string, boost: boolean, account: Acc
   }
 
   // After spin is confirmed, check the outcome
-  let outcome;
+  let outcome: readonly bigint[] | null = null;
   let retries = 0;
   while (!outcome) {
     try {
@@ -382,8 +378,8 @@ export const spin = async (contractAddress: string, boost: boolean, account: Acc
         functionName: 'inspectOutcome',
         args: [degenAddress],
       });
-    } catch (error: any) {
-      const errorMsg = error.message || String(error);
+    } catch (error: unknown) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
       // Known errors that can occur while waiting for the outcome to be available
       const knownErrors = ['WaitForTick()', 'InvalidBlockNumber', '0xd5dc642d'];
 
@@ -406,7 +402,7 @@ export const spin = async (contractAddress: string, boost: boolean, account: Acc
 
   let actionText = '';
   if (Number(outcome[4]) > 0) {
-    actionText = `You won ${formatUnits(outcome[4], decimals)} ${Number(outcome[5]) === 1 ? wagmiConfig.chains[0].nativeCurrency.symbol : symbol}!`;
+    actionText = `You won ${formatUnits(outcome[4], Number(decimals))} ${Number(outcome[5]) === 1 ? wagmiConfig.chains[0].nativeCurrency.symbol : symbol}!`;
   } else {
     actionText = `The Matrix has you...`;
   }
@@ -417,8 +413,8 @@ export const spin = async (contractAddress: string, boost: boolean, account: Acc
     outcome,
     blockInfo,
     pendingAcceptance: true,
-    costToRespin: formatUnits(costToRespin, decimals),
-    prize: Number(outcome[4]) > 0 ? formatUnits(outcome[4], decimals) : '0',
+    costToRespin: formatUnits(costToRespin, Number(decimals)),
+    prize: Number(outcome[4]) > 0 ? formatUnits(outcome[4], Number(decimals)) : '0',
     prizeType: Number(outcome[5]),
     receipt,
   };
@@ -440,7 +436,8 @@ export const accept = async (contractAddress: string, account: Account, client: 
     // First check if we can get the outcome to see if there's something to accept
     let canAccept = false;
     try {
-      const outcome = await publicClient.readContract({
+      // Read the outcome but don't store it if we're not using it
+      await publicClient.readContract({
         ...viemContract,
         functionName: 'inspectOutcome',
         args: [degenAddress],
@@ -491,9 +488,9 @@ export const accept = async (contractAddress: string, account: Account, client: 
       success: true,
       receipt,
     };
-  } catch (error: any) {
-    const errorMsg = error.message || String(error);
-
+  } catch (error: unknown) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    
     // Handle specific error cases
     if (errorMsg.includes('DeadlineExceeded')) {
       return {

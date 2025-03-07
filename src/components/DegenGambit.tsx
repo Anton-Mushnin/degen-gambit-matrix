@@ -4,20 +4,29 @@ import { contractAddress, thirdwebClientId, wagmiConfig } from '../config';
 import { getStreaks, getBalances, spin, accept, respin, getBlockInfo } from "../utils/degenGambit";
 import { useActiveAccount, useActiveWallet } from "thirdweb/react";
 import { createThirdwebClient } from "thirdweb";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { numbers } from "../config/symbols";
 
 // Helper type for spin/respin results
 interface SpinResult {
     description?: string;
-    outcome?: bigint[];
+    outcome?: readonly bigint[] | bigint[];
     prize?: string;
     prizeType?: number;
     blockInfo?: {
         blocksRemaining: number;
-    };
+        currentBlock?: bigint;
+        blockDeadline?: bigint | number;
+        blocksToAct?: number | null;
+        lastSpinBlock?: bigint | number;
+        costToRespin?: null;
+    } | null;
     costToRespin?: string;
     pendingAcceptance?: boolean;
+    actionNeeded?: string;
+    receipt?: Record<string, unknown>;
+    success?: boolean;
+    error?: string;
 }
 
 const DegenGambit = () => {
@@ -29,12 +38,12 @@ const DegenGambit = () => {
     // Define a structured type for spin outcome
     interface SpinOutcome {
         description: string;           // Description of the outcome
-        outcome?: bigint[];            // The actual symbols rolled
+        outcome?: readonly bigint[] | bigint[];            // The actual symbols rolled
         prize: string;                 // Prize amount
         prizeType: number;             // Type of prize (1=native token, 20=GAMBIT)
         blockInfo: {                   // Block timing information
             currentBlock: bigint;         
-            blockDeadline: bigint;
+            blockDeadline: bigint | number;
             blocksRemaining: number;
             blocksToAct: number;
         };
@@ -48,13 +57,12 @@ const DegenGambit = () => {
     const [pendingOutcome, setPendingOutcome] = useState<SpinOutcome | null>(null);
     const [blocksRemaining, setBlocksRemaining] = useState<number | null>(null);
     const [isExpired, setIsExpired] = useState(false);
-    const blockTimerRef = useRef<NodeJS.Timeout | null>(null);
-    const [lastCommandResult, setLastCommandResult] = useState<any>(null);
+    const blockTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
     // Track last spin deadline info
     const lastSpinInfoRef = useRef({
-        lastSpinBlock: null,
-        blockDeadline: null,
-        blocksToAct: null
+        lastSpinBlock: null as number | null,
+        blockDeadline: null as number | null,
+        blocksToAct: null as number | null
     });
     
     // Initial block info fetch when component mounts
@@ -69,7 +77,7 @@ const DegenGambit = () => {
         fetchInitialBlockInfo();
     }, [activeAccount]);
     
-    const updateBlocksRemaining = async () => {
+    const updateBlocksRemaining = useCallback(async () => {
         if (!activeAccount || !pendingOutcome) return;
         
         try {
@@ -80,13 +88,13 @@ const DegenGambit = () => {
                 console.log(`TIMER UPDATE: Current block=${blockInfo.currentBlock}, Deadline=${blockInfo.blockDeadline}, Remaining=${blockInfo.blocksRemaining}`);
                 
                 // Update state immediately with the calculated value
-                setBlocksRemaining(blockInfo.blocksRemaining);
+                setBlocksRemaining(Number(blockInfo.blocksRemaining));
                 
                 // Always update the spin info for reference
                 lastSpinInfoRef.current = {
-                    lastSpinBlock: blockInfo.lastSpinBlock,
-                    blockDeadline: blockInfo.blockDeadline,
-                    blocksToAct: blockInfo.blocksToAct
+                    lastSpinBlock: Number(blockInfo.lastSpinBlock),
+                    blockDeadline: Number(blockInfo.blockDeadline),
+                    blocksToAct: Number(blockInfo.blocksToAct)
                 };
                 
                 if (blockInfo.blocksRemaining <= 0) {
@@ -112,7 +120,7 @@ const DegenGambit = () => {
         } catch (error) {
             console.error("Failed to update block info:", error);
         }
-    };
+    }, [activeAccount, pendingOutcome]);
     
     useEffect(() => {
         if (pendingOutcome && activeAccount && !isExpired) {
@@ -128,7 +136,7 @@ const DegenGambit = () => {
                 }
             };
         }
-    }, [pendingOutcome, activeAccount, isExpired]);
+    }, [pendingOutcome, activeAccount, isExpired, updateBlocksRemaining]);
     
     const formatSpinOutput = (result: SpinResult, currentBlocksRemaining: number | null) => {
         const prize = Number(result.prize || 0);
@@ -142,46 +150,68 @@ const DegenGambit = () => {
         const timerLine = `Time remaining: ${displayBlocks} blocks`;
         const actionText = `Type 'accept' to claim${prize > 0 ? ' prize' : ''} or 'respin' to try again (cost: ${result.costToRespin})`;
         
+        // Ensure the result has the correct blockInfo structure before passing to formatSpinOutput
+        const normalizedResult: SpinResult = {
+            ...result,
+            blockInfo: result.blockInfo ? {
+                blocksRemaining: result.blockInfo.blocksRemaining,
+                currentBlock: typeof result.blockInfo.currentBlock === 'bigint' 
+                    ? result.blockInfo.currentBlock 
+                    : result.blockInfo.currentBlock !== undefined 
+                        ? BigInt(result.blockInfo.currentBlock) 
+                        : undefined,
+                blockDeadline: result.blockInfo.blockDeadline,
+                blocksToAct: result.blockInfo.blocksToAct,
+                lastSpinBlock: result.blockInfo.lastSpinBlock,
+                costToRespin: result.blockInfo.costToRespin
+            } : undefined
+        };
+        
         return {
             output: [
-                result.description,
+                normalizedResult.description,
                 prizeText,
                 timerLine,
                 actionText
-            ].filter(line => line), // Filter out empty lines
-            outcome: result.outcome?.slice(0, 3),
+            ].filter(Boolean) as string[], // Filter out empty lines and cast to string[]
+            outcome: normalizedResult.outcome ? [...normalizedResult.outcome].slice(0, 3) : undefined,
         };
     };
 
-    const handleInput = async (input: string) => {
+    const handleInput = async (input: string): Promise<{output: string[], outcome?: bigint[]}> => {
         switch (input) {
-            case "info":
+            case "info": {
                 return {output: [
                     `Cost to spin: ${contractInfo.data?.costToSpin}`,
                     `Cost to respin: ${contractInfo.data?.costToRespin}`,
                     `Blocks to act: ${contractInfo.data?.blocksToAct} (~${contractInfo.data?.secondsToAct} seconds)`,
                 ],
-            };
-            case "prizes":
-                return {output: contractInfo.data?.prizes};
-            case "getsome": 
+                };
+            }
+            case "prizes": {
+                return {output: contractInfo.data?.prizes || []};
+            }
+            case "getsome": {
                 window.open("https://getsome.game7.io", "_blank");
                 return {output: []};
-            case "streaks":
+            }
+            case "streaks": {
                 const streaks = await getStreaks(contractAddress, activeAccount?.address ?? "");
                 return {output: [
                     `Daily streak: ${streaks.dailyStreak}`,
                     `Weekly streak: ${streaks.weeklyStreak}`,
                 ],
                 };
-            case "balance":
+            }
+            case "balance": {
                 const balances = await getBalances(contractAddress, activeAccount?.address ?? "");
                 return {output: [
                     `Native token balance: ${balances.nativeBalance} ${wagmiConfig.chains[0].nativeCurrency.symbol}`,
                     `Gambit token balance: ${balances.balance} ${balances.symbol}`,
                 ],
                 };
-            case "spin":
+            }
+            case "spin": {
                 if (!activeAccount || !activeWallet) {
                     return {output: ["No account selected"]};
                 }
@@ -198,15 +228,17 @@ const DegenGambit = () => {
                     
                     // Convert to our SpinOutcome type
                     const outcome: SpinOutcome = {
-                        description: spinResult.description,
+                        description: spinResult.description || '',
                         outcome: spinResult.outcome,
                         prize: spinResult.prize || '0',
                         prizeType: spinResult.prizeType || 0,
                         blockInfo: {
-                            currentBlock: spinResult.blockInfo?.currentBlock || BigInt(0),
-                            blockDeadline: spinResult.blockInfo?.blockDeadline || BigInt(0),
-                            blocksRemaining: initialBlocksRemaining, // Use our calculated value
-                            blocksToAct: spinResult.blockInfo?.blocksToAct || 0
+                            currentBlock: typeof spinResult.blockInfo?.currentBlock === 'bigint' 
+                                ? spinResult.blockInfo.currentBlock 
+                                : BigInt(spinResult.blockInfo?.currentBlock || 0),
+                            blockDeadline: spinResult.blockInfo?.blockDeadline || 0,
+                            blocksRemaining: Number(initialBlocksRemaining), // Use our calculated value
+                            blocksToAct: Number(spinResult.blockInfo?.blocksToAct || 0)
                         },
                         costToRespin: spinResult.costToRespin || '0',
                         needsAcceptance: true,
@@ -218,14 +250,43 @@ const DegenGambit = () => {
                     
                     // IMPORTANT: Always set a valid blocks remaining value after a spin
                     console.log(`Setting initial blocks remaining to: ${initialBlocksRemaining}`);
-                    setBlocksRemaining(initialBlocksRemaining);
+                    setBlocksRemaining(Number(initialBlocksRemaining));
                     setIsExpired(false); // Reset expired state with new outcome
                 }
                 
+                // Create a normalized version of spinResult that matches the SpinResult interface
+                const normalizedSpinResult: SpinResult = {
+                    ...spinResult,
+                    blockInfo: spinResult.blockInfo ? {
+                        blocksRemaining: Number(spinResult.blockInfo.blocksRemaining || 0),
+                        currentBlock: typeof spinResult.blockInfo.currentBlock === 'bigint' 
+                            ? spinResult.blockInfo.currentBlock 
+                            : spinResult.blockInfo.currentBlock !== undefined 
+                                ? BigInt(spinResult.blockInfo.currentBlock) 
+                                : undefined,
+                        blockDeadline: typeof spinResult.blockInfo.blockDeadline === 'bigint'
+                            ? spinResult.blockInfo.blockDeadline
+                            : spinResult.blockInfo.blockDeadline !== undefined
+                                ? Number(spinResult.blockInfo.blockDeadline)
+                                : undefined,
+                        blocksToAct: typeof spinResult.blockInfo.blocksToAct === 'number'
+                            ? spinResult.blockInfo.blocksToAct
+                            : spinResult.blockInfo.blocksToAct !== undefined
+                                ? Number(spinResult.blockInfo.blocksToAct)
+                                : null,
+                        lastSpinBlock: typeof spinResult.blockInfo.lastSpinBlock === 'bigint'
+                            ? spinResult.blockInfo.lastSpinBlock
+                            : spinResult.blockInfo.lastSpinBlock !== undefined
+                                ? Number(spinResult.blockInfo.lastSpinBlock)
+                                : undefined,
+                        costToRespin: null
+                    } : null
+                };
                 
                 // Format and return output - same logic for both spin and respin
-                return formatSpinOutput(spinResult, blocksRemaining);
-            case "accept":
+                return formatSpinOutput(normalizedSpinResult, blocksRemaining);
+            }
+            case "accept": {
                 if (!activeAccount || !activeWallet) {
                     return {output: ["No account selected"]};
                 }
@@ -244,9 +305,9 @@ const DegenGambit = () => {
                     
                     // Reset local spin info reference
                     lastSpinInfoRef.current = {
-                        lastSpinBlock: null,
-                        blockDeadline: null,
-                        blocksToAct: null
+                        lastSpinBlock: null as number | null,
+                        blockDeadline: null as number | null,
+                        blocksToAct: null as number | null
                     };
                     
                     if (blockTimerRef.current) {
@@ -268,9 +329,9 @@ const DegenGambit = () => {
                     
                     // Reset local spin info reference
                     lastSpinInfoRef.current = {
-                        lastSpinBlock: null,
-                        blockDeadline: null,
-                        blocksToAct: null
+                        lastSpinBlock: null as number | null,
+                        blockDeadline: null as number | null,
+                        blocksToAct: null as number | null
                     };
                     
                     if (blockTimerRef.current) {
@@ -296,9 +357,10 @@ const DegenGambit = () => {
                         acceptResult.description,
                         acceptResult.error ? `Error: ${acceptResult.error}` : '',
                         "======================"
-                    ].filter(line => line),
+                    ].filter(Boolean) as string[],
                 };
-            case "respin":
+            }
+            case "respin": {
                 if (!activeAccount || !activeWallet) {
                     return {output: ["No account selected"]};
                 }
@@ -317,9 +379,9 @@ const DegenGambit = () => {
                     
                     // Reset local spin info reference
                     lastSpinInfoRef.current = {
-                        lastSpinBlock: null,
-                        blockDeadline: null,
-                        blocksToAct: null
+                        lastSpinBlock: null as number | null,
+                        blockDeadline: null as number | null,
+                        blocksToAct: null as number | null
                     };
                     
                     if (blockTimerRef.current) {
@@ -342,15 +404,17 @@ const DegenGambit = () => {
                     
                     // Convert to our SpinOutcome type
                     const outcome: SpinOutcome = {
-                        description: respinResult.description,
+                        description: respinResult.description || '',
                         outcome: respinResult.outcome,
                         prize: respinResult.prize || '0',
                         prizeType: respinResult.prizeType || 0,
                         blockInfo: {
-                            currentBlock: respinResult.blockInfo?.currentBlock || BigInt(0),
-                            blockDeadline: respinResult.blockInfo?.blockDeadline || BigInt(0),
-                            blocksRemaining: initialBlocksRemaining, // Use our calculated value
-                            blocksToAct: respinResult.blockInfo?.blocksToAct || 0
+                            currentBlock: typeof respinResult.blockInfo?.currentBlock === 'bigint' 
+                                ? respinResult.blockInfo.currentBlock 
+                                : BigInt(respinResult.blockInfo?.currentBlock || 0),
+                            blockDeadline: respinResult.blockInfo?.blockDeadline || 0,
+                            blocksRemaining: Number(initialBlocksRemaining), // Use our calculated value
+                            blocksToAct: Number(respinResult.blockInfo?.blocksToAct || 0)
                         },
                         costToRespin: respinResult.costToRespin || '0',
                         needsAcceptance: true,
@@ -362,10 +426,9 @@ const DegenGambit = () => {
                     
                     // IMPORTANT: Always set a valid blocks remaining value after a respin
                     console.log(`Setting initial blocks remaining to: ${initialBlocksRemaining}`);
-                    setBlocksRemaining(initialBlocksRemaining);
+                    setBlocksRemaining(Number(initialBlocksRemaining));
                     setIsExpired(false); // Reset expired state with new outcome
                 }
-                
                 
                 // Format and return output - same logic for both spin and respin
                 // For respins, prefix the description with "RESPIN: "
@@ -373,19 +436,50 @@ const DegenGambit = () => {
                 if (result.description) {
                     result.description = "RESPIN: " + result.description;
                 }
-                return formatSpinOutput(result, blocksRemaining);
-            case "status":
+                
+                // Create a normalized version of result that matches the SpinResult interface
+                const normalizedResult: SpinResult = {
+                    ...result,
+                    blockInfo: result.blockInfo ? {
+                        blocksRemaining: Number(result.blockInfo.blocksRemaining || 0),
+                        currentBlock: typeof result.blockInfo.currentBlock === 'bigint' 
+                            ? result.blockInfo.currentBlock 
+                            : result.blockInfo.currentBlock !== undefined 
+                                ? BigInt(result.blockInfo.currentBlock) 
+                                : undefined,
+                        blockDeadline: typeof result.blockInfo.blockDeadline === 'bigint'
+                            ? result.blockInfo.blockDeadline
+                            : result.blockInfo.blockDeadline !== undefined
+                                ? Number(result.blockInfo.blockDeadline)
+                                : undefined,
+                        blocksToAct: typeof result.blockInfo.blocksToAct === 'number'
+                            ? result.blockInfo.blocksToAct
+                            : result.blockInfo.blocksToAct !== undefined
+                                ? Number(result.blockInfo.blocksToAct)
+                                : null,
+                        lastSpinBlock: typeof result.blockInfo.lastSpinBlock === 'bigint'
+                            ? result.blockInfo.lastSpinBlock
+                            : result.blockInfo.lastSpinBlock !== undefined
+                                ? Number(result.blockInfo.lastSpinBlock)
+                                : undefined,
+                        costToRespin: null
+                    } : null
+                };
+                
+                return formatSpinOutput(normalizedResult, blocksRemaining);
+            }
+            case "status": {
                 if (pendingOutcome) {
                     // For status command, force a complete refresh including LastSpinBlock
                     const blockInfo = await getBlockInfo(contractAddress, activeAccount?.address || "", true);
                     if (blockInfo) {
-                        setBlocksRemaining(blockInfo.blocksRemaining);
+                        setBlocksRemaining(Number(blockInfo.blocksRemaining));
                         
                         // Update our local reference
                         lastSpinInfoRef.current = {
-                            lastSpinBlock: blockInfo.lastSpinBlock,
-                            blockDeadline: blockInfo.blockDeadline,
-                            blocksToAct: blockInfo.blocksToAct
+                            lastSpinBlock: Number(blockInfo.lastSpinBlock),
+                            blockDeadline: Number(blockInfo.blockDeadline),
+                            blocksToAct: Number(blockInfo.blocksToAct)
                         };
                     }
                     
@@ -425,10 +519,12 @@ const DegenGambit = () => {
                 } else {
                     return {output: ["No pending outcome. Type 'spin' to play!"]};
                 }
-            case "symbols": 
+            }
+            case "symbols": {
                 return {output: ["Minor symbols:", userNumbers.slice(1, 16).join(', '), "Major symbols:", userNumbers.slice(-3).join(', ')]};
+            }
             case input.match(/^set \d+ \d+$/)?.input: {
-                const [_, indexStr, numberStr] = input.split(' ');
+                const [, indexStr, numberStr] = input.split(' ');
                 const index = parseInt(indexStr);
                 const number = parseInt(numberStr);
                 
@@ -441,7 +537,7 @@ const DegenGambit = () => {
                 setUserNumbers(newNumbers);
                 return {output: ["Minor symbols:", newNumbers.slice(1, 16).join(', '), "Major symbols:", newNumbers.slice(-3).join(', ')]};
             }
-            default:
+            default: {
                 return {output: [
                     "=== DEGEN GAMBIT COMMANDS ===",
                     "Game Flow:",
@@ -463,7 +559,8 @@ const DegenGambit = () => {
                     "  clear    - Clear the terminal (⌘K or Ctrl+K)",
                     "=============================",
                 ],
-            };
+                };
+            }
         }
     }
 

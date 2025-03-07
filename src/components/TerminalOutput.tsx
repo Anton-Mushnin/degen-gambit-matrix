@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import styles from './MatrixTerminal.module.css';
@@ -14,22 +13,15 @@ const TerminalContainer = styled.div`
   text-shadow: 0 0 15px ${glow};
 `;
 
-
 interface MatrixTerminalProps {
   text: string
   typingSpeed?: number;
   setIsSystemTyping: (isSystemTyping: boolean) => void;
 }
 
-
-
-
-
 export const TerminalOutput = ({ text, typingSpeed = 20, setIsSystemTyping }: MatrixTerminalProps) => {
   const [displayedText, setDisplayedText] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);
-
-
 
   useEffect(() => {
     if (currentIndex < text.length) {
@@ -43,8 +35,7 @@ export const TerminalOutput = ({ text, typingSpeed = 20, setIsSystemTyping }: Ma
     } else {
       setIsSystemTyping(false);
     }
-  }, [currentIndex, text, typingSpeed]);
-
+  }, [currentIndex, text, typingSpeed, setIsSystemTyping]);
 
   return (
     <TerminalContainer>

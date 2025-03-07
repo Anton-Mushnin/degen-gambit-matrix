@@ -1,14 +1,12 @@
 import { useEffect, useState, useRef } from "react";
 import styles from './MatrixTerminal.module.css';
 
-
-
 const RandomNumbers = ({result, duration}: {result?: string, duration?: number}) => {
     const [text, setText] = useState('');
-    const intervalIdRef = useRef<any | null>(null);
+    const intervalIdRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     useEffect(() => {
-        let timer: any | null = null;
+        let timer: ReturnType<typeof setTimeout> | null = null;
         if (result && duration) {
             timer = setTimeout(() => {
             setText(result); 

@@ -8,7 +8,6 @@ import { g7Testnet, wagmiConfig } from '../config/index.ts';
 import { formatEther } from 'viem';
 import { getDegenGambitInfo } from '../utils/degenGambit.ts';
 
-
 const calculateAverageBlockTime = async () => {
   const publicClient = getPublicClient(wagmiConfig);
   const currentBlock = await publicClient.getBlockNumber();
@@ -22,6 +21,12 @@ const calculateAverageBlockTime = async () => {
   const timeDifference = Number(newBlock.timestamp - oldBlock.timestamp);
   return timeDifference / blocksToCheck; // Average seconds per block
 };
+
+// Define a type for the contract call results
+interface ContractCallResult {
+  status: "success";
+  result: bigint | string | readonly [readonly bigint[], readonly bigint[]];
+}
 
 export function useDegenGambitInfo(contractAddress: string) {
   const { data: blockTime } = useQuery({
@@ -39,6 +44,13 @@ export function useDegenGambitInfo(contractAddress: string) {
   const parseResults = useCallback(() => {
     if (!data || !blockTime) return null;
 
+    // Type-safe way to handle the data
+    const successResults = data.filter((item): item is ContractCallResult => 
+      item.status === "success" && item.result !== undefined
+    );
+    
+    if (successResults.length < 7) return null;
+
     const [
       blocksToAct,
       costToRespin,
@@ -47,19 +59,23 @@ export function useDegenGambitInfo(contractAddress: string) {
       minorGambitPrize,
       prizes,
       symbol,
-    ] = data.map((item: any) => item.result);
+    ] = successResults.map(item => item.result);
 
-    const prizesFormatted = prizes[0].map((prize: bigint, index: number) => `${prizeDescriptions[index]}: ${formatEther(prize)} ${prizes[1][index] === 1n ? g7Testnet.nativeCurrency.symbol : symbol}`)
+    // Type assertion for prizes which is a tuple of two arrays
+    const prizesArray = prizes as readonly [readonly bigint[], readonly bigint[]];
+    const prizesFormatted = prizesArray[0].map((prize: bigint, index: number) => 
+      `${prizeDescriptions[index]}: ${formatEther(prize)} ${prizesArray[1][index] === 1n ? g7Testnet.nativeCurrency.symbol : symbol}`
+    );
 
     const secondsToAct = Number(blocksToAct) * blockTime;
 
     return {
       blocksToAct: Number(blocksToAct),
       secondsToAct: Math.round(secondsToAct),
-      costToRespin: formatEther(costToRespin),
-      costToSpin: formatEther(costToSpin),
-      majorGambitPrize: formatEther(majorGambitPrize),
-      minorGambitPrize: formatEther(minorGambitPrize),
+      costToRespin: formatEther(costToRespin as bigint),
+      costToSpin: formatEther(costToSpin as bigint),
+      majorGambitPrize: formatEther(majorGambitPrize as bigint),
+      minorGambitPrize: formatEther(minorGambitPrize as bigint),
       prizes: prizesFormatted,
       symbol,
     };
@@ -74,7 +90,7 @@ export function useDegenGambitInfo(contractAddress: string) {
   };
 } 
 
-    	// Selector: 11cceaf6
+// Selector: 11cceaf6
 const prizeDescriptions = [
     "spinning at least 1 major symbol with no other prize option",
     "spinning matching minor left and right, with a different minor symbol",

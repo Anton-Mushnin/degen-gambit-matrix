@@ -1,16 +1,15 @@
 import { thirdwebClientId, thirdWebG7Testnet } from '../config';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import styled from 'styled-components';
 import { createThirdwebClient } from 'thirdweb';
 import { useActiveAccount, useActiveWallet, useConnectModal } from 'thirdweb/react';
 import { TerminalOutput } from './TerminalOutput';
 import styles from './MatrixTerminal.module.css';
 import RandomNumbers from './RandomNumbers';
-
+import { Chain } from 'thirdweb/chains';
 
 const color = '#a1eeb5';
 const glow = '#0dda9f';
-
 
 const Container = styled.div`
     background-color:rgb(15, 15, 15);
@@ -31,7 +30,6 @@ const Container = styled.div`
     font-size: 16px;
 `;
 
-
 const Cursor = styled.span`
   font-size: 12px;
   animation: blink 1s step-end infinite;
@@ -49,14 +47,11 @@ interface MatrixTerminalProps {
   statusBar?: string; // Optional status bar text to show at the bottom
 }
 
-
-
 export const MatrixTerminal = ({ onUserInput, numbers, statusBar }: MatrixTerminalProps) => {
   const [userInput, setUserInput] = useState('');
   const [history, setHistory] = useState<string[]>([]);
   const [inputHistory, setInputHistory] = useState<string[]>([]);
   const [inputHistoryIndex, setInputHistoryIndex] = useState(-1);
-
 
   const [isSystemTyping, setIsSystemTyping] = useState(true);
   const { connect } = useConnectModal();
@@ -87,28 +82,55 @@ export const MatrixTerminal = ({ onUserInput, numbers, statusBar }: MatrixTermin
         setText(`Wake up, ${activeAccount.address}`);
         setIsSystemTyping(true);
     }
-  }, [activeAccount]);
+  }, [activeAccount, connect, client]);
 
   useEffect(() => {
     if (activeWallet) {
       const chain = activeWallet.getChain();
       if (chain?.id !== thirdWebG7Testnet.id) {
-        activeWallet.switchChain(thirdWebG7Testnet as any)
+        activeWallet.switchChain(thirdWebG7Testnet as Chain);
       }
     }
   }, [activeWallet]);
 
-
-
   useEffect(() => {
-
     if (!isSystemTyping) {
       setHistory(prev => [...prev, text]);
-    } else {
-
     }
-  }, [isSystemTyping]);
+  }, [isSystemTyping, text]);
 
+  const handleInput = useCallback(async (input: string) => {
+    if (input === 'clear') {
+      setHistory([]);
+      return;
+    }
+
+    if (input === 'spin') {
+      setIsSpinning(true);
+    }
+    try {
+        const result = await onUserInput?.(input);
+        if (result?.output && !result.outcome) {
+            setText(result.output.join('\n'));
+            setIsSystemTyping(true);
+        } else if (result?.outcome) {
+            const outcomeValues = result.outcome.map(item => numbers[Number(item)].toString());
+            setOutcome(outcomeValues);
+            setTimeout(() => {
+                setHistory(prev => [...prev, outcomeValues.join(' ')]);
+                setText(result.output.join('\n'));
+                setIsSystemTyping(true);
+                setOutcome([]);
+            }, 8000);
+        }
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        setText(errorMessage);
+        setIsSystemTyping(true);
+    } finally {
+        setIsSpinning(false);
+    }
+  }, [onUserInput, numbers, setText, setIsSystemTyping, setOutcome, setIsSpinning, setHistory]);
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -154,42 +176,7 @@ export const MatrixTerminal = ({ onUserInput, numbers, statusBar }: MatrixTermin
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [isSystemTyping, userInput, onUserInput]);
-
-
-  const handleInput = async (input: string) => {
-    if (input === 'clear') {
-      setHistory([]);
-      return;
-    }
-
-    if (input === 'spin') {
-      setIsSpinning(true);
-    }
-    try {
-        const result = await onUserInput?.(input);
-        if (result?.output && !result.outcome) {
-            setText(result.output.join('\n'));
-            setIsSystemTyping(true);
-        } else if (result?.outcome) {
-            const _outcome = result.outcome.map(item => numbers[Number(item)].toString());
-            setOutcome(_outcome);
-            setTimeout(() => {
-                setHistory(prev => [...prev, _outcome.join(' ')]);
-                setText(result.output.join('\n'));
-                setIsSystemTyping(true);
-                setOutcome([]);
-            }, 8000);
-        }
-    } catch (e: any) {
-        setText(e.message)
-        setIsSystemTyping(true);
-    } finally {
-        setIsSpinning(false);
-    }
-  }
-
-
+  }, [isSystemTyping, userInput, handleInput, inputHistory, inputHistoryIndex]);
 
   return (
     <Container ref={containerRef}>
