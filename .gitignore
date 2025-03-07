@@ -441,3 +441,6 @@ dist-ssr
 Network Trash Folder
 Temporary Items
 .apdisk
+
+# custom
+.secrets/

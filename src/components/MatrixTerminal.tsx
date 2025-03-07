@@ -1,16 +1,15 @@
 import { thirdwebClientId, thirdWebG7Testnet } from '../config';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import styled from 'styled-components';
 import { createThirdwebClient } from 'thirdweb';
 import { useActiveAccount, useActiveWallet, useConnectModal } from 'thirdweb/react';
 import { TerminalOutput } from './TerminalOutput';
 import styles from './MatrixTerminal.module.css';
 import RandomNumbers from './RandomNumbers';
-
+import { Chain } from 'thirdweb/chains';
 
 const color = '#a1eeb5';
 const glow = '#0dda9f';
-
 
 const Container = styled.div`
     background-color:rgb(15, 15, 15);
@@ -31,7 +30,6 @@ const Container = styled.div`
     font-size: 16px;
 `;
 
-
 const Cursor = styled.span`
   font-size: 12px;
   animation: blink 1s step-end infinite;
@@ -48,14 +46,11 @@ interface MatrixTerminalProps {
   numbers: number[];
 }
 
-
-
 export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) => {
   const [userInput, setUserInput] = useState('');
   const [history, setHistory] = useState<string[]>([]);
   const [inputHistory, setInputHistory] = useState<string[]>([]);
   const [inputHistoryIndex, setInputHistoryIndex] = useState(-1);
-
 
   const [isSystemTyping, setIsSystemTyping] = useState(true);
   const { connect } = useConnectModal();
@@ -71,6 +66,9 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
   // Add ref for the container
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Track if we've shown the welcome message
+  const [welcomeShown, setWelcomeShown] = useState(false);
+
   // Add scroll to bottom effect when history changes
   useEffect(() => {
     if (containerRef.current) {
@@ -82,32 +80,68 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
     if (!activeAccount) {
         connect({client});
     }
-    if (activeAccount) {
+    if (activeAccount && !welcomeShown) {
         setText(`Wake up, ${activeAccount.address}`);
         setIsSystemTyping(true);
+        setWelcomeShown(true);
     }
-  }, [activeAccount]);
+  }, [activeAccount, connect, client, welcomeShown]);
 
   useEffect(() => {
     if (activeWallet) {
       const chain = activeWallet.getChain();
       if (chain?.id !== thirdWebG7Testnet.id) {
-        activeWallet.switchChain(thirdWebG7Testnet as any)
+        activeWallet.switchChain(thirdWebG7Testnet as Chain);
       }
     }
   }, [activeWallet]);
 
-
-
   useEffect(() => {
-
-    if (!isSystemTyping) {
+    if (!isSystemTyping && text) {
       setHistory(prev => [...prev, text]);
-    } else {
-
+      // Clear the text after adding it to history to prevent re-adding
+      setText('');
     }
-  }, [isSystemTyping]);
+  }, [isSystemTyping, text]);
 
+  const handleInput = useCallback(async (input: string) => {
+    if (input === 'clear') {
+      setHistory([]);
+      return;
+    }
+
+    if (input === 'spin') {
+      setIsSpinning(true);
+    }
+    try {
+        const result = await onUserInput?.(input);
+        if (result?.output && !result.outcome) {
+            const outputText = result.output.join('\n');
+            if (outputText) {  // Only set text if there's actual output
+                setText(outputText);
+                setIsSystemTyping(true);
+            }
+        } else if (result?.outcome) {
+            const outcomeValues = result.outcome.map(item => numbers[Number(item)].toString());
+            setOutcome(outcomeValues);
+            setTimeout(() => {
+                setHistory(prev => [...prev, outcomeValues.join(' ')]);
+                const outputText = result.output.join('\n');
+                if (outputText) {  // Only set text if there's actual output
+                    setText(outputText);
+                    setIsSystemTyping(true);
+                }
+                setOutcome([]);
+            }, 8000);
+        }
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        setText(errorMessage);
+        setIsSystemTyping(true);
+    } finally {
+        setIsSpinning(false);
+    }
+  }, [onUserInput, numbers, setText, setIsSystemTyping, setOutcome, setIsSpinning, setHistory]);
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -153,45 +187,11 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [isSystemTyping, userInput, onUserInput]);
-
-
-  const handleInput = async (input: string) => {
-    if (input === 'clear') {
-      setHistory([]);
-      return;
-    }
-
-    if (input === 'spin') {
-      setIsSpinning(true);
-    }
-    try {
-        const result = await onUserInput?.(input);
-        if (result?.output && !result.outcome) {
-            setText(result.output.join('\n'));
-            setIsSystemTyping(true);
-        } else if (result?.outcome) {
-            const _outcome = result.outcome.map(item => numbers[Number(item)].toString());
-            setOutcome(_outcome);
-            setTimeout(() => {
-                setHistory(prev => [...prev, _outcome.join(' ')]);
-                setText(result.output.join('\n'));
-                setIsSystemTyping(true);
-                setOutcome([]);
-            }, 8000);
-        }
-    } catch (e: any) {
-        setText(e.message)
-        setIsSystemTyping(true);
-    } finally {
-        setIsSpinning(false);
-    }
-  }
-
-
+  }, [isSystemTyping, userInput, handleInput, inputHistory, inputHistoryIndex]);
 
   return (
     <Container ref={containerRef}>
+        
         <div className={styles.history}>
             {history.map((input, index) => (
                 <pre key={index} className={styles.pre}>
@@ -202,7 +202,7 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
 
         {!isSystemTyping && !isSpinning && outcome.length === 0 && (
             <div className={styles.inputLine}>
-                <div className={styles.inputText}>{userInput.replace(/ /g, '\u00A0')}</div>
+                <div className={styles.inputText}>{`> ${userInput}`.replace(/ /g, '\u00A0')}</div>
                 <Cursor>█</Cursor>
             </div>
         )}
