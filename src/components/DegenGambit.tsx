@@ -22,9 +22,24 @@ const DegenGambit = () => {
         if (!activeAccount || !pendingSpinResult) return;
         
         try {
+            // Always fetch fresh data from the chain
             const blockInfo = await getBlockInfo(contractAddress, activeAccount.address);
             if (blockInfo) {
+                // Update the local state with the latest block info
                 setBlocksRemaining(blockInfo.blocksRemaining);
+                
+                // Also update the pending spin result with the latest block info
+                setPendingSpinResult(prev => {
+                    if (!prev) return null;
+                    return {
+                        ...prev,
+                        blockInfo: {
+                            ...prev.blockInfo,
+                            currentBlock: blockInfo.currentBlock,
+                            blocksRemaining: blockInfo.blocksRemaining
+                        }
+                    };
+                });
                 
                 // If no blocks remaining, clear pending spin result
                 if (blockInfo.blocksRemaining <= 0) {
@@ -94,9 +109,10 @@ const DegenGambit = () => {
                 
                 const spinResult = await spin(contractAddress, false, activeAccount, client);
                 
-                // Store the spin result for later reference
+                // Store the spin result for later reference with fresh block info
                 if (spinResult.pendingAcceptance) {
                     setPendingSpinResult(spinResult);
+                    // Initialize blocksRemaining but it will be refreshed by the timer
                     setBlocksRemaining(spinResult.blockInfo?.blocksRemaining || null);
                 }
                 
@@ -106,8 +122,9 @@ const DegenGambit = () => {
                     ? `Prize: ${spinResult.prize} ${spinResult.prizeType === 1 ? wagmiConfig.chains[0].nativeCurrency.symbol : 'GAMBIT'}`
                     : '';
                     
+                // Always use the fresh blockInfo from the latest spin
                 const timerLine = spinResult.blockInfo 
-                    ? `⏱️ Time remaining: ${blocksRemaining || spinResult.blockInfo.blocksRemaining || '?'} blocks`
+                    ? `⏱️ Time remaining: ${spinResult.blockInfo.blocksRemaining || '?'} blocks`
                     : '';
                 
                 const actionText = `Type 'accept' to claim${prize > 0 ? ' prize' : ''} or 'respin' to try again (cost: ${spinResult.costToRespin})`;
@@ -168,9 +185,10 @@ const DegenGambit = () => {
                 
                 const respinResult = await respin(contractAddress, false, activeAccount, client);
                 
-                // Update the pending result
+                // Update the pending result with fresh block info
                 if (respinResult.pendingAcceptance) {
                     setPendingSpinResult(respinResult);
+                    // Initialize blocksRemaining but it will be refreshed by the timer
                     setBlocksRemaining(respinResult.blockInfo?.blocksRemaining || null);
                 }
                 
@@ -180,8 +198,9 @@ const DegenGambit = () => {
                     ? `Prize: ${respinResult.prize} ${respinResult.prizeType === 1 ? wagmiConfig.chains[0].nativeCurrency.symbol : 'GAMBIT'}`
                     : '';
                     
+                // Always use the fresh blockInfo from the latest respin
                 const respinTimerLine = respinResult.blockInfo 
-                    ? `⏱️ Time remaining: ${blocksRemaining || respinResult.blockInfo.blocksRemaining || '?'} blocks`
+                    ? `⏱️ Time remaining: ${respinResult.blockInfo.blocksRemaining || '?'} blocks`
                     : '';
                 
                 const respinActionText = `Type 'accept' to claim${respinPrize > 0 ? ' prize' : ''} or 'respin' to try again (cost: ${respinResult.costToRespin})`;
@@ -199,8 +218,8 @@ const DegenGambit = () => {
                 if (pendingSpinResult) {
                     await updateBlocksRemaining(); // Get latest block info
                     
-                    // Create a more prominent timer display with formatting
-                    const timerDisplay = `⏱️ Time remaining: ${blocksRemaining || '?'} blocks`;
+                    // Create a more prominent timer display with the most up-to-date information
+                    const timerDisplay = `⏱️ Time remaining: ${pendingSpinResult.blockInfo?.blocksRemaining || '?'} blocks`;
                     const statusPrize = Number(pendingSpinResult.prize);
                     
                     return {
