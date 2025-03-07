@@ -46,11 +46,12 @@ const Cursor = styled.span`
 interface MatrixTerminalProps {
   onUserInput?: (input: string) => Promise<{output: string[], outcome?: bigint[]}>;
   numbers: number[];
+  statusBar?: string; // Optional status bar text to show at the bottom
 }
 
 
 
-export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) => {
+export const MatrixTerminal = ({ onUserInput, numbers, statusBar }: MatrixTerminalProps) => {
   const [userInput, setUserInput] = useState('');
   const [history, setHistory] = useState<string[]>([]);
   const [inputHistory, setInputHistory] = useState<string[]>([]);
@@ -223,6 +224,13 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
                 {outcome.map((item, index) => (
                     <RandomNumbers key={index} result={item} duration={2000 + index * 2000} />
                 ))}
+            </div>
+        )}
+        
+        {/* Status bar at the bottom of the screen */}
+        {statusBar && (
+            <div className={styles.statusBar}>
+                {statusBar}
             </div>
         )}
     </Container>

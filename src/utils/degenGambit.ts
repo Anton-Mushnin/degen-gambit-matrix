@@ -139,136 +139,268 @@ export const getDegenGambitInfo = async (contractAddress: string) => {
     }
 
 
-    export const spin = async (contractAddress: string, boost: boolean, account: Account, client: ThirdwebClient) => {
-        const viemContract = {
-            address: contractAddress,
-            abi: degenGambitABI,
-          } as const
+    // Helper function to get the current block number and calculate blocks remaining
+export const getBlockInfo = async (contractAddress: string, account: string) => {
+  const publicClient = getPublicClient(wagmiConfig);
+  const viemContract = {
+    address: contractAddress,
+    abi: degenGambitABI,
+  } as const;
 
-          const degenAddress = account.address ?? ""
-          const publicClient = createPublicClient({
-            chain: wagmiConfig.chains[0],
-            transport: http()
-          })
+  try {
+    // Get current block number, blocks to act, and last spin block
+    const [currentBlock, blocksToAct, lastSpinBlock] = await Promise.all([
+      publicClient.getBlockNumber(),
+      publicClient.readContract({
+        ...viemContract,
+        functionName: 'BlocksToAct',
+      }),
+      publicClient.readContract({
+        ...viemContract,
+        functionName: 'LastSpinBlock',
+        args: [account],
+      }),
+    ]);
 
-          const result = await multicall(wagmiConfig, {
-            contracts: [
-              {
-                ...viemContract,
-                functionName: 'symbol',
-              },
-              {
-                ...viemContract,
-                functionName: 'decimals',
-              },
-              {
-                ...viemContract,
-                functionName: 'spinCost',
-                args: [degenAddress],
-              },
-            ],
-          })
-          const [
-            symbol,
-            decimals,
-            spinCost,
-          ] = result.map((item: any) => item.result);
+    // Calculate remaining blocks
+    const blockDeadline = lastSpinBlock + blocksToAct;
+    const blocksRemaining = blockDeadline > currentBlock ? blockDeadline - currentBlock : 0;
 
+    // Get cost to respin for information
+    const costToRespin = await publicClient.readContract({
+      ...viemContract,
+      functionName: 'CostToRespin',
+    });
 
-          const contract = viemAdapter.contract.fromViem({
-            viemContract: viemContract,
-            chain: {
-                ...viemG7Testnet,
-                rpc: viemG7Testnet.rpcUrls["default"].http[0],
-                blockExplorers: [{
-                    name: "Game7",
-                    url: viemG7Testnet.blockExplorers.default.url
-                }],
-                testnet: true
-            },
-            client,
-            });
+    return {
+      currentBlock,
+      blocksToAct,
+      lastSpinBlock,
+      blockDeadline,
+      blocksRemaining,
+      costToRespin,
+    };
+  } catch (error) {
+    console.error("Error getting block info:", error);
+    return null;
+  }
+};
 
+export const spin = async (contractAddress: string, boost: boolean, account: Account, client: ThirdwebClient) => {
+  const viemContract = {
+    address: contractAddress,
+    abi: degenGambitABI,
+  } as const;
 
-            // const walletClient = viemAdapter.wallet.toViem({
-            //     wallet,
-            //     client,
-            //     chain: {
-            //         ...viemG7Testnet,
-            //         rpc: viemG7Testnet.rpcUrls["default"].http[0],
-            //         blockExplorers: [{
-            //             name: "Game7",
-            //             url: viemG7Testnet.blockExplorers.default.url
-            //         }],
-            //         testnet: true
-            //     },
-            // });
+  const degenAddress = account.address ?? "";
+  const publicClient = createPublicClient({
+    chain: wagmiConfig.chains[0],
+    transport: http()
+  });
 
+  const result = await multicall(wagmiConfig, {
+    contracts: [
+      {
+        ...viemContract,
+        functionName: 'symbol',
+      },
+      {
+        ...viemContract,
+        functionName: 'decimals',
+      },
+      {
+        ...viemContract,
+        functionName: 'spinCost',
+        args: [degenAddress],
+      },
+    ],
+  });
+  const [
+    symbol,
+    decimals,
+    spinCost,
+  ] = result.map((item: any) => item.result);
 
-            // const walletClient = createWalletClient({
-            //     chain: viemG7Testnet,
-            //     transport: custom(window.ethereum)
-            //   })
+  const contract = viemAdapter.contract.fromViem({
+    viemContract: viemContract,
+    chain: {
+      ...viemG7Testnet,
+      rpc: viemG7Testnet.rpcUrls["default"].http[0],
+      blockExplorers: [{
+        name: "Game7",
+        url: viemG7Testnet.blockExplorers.default.url
+      }],
+      testnet: true
+    },
+    client,
+  });
 
+  // Execute the spin
+  const tx = prepareContractCall({
+    contract,
+    method: "spin",
+    params: [boost],
+    value: spinCost,
+  });
 
-            // const { request } = await publicClient.simulateContract({
-            //     account: account.address,
-            //     address: contractAddress,
-            //     abi: degenGambitABI,
-            //     functionName: 'spin',
-            //     args: [boost],
-            //     value: spinCost,
-            //   })
-            //   console.log(request)
-            //   await walletClient.writeContract(request)
+  const transactionResult = await sendTransaction({
+    transaction: tx,
+    account,
+  });
 
+  const receipt = await waitForReceipt(transactionResult);
 
-        //   const result = await writeContract(wagmiConfig, {
-        //     ...viemContract,
-        //     functionName: 'spin',
-        //     args: [boost],
-        //   })
-        //   return result
+  // Get current block info
+  const blockInfo = await getBlockInfo(contractAddress, degenAddress);
 
-            
-        const tx = prepareContractCall({
-            contract,
-            method: "spin",
-            params: [boost],
-            value: spinCost,
-          });
+  // After spin is confirmed, check the outcome
+  let outcome;
+  let retries = 0;
+  while (!outcome) {
+    try {
+      outcome = await publicClient.readContract({
+        ...viemContract,
+        functionName: 'inspectOutcome',
+        args: [degenAddress],
+      });
+    } catch (error: any) {
+      const errorMsg = error.message || String(error);
+      // Known errors that can occur while waiting for the outcome to be available
+      const knownErrors = ['WaitForTick()', 'InvalidBlockNumber', '0xd5dc642d'];
 
-        const transactionResult = await sendTransaction({
-            transaction: tx,
-            account,
-          });
-           
-          
-          await waitForReceipt(transactionResult);
-
-          let outcome;
-          let retries = 0;
-          while (!outcome) {
-            try {
-                outcome = await publicClient.readContract({
-                    ...viemContract,
-                    functionName: 'inspectOutcome',
-                    args: [degenAddress],
-                })
-            } catch (error: any) {
-                if (!error.message.includes('WaitForTick()') && !error.message.includes('InvalidBlockNumber') && !error.message.includes('0xd5dc642d')) {
-                    return {description: error.message}
-                }
-                retries += 1;
-                if (retries > 30) {
-                    return {description: "Something went wrong. Please try again."}
-                }
-                await new Promise(resolve => setTimeout(resolve, 1000));
-            }
-          }
-        return {description: Number(outcome[4]) > 0 
-            ? `You won ${formatUnits(outcome[4], decimals)} ${Number(outcome[5]) === 1 ? wagmiConfig.chains[0].nativeCurrency.symbol : symbol}` 
-            : `The Matrix has you...`,
-            outcome,
-          }
+      if (!knownErrors.some(err => errorMsg.includes(err))) {
+        return { description: errorMsg };
+      }
+      retries += 1;
+      if (retries > 30) {
+        return { description: "Something went wrong. Please try again." };
+      }
+      await new Promise(resolve => setTimeout(resolve, 1000));
     }
+  }
+
+  // Get respin cost for informational purposes
+  const costToRespin = await publicClient.readContract({
+    ...viemContract,
+    functionName: 'CostToRespin',
+  });
+
+  let actionText = '';
+  if (Number(outcome[4]) > 0) {
+    actionText = `You won ${formatUnits(outcome[4], decimals)} ${Number(outcome[5]) === 1 ? wagmiConfig.chains[0].nativeCurrency.symbol : symbol}!`;
+  } else {
+    actionText = `The Matrix has you...`;
+  }
+
+  return {
+    description: actionText,
+    actionNeeded: `Type 'accept' to claim or 'respin' to try again (${blockInfo?.blocksRemaining || '?'} blocks remaining)`,
+    outcome,
+    blockInfo,
+    pendingAcceptance: true,
+    costToRespin: formatUnits(costToRespin, decimals),
+    prize: Number(outcome[4]) > 0 ? formatUnits(outcome[4], decimals) : '0',
+    prizeType: Number(outcome[5]),
+    receipt,
+  };
+};
+
+export const accept = async (contractAddress: string, account: Account, client: ThirdwebClient) => {
+  const viemContract = {
+    address: contractAddress,
+    abi: degenGambitABI,
+  } as const;
+
+  const degenAddress = account.address ?? "";
+  const publicClient = createPublicClient({
+    chain: wagmiConfig.chains[0],
+    transport: http()
+  });
+
+  try {
+    // First check if we can get the outcome to see if there's something to accept
+    let canAccept = false;
+    try {
+      const outcome = await publicClient.readContract({
+        ...viemContract,
+        functionName: 'inspectOutcome',
+        args: [degenAddress],
+      });
+      canAccept = true;
+    } catch (error) {
+      // If we can't get the outcome, we might not be able to accept
+      console.error("Error checking outcome:", error);
+    }
+
+    if (!canAccept) {
+      return {
+        description: "Nothing to accept. Spin first!",
+        success: false,
+      };
+    }
+
+    const contract = viemAdapter.contract.fromViem({
+      viemContract: viemContract,
+      chain: {
+        ...viemG7Testnet,
+        rpc: viemG7Testnet.rpcUrls["default"].http[0],
+        blockExplorers: [{
+          name: "Game7",
+          url: viemG7Testnet.blockExplorers.default.url
+        }],
+        testnet: true
+      },
+      client,
+    });
+
+    // Call the accept function to claim any prize
+    const tx = prepareContractCall({
+      contract,
+      method: "accept",
+      params: [],
+    });
+
+    const transactionResult = await sendTransaction({
+      transaction: tx,
+      account,
+    });
+
+    const receipt = await waitForReceipt(transactionResult);
+
+    return {
+      description: "Outcome accepted successfully!",
+      success: true,
+      receipt,
+    };
+  } catch (error: any) {
+    const errorMsg = error.message || String(error);
+
+    // Handle specific error cases
+    if (errorMsg.includes('DeadlineExceeded')) {
+      return {
+        description: "Too late! The deadline to accept this outcome has passed.",
+        success: false,
+        error: errorMsg,
+      };
+    }
+
+    return {
+      description: "Failed to accept: " + errorMsg,
+      success: false,
+      error: errorMsg,
+    };
+  }
+};
+
+export const respin = async (contractAddress: string, boost: boolean, account: Account, client: ThirdwebClient) => {
+  // Respinning is the same as spinning, but we know it's within the deadline period
+  // The contract will automatically use the CostToRespin price
+  const spinResult = await spin(contractAddress, boost, account, client);
+  
+  // Add a note indicating this was a respin
+  if (spinResult.description) {
+    spinResult.description = "Respin: " + spinResult.description;
+  }
+  
+  return spinResult;
+}

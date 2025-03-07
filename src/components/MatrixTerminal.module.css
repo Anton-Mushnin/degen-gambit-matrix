@@ -34,3 +34,18 @@
     text-shadow: 0 0 10px #0dda9f;
     gap: 10px;
 }
+
+.statusBar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 8px 40px;
+    background-color: rgba(20, 20, 20, 0.9);
+    color: #a1eeb5;
+    text-shadow: 0 0 10px #0dda9f;
+    font-size: 14px;
+    border-top: 1px solid #333;
+    text-align: center;
+    z-index: 100;
+}
