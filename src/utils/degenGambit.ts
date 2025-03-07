@@ -484,7 +484,7 @@ export const accept = async (contractAddress: string, account: Account, client: 
     const receipt = await waitForReceipt(transactionResult);
 
     return {
-      description: "Outcome accepted successfully!",
+      description: "Outcome accepted successfully.",
       success: true,
       receipt,
     };

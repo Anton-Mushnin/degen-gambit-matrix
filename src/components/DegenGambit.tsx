@@ -62,10 +62,12 @@ const DegenGambit = () => {
             ? `Prize: ${result.prize} ${result.prizeType === 1 ? wagmiConfig.chains[0].nativeCurrency.symbol : 'GAMBIT'}`
             : '';
             
-        const actionText = `Type 'accept' to claim${prize > 0 ? ' prize' : ''} or 'respin' to try again (cost: ${result.costToRespin})`;
+        const actionText = prize > 0 ? `Type 'accept' to claim prize` : '';
+        const description = prize > 0 ? '' : result.description;
         
         const normalizedResult: SpinResult = {
             ...result,
+            description,
             blockInfo: result.blockInfo ? {
                 blocksRemaining: result.blockInfo.blocksRemaining,
                 currentBlock: typeof result.blockInfo.currentBlock === 'bigint' 
@@ -219,7 +221,7 @@ const DegenGambit = () => {
                         output: [
                             `=== ${spinType} OUTCOME ACCEPTED ===`,
                             acceptResult.description,
-                            "Transaction confirmed. Outcome settled successfully!",
+                            "Transaction confirmed.",
                             "======================",
                         ],
                     };
