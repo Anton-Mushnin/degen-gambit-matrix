@@ -59,6 +59,7 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
   const client = createThirdwebClient({ clientId: thirdwebClientId });
   const [text, setText] = useState('');
   const [isSpinning, setIsSpinning] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false)
 
   const [rerenderKey, setRerenderKey] = useState(0);
   const [outcome, setOutcome] = useState<string[]>([]);
@@ -110,9 +111,10 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
       return;
     }
 
-    if (input === 'spin') {
+    if (['spin', 'respin'].includes(input)) {
       setIsSpinning(true);
     }
+    setIsProcessing(true)
     try {
         const result = await onUserInput?.(input);
         if (result?.output && !result.outcome) {
@@ -140,6 +142,7 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
         setIsSystemTyping(true);
     } finally {
         setIsSpinning(false);
+        setIsProcessing(false);
     }
   }, [onUserInput, numbers, setText, setIsSystemTyping, setOutcome, setIsSpinning, setHistory]);
 
@@ -200,7 +203,7 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
             ))}
         </div>
 
-        {!isSystemTyping && !isSpinning && outcome.length === 0 && (
+        {!isSystemTyping && !isSpinning && outcome.length === 0 && !isProcessing && (
             <div className={styles.inputLine}>
                 <div className={styles.inputText}>{`> ${userInput}`.replace(/ /g, '\u00A0')}</div>
                 <Cursor>█</Cursor>
