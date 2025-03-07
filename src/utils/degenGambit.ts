@@ -140,17 +140,29 @@ export const getDegenGambitInfo = async (contractAddress: string) => {
 
 
     // Helper function to get the current block number and calculate blocks remaining
-// Force a fetch of new blocks
+// Contract constants - loaded once and cached
+let CONTRACT_CONSTANTS = {
+  blocksToAct: null,
+  costToRespin: null,
+  loaded: false
+};
+
+// Block tracking
 let lastCheckedTimestamp = 0;
 let cachedBlockNumber = BigInt(0);
+let blockListeners = [];
 
+// Efficient block number updating
 async function getLatestBlockNumber(client) {
   const now = Date.now();
+  // Only query for new blocks every 10 seconds max
   if (now - lastCheckedTimestamp > 10000) {
     try {
       cachedBlockNumber = await client.getBlockNumber();
       lastCheckedTimestamp = now;
       console.log(`NEW BLOCK: ${cachedBlockNumber}`);
+      // Notify any listeners about the new block
+      blockListeners.forEach(listener => listener(cachedBlockNumber));
     } catch (err) {
       console.error("Failed to get latest block:", err);
     }
@@ -158,50 +170,119 @@ async function getLatestBlockNumber(client) {
   return cachedBlockNumber;
 }
 
-export const getBlockInfo = async (contractAddress: string, account: string) => {
+// Load contract constants once
+async function loadContractConstants(contractAddress) {
+  if (CONTRACT_CONSTANTS.loaded) return CONTRACT_CONSTANTS;
+  
   const publicClient = getPublicClient(wagmiConfig);
   const viemContract = {
     address: contractAddress,
     abi: degenGambitABI,
   } as const;
-
+  
   try {
-    if (!account) {
-      console.error("No account provided to getBlockInfo");
-      return null;
-    }
-    
-    const [blocksToAct, lastSpinBlock] = await Promise.all([
+    // Get all constants in parallel
+    const [blocksToAct, costToRespin] = await Promise.all([
       publicClient.readContract({
         ...viemContract,
         functionName: 'BlocksToAct',
       }),
       publicClient.readContract({
         ...viemContract,
-        functionName: 'LastSpinBlock',
-        args: [account],
+        functionName: 'CostToRespin',
       }),
     ]);
     
-    const currentBlock = await getLatestBlockNumber(publicClient);
+    // Store the constants
+    CONTRACT_CONSTANTS = {
+      blocksToAct: Number(blocksToAct),
+      costToRespin,
+      loaded: true
+    };
+    
+    console.log(`Loaded contract constants: blocksToAct=${blocksToAct}`);
+    return CONTRACT_CONSTANTS;
+  } catch (error) {
+    console.error("Failed to load contract constants:", error);
+    return CONTRACT_CONSTANTS;
+  }
+}
 
-    const blockDeadline = lastSpinBlock + blocksToAct;
-    const blocksRemaining = blockDeadline > currentBlock ? Number(blockDeadline - currentBlock) : 0;
+// Cache of last spin blocks by account
+let LAST_SPIN_BLOCKS = {};
 
-    const costToRespin = await publicClient.readContract({
+// Get LastSpinBlock for a specific account - only needed after spin/respin
+async function getLastSpinBlock(contractAddress, account, forceRefresh = false) {
+  // Use cached value if available and not forcing refresh
+  if (!forceRefresh && LAST_SPIN_BLOCKS[account] !== undefined) {
+    return LAST_SPIN_BLOCKS[account];
+  }
+  
+  const publicClient = getPublicClient(wagmiConfig);
+  const viemContract = {
+    address: contractAddress,
+    abi: degenGambitABI,
+  } as const;
+  
+  try {
+    const lastSpinBlock = await publicClient.readContract({
       ...viemContract,
-      functionName: 'CostToRespin',
+      functionName: 'LastSpinBlock',
+      args: [account],
     });
+    
+    // Cache the result
+    LAST_SPIN_BLOCKS[account] = Number(lastSpinBlock);
+    return LAST_SPIN_BLOCKS[account];
+  } catch (error) {
+    console.error("Failed to get LastSpinBlock:", error);
+    return null;
+  }
+}
 
-    console.log(`BLOCK INFO: Current=${currentBlock}, Last=${lastSpinBlock}, Deadline=${blockDeadline}, Remaining=${blocksRemaining}`);
+// Main function - now optimized to minimize chain calls
+// After a spin/respin, we need to update the last spin block
+export const updateLastSpinBlock = async (contractAddress: string, account: string) => {
+  if (!account) return;
+  
+  // Force refresh the LastSpinBlock from the chain
+  await getLastSpinBlock(contractAddress, account, true);
+  console.log(`Updated LastSpinBlock for ${account}`);
+};
 
+export const getBlockInfo = async (contractAddress: string, account: string, forceRefresh = false) => {
+  if (!account) {
+    console.error("No account provided to getBlockInfo");
+    return null;
+  }
+  
+  try {
+    // Load constants if not already loaded
+    const constants = await loadContractConstants(contractAddress);
+    
+    // Get last spin block (only value that changes per user)
+    const lastSpinBlock = await getLastSpinBlock(contractAddress, account, forceRefresh);
+    if (lastSpinBlock === null) return null;
+    
+    // Get current block - the only value we need to check frequently
+    const currentBlock = await getLatestBlockNumber(getPublicClient(wagmiConfig));
+    
+    // Calculate time remaining
+    const blockDeadline = lastSpinBlock + constants.blocksToAct;
+    const blocksRemaining = blockDeadline > currentBlock ? Number(blockDeadline - currentBlock) : 0;
+    
+    // Only log when values actually change
+    if (forceRefresh) {
+      console.log(`BLOCK INFO: Current=${currentBlock}, Last=${lastSpinBlock}, Deadline=${blockDeadline}, Remaining=${blocksRemaining}`);
+    }
+    
     return {
       currentBlock,
-      blocksToAct: Number(blocksToAct),
-      lastSpinBlock: Number(lastSpinBlock),
+      blocksToAct: constants.blocksToAct,
+      lastSpinBlock,
       blockDeadline: Number(blockDeadline),
       blocksRemaining,
-      costToRespin,
+      costToRespin: constants.costToRespin,
     };
   } catch (error) {
     console.error("Error getting block info:", error);
@@ -273,8 +354,11 @@ export const spin = async (contractAddress: string, boost: boolean, account: Acc
 
   const receipt = await waitForReceipt(transactionResult);
 
-  // Get current block info
-  const blockInfo = await getBlockInfo(contractAddress, degenAddress);
+  // After a spin, force update the LastSpinBlock
+  await updateLastSpinBlock(contractAddress, degenAddress);
+  
+  // Get current block info with fresh data
+  const blockInfo = await getBlockInfo(contractAddress, degenAddress, true);
 
   // After spin is confirmed, check the outcome
   let outcome;

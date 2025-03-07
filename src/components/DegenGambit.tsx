@@ -50,14 +50,31 @@ const DegenGambit = () => {
     const [isExpired, setIsExpired] = useState(false);
     const blockTimerRef = useRef<NodeJS.Timeout | null>(null);
     const [lastCommandResult, setLastCommandResult] = useState<any>(null);
+    // Track last spin deadline info
+    const lastSpinInfoRef = useRef({
+        lastSpinBlock: null,
+        blockDeadline: null,
+        blocksToAct: null
+    });
+    
     const updateBlocksRemaining = async () => {
         if (!activeAccount || !pendingOutcome) return;
         
         try {
+            // Get only the current block, not calling LastSpinBlock unnecessarily
             const blockInfo = await getBlockInfo(contractAddress, activeAccount.address);
             if (blockInfo) {
                 console.log(`UPDATING TIMER: ${blockInfo.blocksRemaining} blocks remaining`);
                 setBlocksRemaining(blockInfo.blocksRemaining);
+                
+                // Store the spin info for local calculations
+                if (lastSpinInfoRef.current.lastSpinBlock === null) {
+                    lastSpinInfoRef.current = {
+                        lastSpinBlock: blockInfo.lastSpinBlock,
+                        blockDeadline: blockInfo.blockDeadline,
+                        blocksToAct: blockInfo.blocksToAct
+                    };
+                }
                 
                 if (blockInfo.blocksRemaining <= 0) {
                     console.log("TIMER EXPIRED!");
@@ -203,6 +220,13 @@ const DegenGambit = () => {
                     setBlocksRemaining(null);
                     setIsExpired(false);
                     
+                    // Reset local spin info reference
+                    lastSpinInfoRef.current = {
+                        lastSpinBlock: null,
+                        blockDeadline: null,
+                        blocksToAct: null
+                    };
+                    
                     if (blockTimerRef.current) {
                         clearInterval(blockTimerRef.current);
                         blockTimerRef.current = null;
@@ -219,6 +243,13 @@ const DegenGambit = () => {
                     setPendingOutcome(null);
                     setBlocksRemaining(null);
                     setIsExpired(false);
+                    
+                    // Reset local spin info reference
+                    lastSpinInfoRef.current = {
+                        lastSpinBlock: null,
+                        blockDeadline: null,
+                        blocksToAct: null
+                    };
                     
                     if (blockTimerRef.current) {
                         clearInterval(blockTimerRef.current);
@@ -261,6 +292,13 @@ const DegenGambit = () => {
                     setPendingOutcome(null);
                     setBlocksRemaining(null);
                     setIsExpired(false);
+                    
+                    // Reset local spin info reference
+                    lastSpinInfoRef.current = {
+                        lastSpinBlock: null,
+                        blockDeadline: null,
+                        blocksToAct: null
+                    };
                     
                     if (blockTimerRef.current) {
                         clearInterval(blockTimerRef.current);
@@ -312,8 +350,18 @@ const DegenGambit = () => {
                 return formatSpinOutput(result, blocksRemaining);
             case "status":
                 if (pendingOutcome) {
-                    // Update the blocks remaining - but only once when status is requested
-                    await updateBlocksRemaining();
+                    // For status command, force a complete refresh including LastSpinBlock
+                    const blockInfo = await getBlockInfo(contractAddress, activeAccount?.address || "", true);
+                    if (blockInfo) {
+                        setBlocksRemaining(blockInfo.blocksRemaining);
+                        
+                        // Update our local reference
+                        lastSpinInfoRef.current = {
+                            lastSpinBlock: blockInfo.lastSpinBlock,
+                            blockDeadline: blockInfo.blockDeadline,
+                            blocksToAct: blockInfo.blocksToAct
+                        };
+                    }
                     
                     // Check if expired
                     if (isExpired || pendingOutcome.isExpired) {
