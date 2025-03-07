@@ -123,9 +123,9 @@ const DegenGambit = () => {
                     ? `Prize: ${spinResult.prize} ${spinResult.prizeType === 1 ? wagmiConfig.chains[0].nativeCurrency.symbol : 'GAMBIT'}`
                     : '';
                     
-                // Always use the fresh blockInfo from the latest spin
+                // Use the blocksRemaining for countdown
                 const timerLine = spinResult.blockInfo 
-                    ? `Time remaining: ${spinResult.blockInfo.blocksToAct || '?'} blocks`
+                    ? `Time remaining: ${spinResult.blockInfo.blocksRemaining || '?'} blocks`
                     : '';
                 
                 const actionText = `Type 'accept' to claim${prize > 0 ? ' prize' : ''} or 'respin' to try again (cost: ${spinResult.costToRespin})`;
@@ -199,9 +199,9 @@ const DegenGambit = () => {
                     ? `Prize: ${respinResult.prize} ${respinResult.prizeType === 1 ? wagmiConfig.chains[0].nativeCurrency.symbol : 'GAMBIT'}`
                     : '';
                     
-                // Always use the fresh blockInfo from the latest respin
+                // Use the blocksRemaining for countdown
                 const respinTimerLine = respinResult.blockInfo 
-                    ? `Time remaining: ${respinResult.blockInfo.blocksToAct || '?'} blocks`
+                    ? `Time remaining: ${respinResult.blockInfo.blocksRemaining || '?'} blocks`
                     : '';
                 
                 const respinActionText = `Type 'accept' to claim${respinPrize > 0 ? ' prize' : ''} or 'respin' to try again (cost: ${respinResult.costToRespin})`;
@@ -219,8 +219,8 @@ const DegenGambit = () => {
                 if (pendingSpinResult) {
                     await updateBlocksRemaining(); // Get latest block info
                     
-                    // Create a timer display with the correct blocks to act value
-                    const timerDisplay = `Time remaining: ${pendingSpinResult.blockInfo?.blocksToAct || '?'} blocks`;
+                    // Create a timer display that shows the decreasing blocks remaining
+                    const timerDisplay = `Time remaining: ${pendingSpinResult.blockInfo?.blocksRemaining || '?'} blocks`;
                     const statusPrize = Number(pendingSpinResult.prize);
                     
                     return {
@@ -230,7 +230,7 @@ const DegenGambit = () => {
                             `Prize: ${pendingSpinResult.prize} ${pendingSpinResult.prizeType === 1 ? wagmiConfig.chains[0].nativeCurrency.symbol : 'GAMBIT'}`,
                             timerDisplay,
                             `Respin cost: ${pendingSpinResult.costToRespin} ${wagmiConfig.chains[0].nativeCurrency.symbol}`,
-                            `Block deadline: ${pendingSpinResult.blockInfo?.blockDeadline} (current: ${pendingSpinResult.blockInfo?.currentBlock})`,
+                            `Block deadline: ${pendingSpinResult.blockInfo?.blockDeadline} (current: ${pendingSpinResult.blockInfo?.currentBlock}, remaining: ${pendingSpinResult.blockInfo?.blocksRemaining})`,
                             "",
                             `Type 'accept' to claim${statusPrize > 0 ? ' prize' : ''} or 'respin' to try again`,
                             "==========================="
