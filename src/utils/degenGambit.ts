@@ -146,8 +146,6 @@ let cachedBlockNumber = BigInt(0);
 
 async function getLatestBlockNumber(client) {
   const now = Date.now();
-  // Only query the chain for a new block number every 10 seconds max
-  // This prevents hammering the chain with too many requests
   if (now - lastCheckedTimestamp > 10000) {
     try {
       cachedBlockNumber = await client.getBlockNumber();
@@ -173,7 +171,6 @@ export const getBlockInfo = async (contractAddress: string, account: string) => 
       return null;
     }
     
-    // FIRST get the last spin block and blocks to act - these don't change often
     const [blocksToAct, lastSpinBlock] = await Promise.all([
       publicClient.readContract({
         ...viemContract,
@@ -186,20 +183,16 @@ export const getBlockInfo = async (contractAddress: string, account: string) => 
       }),
     ]);
     
-    // THEN get the current block number - this changes frequently
     const currentBlock = await getLatestBlockNumber(publicClient);
 
-    // Calculate remaining blocks - force to numbers for easier math
     const blockDeadline = lastSpinBlock + blocksToAct;
     const blocksRemaining = blockDeadline > currentBlock ? Number(blockDeadline - currentBlock) : 0;
 
-    // Get cost to respin for information
     const costToRespin = await publicClient.readContract({
       ...viemContract,
       functionName: 'CostToRespin',
     });
 
-    // Log to help debugging
     console.log(`BLOCK INFO: Current=${currentBlock}, Last=${lastSpinBlock}, Deadline=${blockDeadline}, Remaining=${blocksRemaining}`);
 
     return {

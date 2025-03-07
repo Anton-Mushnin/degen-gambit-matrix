@@ -46,39 +46,28 @@ const DegenGambit = () => {
 
     // Single consolidated state for any pending outcome (initial spin or respin)
     const [pendingOutcome, setPendingOutcome] = useState<SpinOutcome | null>(null);
-    // Track blocks remaining separately in a simpler state to update frequently
     const [blocksRemaining, setBlocksRemaining] = useState<number | null>(null);
     const [isExpired, setIsExpired] = useState(false);
     const blockTimerRef = useRef<NodeJS.Timeout | null>(null);
-    
-    // Track the last command result for rerendering when blocks update
     const [lastCommandResult, setLastCommandResult] = useState<any>(null);
-    
-    // ULTRA-DIRECT function to just fetch and update the blocks remaining
     const updateBlocksRemaining = async () => {
         if (!activeAccount || !pendingOutcome) return;
         
         try {
-            // Call the chain directly for just what we need
             const blockInfo = await getBlockInfo(contractAddress, activeAccount.address);
             if (blockInfo) {
                 console.log(`UPDATING TIMER: ${blockInfo.blocksRemaining} blocks remaining`);
-                
-                // Always update the display with whatever we got
                 setBlocksRemaining(blockInfo.blocksRemaining);
                 
-                // Check if expired
                 if (blockInfo.blocksRemaining <= 0) {
                     console.log("TIMER EXPIRED!");
                     setIsExpired(true);
                     
-                    // Clear timer when expired
                     if (blockTimerRef.current) {
                         clearInterval(blockTimerRef.current);
                         blockTimerRef.current = null;
                     }
                     
-                    // Update the full outcome
                     setPendingOutcome(prev => {
                         if (!prev) return null;
                         return {
@@ -87,27 +76,18 @@ const DegenGambit = () => {
                         };
                     });
                 }
-                
-                // Just update the display - DON'T re-run commands that would trigger transactions
-                // Only update the blocks remaining number for display
             }
         } catch (error) {
             console.error("Failed to update block info:", error);
         }
     };
     
-    // Regular interval to update the blocks remaining counter
     useEffect(() => {
         if (pendingOutcome && activeAccount && !isExpired) {
             console.log("Starting block countdown timer");
-            
-            // Update immediately
             updateBlocksRemaining();
-            
-            // Update every 15 seconds, which is a reasonable interval for block updates
             blockTimerRef.current = setInterval(updateBlocksRemaining, 15000);
             
-            // Clean up
             return () => {
                 console.log("Stopping block countdown timer");
                 if (blockTimerRef.current) {
@@ -118,19 +98,13 @@ const DegenGambit = () => {
         }
     }, [pendingOutcome, activeAccount, isExpired]);
     
-    // Unified function to format spin/respin output
     const formatSpinOutput = (result: SpinResult, currentBlocksRemaining: number | null) => {
-        // Get prize info
         const prize = Number(result.prize || 0);
         const prizeText = prize > 0 
             ? `Prize: ${result.prize} ${result.prizeType === 1 ? wagmiConfig.chains[0].nativeCurrency.symbol : 'GAMBIT'}`
             : '';
             
-        // Use the separately tracked blocks remaining state that updates frequently
-        // This is displayed inline and will update as currentBlocksRemaining changes
         const timerLine = `Time remaining: ${currentBlocksRemaining !== null ? currentBlocksRemaining : result.blockInfo?.blocksRemaining || '?'} blocks`;
-        
-        // Show action options
         const actionText = `Type 'accept' to claim${prize > 0 ? ' prize' : ''} or 'respin' to try again (cost: ${result.costToRespin})`;
         
         return {
@@ -209,7 +183,6 @@ const DegenGambit = () => {
                     }
                 }
                 
-                // Don't store spin command for refreshing - just update the blocks directly
                 
                 // Format and return output - same logic for both spin and respin
                 return formatSpinOutput(spinResult, blocksRemaining);
@@ -329,7 +302,6 @@ const DegenGambit = () => {
                     }
                 }
                 
-                // Don't store respin command for refreshing - just update the blocks directly
                 
                 // Format and return output - same logic for both spin and respin
                 // For respins, prefix the description with "RESPIN: "
