@@ -140,6 +140,26 @@ export const getDegenGambitInfo = async (contractAddress: string) => {
 
 
     // Helper function to get the current block number and calculate blocks remaining
+// Force a fetch of new blocks
+let lastCheckedTimestamp = 0;
+let cachedBlockNumber = BigInt(0);
+
+async function getLatestBlockNumber(client) {
+  const now = Date.now();
+  // Only query the chain for a new block number every 10 seconds max
+  // This prevents hammering the chain with too many requests
+  if (now - lastCheckedTimestamp > 10000) {
+    try {
+      cachedBlockNumber = await client.getBlockNumber();
+      lastCheckedTimestamp = now;
+      console.log(`NEW BLOCK: ${cachedBlockNumber}`);
+    } catch (err) {
+      console.error("Failed to get latest block:", err);
+    }
+  }
+  return cachedBlockNumber;
+}
+
 export const getBlockInfo = async (contractAddress: string, account: string) => {
   const publicClient = getPublicClient(wagmiConfig);
   const viemContract = {
@@ -148,9 +168,13 @@ export const getBlockInfo = async (contractAddress: string, account: string) => 
   } as const;
 
   try {
-    // Get current block number, blocks to act, and last spin block
-    const [currentBlock, blocksToAct, lastSpinBlock] = await Promise.all([
-      publicClient.getBlockNumber(),
+    if (!account) {
+      console.error("No account provided to getBlockInfo");
+      return null;
+    }
+    
+    // FIRST get the last spin block and blocks to act - these don't change often
+    const [blocksToAct, lastSpinBlock] = await Promise.all([
       publicClient.readContract({
         ...viemContract,
         functionName: 'BlocksToAct',
@@ -161,10 +185,13 @@ export const getBlockInfo = async (contractAddress: string, account: string) => 
         args: [account],
       }),
     ]);
+    
+    // THEN get the current block number - this changes frequently
+    const currentBlock = await getLatestBlockNumber(publicClient);
 
-    // Calculate remaining blocks
+    // Calculate remaining blocks - force to numbers for easier math
     const blockDeadline = lastSpinBlock + blocksToAct;
-    const blocksRemaining = blockDeadline > currentBlock ? blockDeadline - currentBlock : 0;
+    const blocksRemaining = blockDeadline > currentBlock ? Number(blockDeadline - currentBlock) : 0;
 
     // Get cost to respin for information
     const costToRespin = await publicClient.readContract({
@@ -172,14 +199,16 @@ export const getBlockInfo = async (contractAddress: string, account: string) => 
       functionName: 'CostToRespin',
     });
 
+    // Log to help debugging
+    console.log(`BLOCK INFO: Current=${currentBlock}, Last=${lastSpinBlock}, Deadline=${blockDeadline}, Remaining=${blocksRemaining}`);
+
     return {
       currentBlock,
-      blocksToAct,
-      lastSpinBlock,
-      blockDeadline,
+      blocksToAct: Number(blocksToAct),
+      lastSpinBlock: Number(lastSpinBlock),
+      blockDeadline: Number(blockDeadline),
       blocksRemaining,
       costToRespin,
-      // Include the full blockToAct value for UI display
     };
   } catch (error) {
     console.error("Error getting block info:", error);

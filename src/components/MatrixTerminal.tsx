@@ -193,6 +193,7 @@ export const MatrixTerminal = ({ onUserInput, numbers, statusBar }: MatrixTermin
 
   return (
     <Container ref={containerRef}>
+        
         <div className={styles.history}>
             {history.map((input, index) => (
                 <pre key={index} className={styles.pre}>
