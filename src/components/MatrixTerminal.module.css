@@ -40,12 +40,21 @@
     bottom: 0;
     left: 0;
     right: 0;
-    padding: 8px 40px;
-    background-color: rgba(20, 20, 20, 0.9);
+    padding: 12px 40px;
+    background-color: rgba(25, 25, 25, 0.95);
     color: #a1eeb5;
     text-shadow: 0 0 10px #0dda9f;
-    font-size: 14px;
-    border-top: 1px solid #333;
+    font-size: 16px;
+    font-weight: bold;
+    border-top: 1px solid #3b8f5f;
     text-align: center;
     z-index: 100;
+    box-shadow: 0 -2px 10px rgba(13, 218, 159, 0.3);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 -2px 10px rgba(13, 218, 159, 0.3); }
+    50% { box-shadow: 0 -2px 20px rgba(13, 218, 159, 0.5); }
+    100% { box-shadow: 0 -2px 10px rgba(13, 218, 159, 0.3); }
 }

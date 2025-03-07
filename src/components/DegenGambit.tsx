@@ -46,8 +46,8 @@ const DegenGambit = () => {
             // Update immediately
             updateBlocksRemaining();
             
-            // Then set up interval (every 15 seconds)
-            blockTimerRef.current = setInterval(updateBlocksRemaining, 15000);
+            // Then set up interval (every 5 seconds)
+            blockTimerRef.current = setInterval(updateBlocksRemaining, 5000);
             
             // Clean up on unmount
             return () => {
@@ -100,11 +100,15 @@ const DegenGambit = () => {
                     setBlocksRemaining(spinResult.blockInfo?.blocksRemaining || null);
                 }
                 
+                const timerLine = spinResult.blockInfo 
+                    ? `⏱️ Time remaining: ${blocksRemaining || spinResult.blockInfo.blocksRemaining || '?'} blocks`
+                    : '';
+                
                 return {
                     output: [
                         spinResult.description,
                         spinResult.actionNeeded || '',
-                        spinResult.blockInfo ? `Block deadline: ${spinResult.blockInfo.blockDeadline} (current: ${spinResult.blockInfo.currentBlock})` : '',
+                        timerLine,
                     ].filter(line => line), // Filter out empty lines
                     outcome: spinResult.outcome?.slice(0, 3),
                 };
@@ -147,11 +151,15 @@ const DegenGambit = () => {
                     setBlocksRemaining(respinResult.blockInfo?.blocksRemaining || null);
                 }
                 
+                const timerLine = respinResult.blockInfo 
+                    ? `⏱️ Time remaining: ${blocksRemaining || respinResult.blockInfo.blocksRemaining || '?'} blocks`
+                    : '';
+                
                 return {
                     output: [
                         respinResult.description,
                         respinResult.actionNeeded || '',
-                        respinResult.blockInfo ? `Block deadline: ${respinResult.blockInfo.blockDeadline} (current: ${respinResult.blockInfo.currentBlock})` : '',
+                        timerLine,
                     ].filter(line => line),
                     outcome: respinResult.outcome?.slice(0, 3),
                 };
@@ -159,12 +167,15 @@ const DegenGambit = () => {
                 if (pendingSpinResult) {
                     await updateBlocksRemaining(); // Get latest block info
                     
+                    // Create a more prominent timer display with formatting
+                    const timerDisplay = `⏱️ Time remaining: ${blocksRemaining || '?'} blocks`;
+                    
                     return {
                         output: [
                             "Pending spin:",
                             pendingSpinResult.description,
                             `Prize: ${pendingSpinResult.prize} ${pendingSpinResult.prizeType === 1 ? wagmiConfig.chains[0].nativeCurrency.symbol : 'GAMBIT'}`,
-                            `Blocks remaining: ${blocksRemaining || '?'}`,
+                            timerDisplay,
                             `Respin cost: ${pendingSpinResult.costToRespin}`,
                             "Type 'accept' to claim or 'respin' to try again"
                         ],
@@ -209,16 +220,17 @@ const DegenGambit = () => {
         }
     }
 
+    // Create a more visible status bar with action information
+    const statusBarText = pendingSpinResult 
+        ? `⏱️ ${blocksRemaining || '?'} blocks remaining | Prize: ${pendingSpinResult.prize} | Type 'accept' to claim or 'respin' to try again`
+        : undefined;
+        
     return (
         <div>
             <MatrixTerminal 
                 onUserInput={handleInput} 
                 numbers={userNumbers} 
-                statusBar={
-                    pendingSpinResult 
-                        ? `Pending: ${blocksRemaining || '?'} blocks remaining. Type 'accept' or 'respin'.` 
-                        : undefined
-                }
+                statusBar={statusBarText}
             />
         </div>
     )
