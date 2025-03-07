@@ -20,6 +20,7 @@ const Container = styled.div`
     flex-direction: column;
     align-items: start;
     justify-content: start;
+    height: 100vh;
     min-height: 100vh;
     width: calc(100vw - 10px);
     max-height: 100vh;
@@ -28,6 +29,8 @@ const Container = styled.div`
     color: ${color};
     text-shadow: 0 0 12px ${glow};
     font-size: 16px;
+    overflow-y: auto;
+    scroll-behavior: smooth;
 `;
 
 const Cursor = styled.span`
@@ -166,6 +169,7 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
           return;
         }
         if (e.key === 'ArrowUp') {
+            e.preventDefault();
             if (inputHistory[inputHistoryIndex + 1]) {
                 setUserInput(inputHistory[inputHistoryIndex + 1]);
                 setInputHistoryIndex(prev => prev + 1);
@@ -173,6 +177,7 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
           return;
         }
         if (e.key === 'ArrowDown') {
+            e.preventDefault();
             if (inputHistory[inputHistoryIndex - 1]) {
                 setUserInput(inputHistory[inputHistoryIndex - 1]);
                 setInputHistoryIndex(prev => prev - 1);
