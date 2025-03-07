@@ -179,6 +179,7 @@ export const getBlockInfo = async (contractAddress: string, account: string) => 
       blockDeadline,
       blocksRemaining,
       costToRespin,
+      // Include the full blockToAct value for UI display
     };
   } catch (error) {
     console.error("Error getting block info:", error);

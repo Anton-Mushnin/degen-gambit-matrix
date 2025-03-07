@@ -36,7 +36,8 @@ const DegenGambit = () => {
                         blockInfo: {
                             ...prev.blockInfo,
                             currentBlock: blockInfo.currentBlock,
-                            blocksRemaining: blockInfo.blocksRemaining
+                            blocksRemaining: blockInfo.blocksRemaining,
+                            blocksToAct: blockInfo.blocksToAct
                         }
                     };
                 });
@@ -124,7 +125,7 @@ const DegenGambit = () => {
                     
                 // Always use the fresh blockInfo from the latest spin
                 const timerLine = spinResult.blockInfo 
-                    ? `⏱️ Time remaining: ${spinResult.blockInfo.blocksRemaining || '?'} blocks`
+                    ? `Time remaining: ${spinResult.blockInfo.blocksToAct || '?'} blocks`
                     : '';
                 
                 const actionText = `Type 'accept' to claim${prize > 0 ? ' prize' : ''} or 'respin' to try again (cost: ${spinResult.costToRespin})`;
@@ -200,7 +201,7 @@ const DegenGambit = () => {
                     
                 // Always use the fresh blockInfo from the latest respin
                 const respinTimerLine = respinResult.blockInfo 
-                    ? `⏱️ Time remaining: ${respinResult.blockInfo.blocksRemaining || '?'} blocks`
+                    ? `Time remaining: ${respinResult.blockInfo.blocksToAct || '?'} blocks`
                     : '';
                 
                 const respinActionText = `Type 'accept' to claim${respinPrize > 0 ? ' prize' : ''} or 'respin' to try again (cost: ${respinResult.costToRespin})`;
@@ -218,8 +219,8 @@ const DegenGambit = () => {
                 if (pendingSpinResult) {
                     await updateBlocksRemaining(); // Get latest block info
                     
-                    // Create a more prominent timer display with the most up-to-date information
-                    const timerDisplay = `⏱️ Time remaining: ${pendingSpinResult.blockInfo?.blocksRemaining || '?'} blocks`;
+                    // Create a timer display with the correct blocks to act value
+                    const timerDisplay = `Time remaining: ${pendingSpinResult.blockInfo?.blocksToAct || '?'} blocks`;
                     const statusPrize = Number(pendingSpinResult.prize);
                     
                     return {
