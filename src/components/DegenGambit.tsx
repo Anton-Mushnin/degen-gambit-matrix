@@ -106,7 +106,7 @@ const DegenGambit = () => {
                 return {output: contractInfo.data?.prizes || []};
             }
             case "getsome": {
-                window.open("https://getsome.game7.io", "_blank");
+                window.open(`https://getsome.game7.io?network=testnet&address=${activeAccount?.address}`, "_blank");
                 return {output: []};
             }
             case "streaks": {
