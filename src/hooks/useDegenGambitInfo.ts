@@ -72,10 +72,10 @@ export function useDegenGambitInfo(contractAddress: string) {
     return {
       blocksToAct: Number(blocksToAct),
       secondsToAct: Math.round(secondsToAct),
-      costToRespin: formatEther(costToRespin as bigint),
-      costToSpin: formatEther(costToSpin as bigint),
-      majorGambitPrize: formatEther(majorGambitPrize as bigint),
-      minorGambitPrize: formatEther(minorGambitPrize as bigint),
+      costToRespin: `${costToRespin} WEI [TG7T]`,
+      costToSpin: `${costToSpin} WEI [TG7T]`,
+      majorGambitPrize: `${formatEther(majorGambitPrize as bigint)} ${symbol}`,
+      minorGambitPrize: `${formatEther(minorGambitPrize as bigint)} ${symbol}`,
       prizes: prizesFormatted,
       symbol,
     };
