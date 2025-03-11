@@ -1,0 +1,17 @@
+.container {
+    color: #a1eeb5;
+    text-shadow: 0 0 10px #0dda9f;
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    justify-content: start;
+    place-self: stretch;
+    height: 100%;
+    padding-top: 40px;
+}
+
+.event {
+    font-family: 'NimbusMono', 'Courier New', Courier, monospace;
+    font-size: 12px;
+    
+}
