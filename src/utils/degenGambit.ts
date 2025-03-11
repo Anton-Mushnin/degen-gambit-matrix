@@ -520,3 +520,30 @@ export const respin = async (contractAddress: string, boost: boolean, account: A
   
   return spinResult;
 }
+
+
+export const getSupply = async (contractAddress: string) => {
+
+  const contract = {
+      address: contractAddress,
+      abi: degenGambitABI,
+    } as const
+
+    const publicClient = createPublicClient({
+      chain: wagmiConfig.chains[0],
+      transport: http()
+    });
+    
+    const totalSupply = await publicClient.readContract({
+      ...contract,
+      functionName: 'totalSupply',
+      args: [],
+    })
+    
+
+
+    return {
+      value: totalSupply,
+      formatted: formatUnits(totalSupply, 18),
+    }
+}
