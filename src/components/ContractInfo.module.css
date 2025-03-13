@@ -4,8 +4,11 @@
     align-items: start;
     justify-content: start;
     height: 100%;
-    border-right: 1px solid #636363;
     padding: 40px;
+    width: 100%;
+    box-sizing: border-box;
+    border-bottom: 1px solid #636363;
+    /* background-color: #551a4f; */
 }
 
 .item {
