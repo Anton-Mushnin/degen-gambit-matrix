@@ -23,7 +23,6 @@ const DegenGambit = () => {
     const activeAccount = useActiveAccount();
     const [userNumbers, setUserNumbers] = useState<number[]>(numbers);
     const [isWin, setIsWin] = useState(false);
-    const [outcome, setOutcome] = useState<number[]>([]); 
 
 
     const acceptMutation = useMutation({
@@ -69,10 +68,6 @@ const DegenGambit = () => {
                 
                 // Execute the spin
                 const spinResult = await spin(contractAddress, input === "spin boost", _client);
-                if (spinResult.outcome) {
-                    const outcomeValues = spinResult.outcome.map(item => numbers[Number(item)]);
-                    setOutcome(outcomeValues);
-                }
                 
                 setTimeout(() => {
                     setIsWin(!!spinResult.prize && (Number(spinResult.prize) > 0));
