@@ -164,7 +164,7 @@ const Stream: React.FC = () => {
   }, [contractInfo.data, activeAccount?.address]);
 
   return (
-      <div className={styles.container}>
+      <div className={styles.container} ref={containerRef}>
         {events.map((event, index) => (
           <div key={index} className={styles.event}>
             {event.description}
