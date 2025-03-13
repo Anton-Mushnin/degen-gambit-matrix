@@ -22,7 +22,6 @@ const Container = styled.div`
     justify-content: start;
     height: 100vh;
     min-height: 100vh;
-    width: calc(100vw - 10px);
     max-height: 100vh;
     padding: 40px;
     gap: 0px;
@@ -31,6 +30,15 @@ const Container = styled.div`
     font-size: 16px;
     overflow-y: auto;
     scroll-behavior: smooth;
+
+    /* Hide scrollbar for Chrome, Safari and Opera */
+    &::-webkit-scrollbar {
+        display: none;
+    }
+    
+    /* Hide scrollbar for IE, Edge and Firefox */
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
 `;
 
 const Cursor = styled.span`
@@ -45,7 +53,7 @@ const Cursor = styled.span`
 `;
 
 interface MatrixTerminalProps {
-  onUserInput?: (input: string) => Promise<{output: string[], outcome?: bigint[]}>;
+  onUserInput?: (input: string) => Promise<{output: string[], outcome?: bigint[], isPrize: boolean}>;
   numbers: number[];
 }
 
@@ -66,6 +74,8 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
 
   const [rerenderKey, setRerenderKey] = useState(0);
   const [outcome, setOutcome] = useState<string[]>([]);
+
+  const [autoSpin, setAutoSpin] = useState(true);
 
   // Add ref for the container
   const containerRef = useRef<HTMLDivElement>(null);
@@ -108,9 +118,15 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
     }
   }, [isSystemTyping, text]);
 
-  const handleInput = useCallback(async (input: string) => {
+  const handleInput = async (input: string) => {
     if (input === 'clear') {
       setHistory([]);
+      return;
+    }
+
+    if (input === 'auto') {
+      setAutoSpin(!autoSpin);
+      setHistory(prev => [...prev, `Auto spin: ${!autoSpin}`]); //todo: make it better way to show this
       return;
     }
 
@@ -133,6 +149,11 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
               }
             }
         } else if (result?.outcome) {
+            if (autoSpin) {
+              setTimeout(() => {
+                handleInput('spin')
+              }, result.isPrize ? 22000 : 11000)
+            }
             const outcomeValues = result.outcome.map(item => numbers[Number(item)].toString());
             setOutcome(outcomeValues);
             setTimeout(() => {
@@ -156,7 +177,7 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
         setIsSpinning(false);
         setIsProcessing(false);
     }
-  }, [onUserInput, numbers, setText, setIsSystemTyping, setOutcome, setIsSpinning, setHistory]);
+  };
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
