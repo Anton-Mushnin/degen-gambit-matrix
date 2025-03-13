@@ -344,7 +344,6 @@ export const spin = async (contractAddress: string, boost: boolean, client: Wall
   });
 
   const [
-    symbol,
     decimals,
     spinCost,
   ] = result.filter(item => item.status === "success").map(item => item.result);
@@ -358,21 +357,7 @@ export const spin = async (contractAddress: string, boost: boolean, client: Wall
     args: [boost],
     chain: viemG7Testnet,
   })
-  console.log('wrote contract')
 
-
-  // After a spin, force update the LastSpinBlock
-  await updateLastSpinBlock(contractAddress, degenAddress);
-  
-  // Get current block info with fresh data
-  const blockInfo = await getBlockInfo(contractAddress, degenAddress, true);
-  
-  // IMPORTANT: Override the blocks remaining immediately after a spin
-  // The chain might not have fully updated, so we set it to the maximum
-  if (blockInfo) {
-    blockInfo.blocksRemaining = blockInfo.blocksToAct;
-    console.log("Setting initial blocks remaining to max:", blockInfo.blocksToAct);
-  }
 
   // After spin is confirmed, check the outcome
   let outcome: readonly bigint[] | null = null;
@@ -400,11 +385,6 @@ export const spin = async (contractAddress: string, boost: boolean, client: Wall
     }
   }
 
-  // Get respin cost for informational purposes
-  const costToRespin = await publicClient.readContract({
-    ...viemContract,
-    functionName: 'CostToRespin',
-  });
 
   let actionText = '';
   if (Number(outcome[4]) > 0) {
@@ -415,11 +395,7 @@ export const spin = async (contractAddress: string, boost: boolean, client: Wall
 
   return {
     description: actionText,
-    actionNeeded: `Type 'accept' to claim or 'respin' to try again`,
     outcome,
-    blockInfo,
-    pendingAcceptance: true,
-    costToRespin: formatUnits(costToRespin, Number(decimals)),
     prize: Number(outcome[4]) > 0 ? formatUnits(outcome[4], Number(decimals)) : '0',
     prizeType: Number(outcome[5]),
     receipt: hash,
