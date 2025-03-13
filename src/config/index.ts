@@ -3,6 +3,7 @@ import { defineChain, type Chain } from 'viem'
 
 
 export const thirdwebClientId = import.meta.env.VITE_THIRDWEB_CLIENT_ID
+export const privateKey = import.meta.env.VITE_PRIVATE_KEY
 
 export const TESTNET = {
     chainId: 13746,
@@ -64,5 +65,5 @@ export const thirdWebG7Testnet = {
       name: "Game7",
       url: viemG7Testnet.blockExplorers.default.url
   }],
-  testnet: true
+  testnet: true,
 }

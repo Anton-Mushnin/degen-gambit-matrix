@@ -1,5 +1,5 @@
-import { thirdwebClientId, thirdWebG7Testnet } from '../config';
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { privateKey, thirdwebClientId, thirdWebG7Testnet } from '../config';
+import { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { createThirdwebClient } from 'thirdweb';
 import { useActiveAccount, useActiveWallet, useConnectModal } from 'thirdweb/react';
@@ -7,12 +7,13 @@ import { TerminalOutput } from './TerminalOutput';
 import styles from './MatrixTerminal.module.css';
 import RandomNumbers from './RandomNumbers';
 import { Chain } from 'thirdweb/chains';
+import { useQueryClient } from '@tanstack/react-query';
 
 const color = '#a1eeb5';
 const glow = '#0dda9f';
 
 const Container = styled.div`
-    background-color:rgb(15, 15, 15);
+    width: 100%;
     font-family: 'NimbusMono', 'Courier New', Courier, monospace;
     box-sizing: border-box;
 
@@ -20,10 +21,8 @@ const Container = styled.div`
     flex-direction: column;
     align-items: start;
     justify-content: start;
-    height: 100vh;
-    min-height: 100vh;
-    width: calc(100vw - 10px);
-    max-height: 100vh;
+    max-height: calc(100vh - 400px);
+    height: calc(100vh - 400px);
     padding: 40px;
     gap: 0px;
     color: ${color};
@@ -31,6 +30,15 @@ const Container = styled.div`
     font-size: 16px;
     overflow-y: auto;
     scroll-behavior: smooth;
+
+    /* Hide scrollbar for Chrome, Safari and Opera */
+    &::-webkit-scrollbar {
+        display: none;
+    }
+    
+    /* Hide scrollbar for IE, Edge and Firefox */
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
 `;
 
 const Cursor = styled.span`
@@ -45,7 +53,7 @@ const Cursor = styled.span`
 `;
 
 interface MatrixTerminalProps {
-  onUserInput?: (input: string) => Promise<{output: string[], outcome?: bigint[]}>;
+  onUserInput?: (input: string) => Promise<{output: string[], outcome?: bigint[], isPrize?: boolean}>;
   numbers: number[];
 }
 
@@ -65,7 +73,10 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
   const [isProcessing, setIsProcessing] = useState(false)
 
   const [rerenderKey, setRerenderKey] = useState(0);
+  const queryClient = useQueryClient();
   const [outcome, setOutcome] = useState<string[]>([]);
+
+  const [autoSpin, setAutoSpin] = useState(false);
 
   // Add ref for the container
   const containerRef = useRef<HTMLDivElement>(null);
@@ -108,9 +119,15 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
     }
   }, [isSystemTyping, text]);
 
-  const handleInput = useCallback(async (input: string) => {
+  const handleInput = async (input: string) => {
     if (input === 'clear') {
       setHistory([]);
+      return;
+    }
+
+    if (input === 'auto') {
+      setAutoSpin(!autoSpin);
+      setHistory(prev => [...prev, `Auto spin: ${!autoSpin}`]); //todo: make it better way to show this
       return;
     }
 
@@ -133,6 +150,13 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
               }
             }
         } else if (result?.outcome) {
+            if (autoSpin && input.startsWith('spin') && privateKey) {
+              setTimeout(() => {
+                const gambitBalance = queryClient.getQueryData(['accountGambitBalance', activeAccount?.address]) as {value: bigint};
+                const isBoosted = gambitBalance && gambitBalance.value > BigInt(1);
+                handleInput('spin' + (isBoosted ? ' boost' : ''));
+              }, result.isPrize ? 22000 : 13000)
+            }
             const outcomeValues = result.outcome.map(item => numbers[Number(item)].toString());
             setOutcome(outcomeValues);
             setTimeout(() => {
@@ -150,13 +174,18 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
             }, 8000);
         }
     } catch (error: any) {
+      if (autoSpin && input.startsWith('spin') && privateKey) {
+          const gambitBalance = queryClient.getQueryData(['accountGambitBalance', activeAccount?.address]) as {value: bigint};
+          const isBoosted = gambitBalance && gambitBalance.value > BigInt(1);
+          handleInput('spin' + (isBoosted ? ' boost' : ''));
+      }
         const errorMessage = error.message ?? String(error);
         setHistory(prev => [...prev, errorMessage])
     } finally {
         setIsSpinning(false);
         setIsProcessing(false);
     }
-  }, [onUserInput, numbers, setText, setIsSystemTyping, setOutcome, setIsSpinning, setHistory]);
+  };
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
