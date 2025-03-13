@@ -65,5 +65,5 @@ export const thirdWebG7Testnet = {
       name: "Game7",
       url: viemG7Testnet.blockExplorers.default.url
   }],
-  testnet: true
+  testnet: true,
 }
