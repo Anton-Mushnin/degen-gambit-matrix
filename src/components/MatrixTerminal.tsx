@@ -75,7 +75,7 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
   const [rerenderKey, setRerenderKey] = useState(0);
   const [outcome, setOutcome] = useState<string[]>([]);
 
-  const [autoSpin, setAutoSpin] = useState(true);
+  const [autoSpin, setAutoSpin] = useState(false);
 
   // Add ref for the container
   const containerRef = useRef<HTMLDivElement>(null);
@@ -149,10 +149,12 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
               }
             }
         } else if (result?.outcome) {
-            if (autoSpin) {
+            if (autoSpin && input === 'spin' && privateKey) {
               setTimeout(() => {
-                handleInput('spin')
-              }, result.isPrize ? 22000 : 11000)
+                const gambitBalance = queryClient.getQueryData(['accountGambitBalance', activeAccount?.address]) as {value: bigint};
+                const isBoosted = gambitBalance && gambitBalance.value > BigInt(1);
+                handleInput('spin' + (isBoosted ? ' boost' : ''));
+              }, result.isPrize ? 22000 : 13000)
             }
             const outcomeValues = result.outcome.map(item => numbers[Number(item)].toString());
             setOutcome(outcomeValues);
@@ -171,6 +173,11 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
             }, 8000);
         }
     } catch (error: any) {
+      if (autoSpin && input === 'spin' && privateKey) {
+          const gambitBalance = queryClient.getQueryData(['accountGambitBalance', activeAccount?.address]) as {value: bigint};
+          const isBoosted = gambitBalance && gambitBalance.value > BigInt(1);
+          handleInput('spin' + (isBoosted ? ' boost' : ''));
+      }
         const errorMessage = error.message ?? String(error);
         setHistory(prev => [...prev, errorMessage])
     } finally {
