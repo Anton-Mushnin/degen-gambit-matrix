@@ -64,7 +64,7 @@ export function useDegenGambitInfo(contractAddress: string) {
     // Type assertion for prizes which is a tuple of two arrays
     const prizesArray = prizes as readonly [readonly bigint[], readonly bigint[]];
     const prizesFormatted = prizesArray[0].map((prize: bigint, index: number) => 
-      `${prizeDescriptions[index]}: ${formatEther(prize)} ${prizesArray[1][index] === 1n ? g7Testnet.nativeCurrency.symbol : symbol}`
+      `${prizeDescriptions[index]}: ${formatEther(prize)} ${prizesArray[1][index] === 1n ? g7Testnet.nativeCurrency.symbol : 'GAMBIT'}`
     );
 
     const secondsToAct = Number(blocksToAct) * blockTime;
@@ -74,8 +74,8 @@ export function useDegenGambitInfo(contractAddress: string) {
       secondsToAct: Math.round(secondsToAct),
       costToRespin: `${costToRespin} WEI [TG7T]`,
       costToSpin: `${costToSpin} WEI [TG7T]`,
-      majorGambitPrize: `${formatEther(majorGambitPrize as bigint)} ${symbol}`,
-      minorGambitPrize: `${formatEther(minorGambitPrize as bigint)} ${symbol}`,
+      majorGambitPrize: `${formatEther(majorGambitPrize as bigint)} GAMBIT`,
+      minorGambitPrize: `${formatEther(minorGambitPrize as bigint)} GAMBIT`,
       prizes: prizesFormatted,
       symbol,
     };
@@ -92,11 +92,11 @@ export function useDegenGambitInfo(contractAddress: string) {
 
 // Selector: 11cceaf6
 const prizeDescriptions = [
-    "spinning at least 1 major symbol with no other prize option",
-    "spinning matching minor left and right, with a different minor symbol",
-    "spinning all matching minor symbols",
-    "spinning matching minor symbol left and right, with a major symbol center",
-    "spinning matching major symbol left and right, with a different major symbol center",
-    "spinning 3 different major symbols",
-    "spinning all matching major symbol"
+    "at least 1 major symbol with no other prize option",
+    "matching minor left and right, with a different minor symbol",
+    "all matching minor symbols",
+    "matching minor symbol left and right, with a major symbol center",
+    "matching major symbol left and right, with a different major symbol center",
+    "3 different major symbols",
+    "all matching major symbol"
 ];
