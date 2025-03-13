@@ -1,14 +1,11 @@
 import { useDegenGambitInfo } from '../hooks/useDegenGambitInfo';
 import { contractAddress } from '../config';
 import styles from './Rules.module.css';
-import { useEffect } from 'react';
 import { numbers } from '../config/symbols';
 
 const Rules = () => {
     const contractInfo = useDegenGambitInfo(contractAddress);
-    useEffect(() => {
-        console.log(contractInfo.data);
-    }, [contractInfo.data]);
+
     return ( 
         <div className={styles.container}>
             <div className={styles.constants}>
