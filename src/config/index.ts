@@ -3,6 +3,7 @@ import { defineChain, type Chain } from 'viem'
 
 
 export const thirdwebClientId = import.meta.env.VITE_THIRDWEB_CLIENT_ID
+export const privateKey = import.meta.env.VITE_PRIVATE_KEY
 
 export const TESTNET = {
     chainId: 13746,
