@@ -131,7 +131,7 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
       return;
     }
 
-    if (['spin', 'respin'].includes(input)) {
+    if (['spin', 'respin', 'spin boost'].includes(input)) {
       setIsSpinning(true);
     }
     setIsProcessing(true)
