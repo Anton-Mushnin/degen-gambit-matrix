@@ -22,16 +22,26 @@ const styles = `
 `;
 
 const color = '#a1eeb5';
-const glow = '#0dda9f';
 
 const styleSheet = document.createElement("style");
 styleSheet.innerText = styles;
 document.head.appendChild(styleSheet);
 
-const Matrix: React.FC<{outcome: number[]}> = ({outcome}) => {
+const Matrix: React.FC<{outcome: number[], onClose: () => void}> = ({outcome, onClose}) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [screenSize, setScreenSize] = useState({width: 0, height: 0});
   const [digitPositions, setDigitPositions] = useState<{x: number, y: number, digit: string}[]>([]);
+
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (event.code === 'Space') {
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [onClose]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -46,7 +56,6 @@ const Matrix: React.FC<{outcome: number[]}> = ({outcome}) => {
         setScreenSize({width: w, height: h});
     }
     const cols = Math.floor(w / 20) + 1;
-    const rows = Math.floor(h / 20); // Calculate number of rows based on height
 
     const ypos = Array(cols).fill(0);
 
@@ -116,7 +125,6 @@ const Matrix: React.FC<{outcome: number[]}> = ({outcome}) => {
     }
     outcomeNumbers.push({x: 2, y: 2, digit: '7'});
     setDigitPositions(outcomeNumbers);
-    console.log(outcomeNumbers);
   }, [outcome, screenSize])
     
     
