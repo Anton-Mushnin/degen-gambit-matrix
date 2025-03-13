@@ -8,8 +8,6 @@
     place-self: stretch;
     height: 100%;
     max-height: 100vh;
-    padding-top: 40px;
-    border-left: 1px solid #636363;
     padding: 40px;
     overflow-y: auto;
     scroll-behavior: smooth;
@@ -20,10 +18,12 @@
     }
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;  /* Firefox */
+    margin-top: 20px;
 }
 
 .event {
     font-family: 'NimbusMono', 'Courier New', Courier, monospace;
     font-size: 16px;
+    white-space: nowrap;
     
 }
