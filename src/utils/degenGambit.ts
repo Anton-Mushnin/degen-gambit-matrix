@@ -329,10 +329,6 @@ export const spin = async (contractAddress: string, boost: boolean, client: Wall
     contracts: [
       {
         ...viemContract,
-        functionName: 'symbol',
-      },
-      {
-        ...viemContract,
         functionName: 'decimals',
       },
       {
