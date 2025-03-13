@@ -1,5 +1,5 @@
-import { thirdwebClientId, thirdWebG7Testnet } from '../config';
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { privateKey, thirdwebClientId, thirdWebG7Testnet } from '../config';
+import { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { createThirdwebClient } from 'thirdweb';
 import { useActiveAccount, useActiveWallet, useConnectModal } from 'thirdweb/react';
@@ -7,12 +7,13 @@ import { TerminalOutput } from './TerminalOutput';
 import styles from './MatrixTerminal.module.css';
 import RandomNumbers from './RandomNumbers';
 import { Chain } from 'thirdweb/chains';
+import { useQueryClient } from '@tanstack/react-query';
 
 const color = '#a1eeb5';
 const glow = '#0dda9f';
 
 const Container = styled.div`
-    background-color:rgb(15, 15, 15);
+    width: 100%;
     font-family: 'NimbusMono', 'Courier New', Courier, monospace;
     box-sizing: border-box;
 
@@ -20,9 +21,8 @@ const Container = styled.div`
     flex-direction: column;
     align-items: start;
     justify-content: start;
-    height: 100vh;
-    min-height: 100vh;
-    max-height: 100vh;
+    max-height: calc(100vh - 400px);
+    height: calc(100vh - 400px);
     padding: 40px;
     gap: 0px;
     color: ${color};
@@ -53,7 +53,7 @@ const Cursor = styled.span`
 `;
 
 interface MatrixTerminalProps {
-  onUserInput?: (input: string) => Promise<{output: string[], outcome?: bigint[], isPrize: boolean}>;
+  onUserInput?: (input: string) => Promise<{output: string[], outcome?: bigint[], isPrize?: boolean}>;
   numbers: number[];
 }
 
@@ -73,6 +73,7 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
   const [isProcessing, setIsProcessing] = useState(false)
 
   const [rerenderKey, setRerenderKey] = useState(0);
+  const queryClient = useQueryClient();
   const [outcome, setOutcome] = useState<string[]>([]);
 
   const [autoSpin, setAutoSpin] = useState(false);
@@ -149,7 +150,7 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
               }
             }
         } else if (result?.outcome) {
-            if (autoSpin && input === 'spin' && privateKey) {
+            if (autoSpin && input.startsWith('spin') && privateKey) {
               setTimeout(() => {
                 const gambitBalance = queryClient.getQueryData(['accountGambitBalance', activeAccount?.address]) as {value: bigint};
                 const isBoosted = gambitBalance && gambitBalance.value > BigInt(1);
@@ -173,7 +174,7 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
             }, 8000);
         }
     } catch (error: any) {
-      if (autoSpin && input === 'spin' && privateKey) {
+      if (autoSpin && input.startsWith('spin') && privateKey) {
           const gambitBalance = queryClient.getQueryData(['accountGambitBalance', activeAccount?.address]) as {value: bigint};
           const isBoosted = gambitBalance && gambitBalance.value > BigInt(1);
           handleInput('spin' + (isBoosted ? ' boost' : ''));
