@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { watchContractEvent } from '@wagmi/core';
 import { contractAddress } from '../config';
 import { degenGambitABI } from '../ABIs/DegenGambit.abi.ts';
 import { wagmiConfig } from '../config';
-import { formatEther } from 'viem';
+import { formatEther, formatUnits } from 'viem';
 import styles from './Stream.module.css';
 import { useDegenGambitInfo } from '../hooks/useDegenGambitInfo';
 import { useQueryClient } from '@tanstack/react-query';
@@ -13,7 +13,7 @@ interface ContractEvent {
   player: string;
   bonus?: boolean;
   blockNumber: number;
-  eventType: 'spin' | 'accept' | 'respin';
+  eventType: 'spin' | 'accept' | 'respin' | 'dailyStreak' | 'weeklyStreak';
   description: string;
 }
 
@@ -22,6 +22,15 @@ const Stream: React.FC = () => {
   const activeAccount = useActiveAccount()
   const contractInfo = useDegenGambitInfo(contractAddress);
   const queryClient = useQueryClient()
+
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Add scroll to bottom effect when history changes
+  useEffect(() => {
+    if (containerRef.current) {
+      containerRef.current.scrollTop = containerRef.current.scrollHeight;
+    }
+  }, [events]);
 
   useEffect(() => {
     const unwatchSpin = watchContractEvent(wagmiConfig, {
@@ -33,6 +42,9 @@ const Stream: React.FC = () => {
         queryClient.invalidateQueries({ queryKey: ['contractBalance'] });
         if (logs.some((log) => log.args.player === activeAccount?.address)) {
           queryClient.invalidateQueries({queryKey: ['accountBalance']});
+          queryClient.invalidateQueries({queryKey: ['costToSpin']});
+          queryClient.invalidateQueries({queryKey: ['lastSpinBlock']});
+          queryClient.invalidateQueries({queryKey: ['currentBlock']});
         }
         
         
@@ -49,7 +61,7 @@ const Stream: React.FC = () => {
                 const {player, bonus} = log.args;
                 if (!contractInfo.data?.costToSpin || !contractInfo.data?.costToRespin) return;
                 const costToSpinFormatted = `${Math.random() < 0.2 ? contractInfo.data.costToSpin : contractInfo.data.costToRespin}`;
-                const description = `${player.slice(0, 6)}...${player?.slice(-4)} uploads ${costToSpinFormatted}${bonus ? ' and 1 GAMBIT' : ''}`;
+                const description = `${player.slice(0, 6)}...${player?.slice(-4)} uploads ${costToSpinFormatted}${bonus ? ' and burns 1 GAMBIT' : ''}`;
                 setEvents(prev => [...prev, {
                     player,
                     description,
@@ -67,7 +79,14 @@ const Stream: React.FC = () => {
       abi: degenGambitABI,
       eventName: 'Award',
       onLogs: (logs) => {
-        queryClient.invalidateQueries({queryKey: ['gambitSupply']})
+        const gambitAwarded = logs.some((log) => log.args.value && formatUnits(log.args.value, 18) === '1')
+        const ethAwarded = logs.some((log) => log.args.value && formatUnits(log.args.value, 18) !== '1')
+        if (gambitAwarded) {
+          queryClient.invalidateQueries({queryKey: ['gambitSupply']})
+        }
+        if (ethAwarded) {
+          queryClient.invalidateQueries({queryKey: ['contractBalance']});
+        }
         if (logs.some((log) => log.args.player === activeAccount?.address)) {
           queryClient.invalidateQueries({queryKey: ['accountGambitBalance']});
         }
@@ -90,11 +109,59 @@ const Stream: React.FC = () => {
       },
     });
 
+    const unwatchDailyStreak = watchContractEvent(wagmiConfig, {
+      address: contractAddress,
+      abi: degenGambitABI,
+      eventName: 'DailyStreak',
+      onLogs: (logs) => {
+        queryClient.invalidateQueries({queryKey: ['gambitSupply']})
+        if (logs.some((log) => log.args.player === activeAccount?.address)) {
+          queryClient.invalidateQueries({queryKey: ['accountGambitBalance']});
+        }
+        logs.forEach(log => {
+            const {player} = log.args;
+            if (!player) return;
+            const description = `${player.slice(0, 6)}...${player?.slice(-4)} claimed daily streak`;
+            setEvents(prev => [...prev, {
+                player,
+                description,
+                blockNumber: Number(log.blockNumber),
+                eventType: 'dailyStreak'
+            }]);
+        });
+      },
+    });
+
+    const unwatchWeeklyStreak = watchContractEvent(wagmiConfig, {
+      address: contractAddress,
+      abi: degenGambitABI,
+      eventName: 'WeeklyStreak',
+      onLogs: (logs) => {
+        queryClient.invalidateQueries({queryKey: ['gambitSupply']})
+        if (logs.some((log) => log.args.player === activeAccount?.address)) {
+          queryClient.invalidateQueries({queryKey: ['accountGambitBalance']});
+        }
+        logs.forEach(log => {
+            const {player} = log.args;
+            if (!player) return;
+            const description = `${player.slice(0, 6)}...${player?.slice(-4)} claimed weekly streak`;
+            setEvents(prev => [...prev, {
+                player,
+                description,
+                blockNumber: Number(log.blockNumber),
+                eventType: 'weeklyStreak'
+            }]);
+        });
+      },
+    });
+
     return () => {
       unwatchSpin();
       unwatchAccept();
+      unwatchDailyStreak();
+      unwatchWeeklyStreak();
     };
-  }, [contractInfo.data]);
+  }, [contractInfo.data, activeAccount?.address]);
 
   return (
       <div className={styles.container}>
