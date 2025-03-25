@@ -67,3 +67,6 @@ export const thirdWebG7Testnet = {
   }],
   testnet: true,
 }
+
+
+export const ZIG_ZAG_ZOG_VERSION = '0.1.0'

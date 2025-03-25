@@ -5,7 +5,7 @@ import { multicall } from '@wagmi/core';
 import { createPublicClient, formatUnits, http, WalletClient } from 'viem';
 
 // Define a more specific type for multicall results that matches the actual return type
-type WagmiMulticallSuccessResult<T> = {
+export type WagmiMulticallSuccessResult<T> = {
   status: "success";
   result: T;
 };
