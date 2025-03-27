@@ -3,6 +3,9 @@
     flex-direction: row;
     align-items: center;
     justify-content: center;
+    width: 100vw;
+    gap: 10px;
+    padding: 10px;
 }
 
 .vStack {
@@ -10,5 +13,36 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 10px;
 }
+
+.buyButton {
+    background-color: #000;
+    color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 24px;
+    border: 1px solid #fff;
+}
+
+.debugInfo {
+    font-size: 12px;
+    color: #f490e7;
+}
+
+.commitButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #000;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    border: 1px solid #fff;
+    min-width: 200px;
+    margin-top: 20px;
+}
+
 
