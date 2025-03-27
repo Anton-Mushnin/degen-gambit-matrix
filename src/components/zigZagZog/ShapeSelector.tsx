@@ -7,14 +7,20 @@ import { useEffect } from "react";
 
 
 const ShapeSelector = ({playsCount, selected, onSelect, isCommitPhase}: {playsCount: number, selected: ShapeSelection, onSelect: (shapes: ShapeSelection) => void, isCommitPhase: boolean}) => {
+    
+    
+    
     const getStrokeColor = (count: bigint) => {
         if (count === BigInt(0)) return 'gray';
+        const hue = 160 - (Number(count) - 1) / (playsCount - 1) * 100;
         const saturation = Math.max(10, (Number(count) - 1) / (playsCount - 1) * 100);
-        return `hsl(270, ${saturation}%, 50%)`;
+        return `hsl(${hue}, ${saturation}%, 50%)`;
     };
 
     useEffect(() => {
-        console.log(playsCount)
+        if (BigInt(playsCount) < selected.circles + selected.triangles + selected.squares) {
+            onSelect({circles: BigInt(0), squares: BigInt(0), triangles: BigInt(0)})
+        }
     }, [playsCount])
 
     const handleShapeClick = (shape: keyof ShapeSelection, d: number) => {
