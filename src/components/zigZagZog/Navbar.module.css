@@ -1,0 +1,13 @@
+.container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    gap: 10px;
+}
+
+.getsome {
+    cursor: pointer;
+}
+
