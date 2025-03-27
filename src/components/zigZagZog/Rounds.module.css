@@ -1,0 +1,31 @@
+.container {
+    display: flex;
+    align-items: center;
+    justify-content: start;
+    width: 100%;
+    padding: 16px;
+    gap: 16px;
+    width: 100%;
+    /* flex: 1; */
+}
+
+.roundContainer{
+    display: flex;
+    /* flex-direction: column; */
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    gap: 16px;
+    padding: 16px;
+}
+
+.round{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #aeadad;
+    border-radius: 16px;
+    padding: 16px;
+    /* width: 100%; */
+}
