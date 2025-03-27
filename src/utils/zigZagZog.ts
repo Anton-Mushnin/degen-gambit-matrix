@@ -6,81 +6,16 @@ import { multicall } from '@wagmi/core';
 import { ShapeSelection } from './signing.ts';
 
 
-export const getZigZagZogConstants = async (contractAddress: string) => {
 
-    const contract = {
-        address: contractAddress,
-        abi: zigZagZogABI,
-      } as const
-
-      const result = await multicall(wagmiConfig, {
-        contracts: [
-          {
-            ...contract,
-            functionName: 'playCost',
-          },
-          {
-            ...contract,
-            functionName: 'commitDuration',
-          },
-          {
-            ...contract,
-            functionName: 'revealDuration',
-          },
-          {
-            ...contract,
-            functionName: 'ZigZagZogVersion',
-          },
-        ],
-      })
-      return result
+export interface GameConstants {
+  playCost: bigint;
+  commitDuration: number;
+  revealDuration: number;
 }
 
 
-export const getZigZagZogInfo = async (contractAddress: string) => {
 
-    const publicClient = getPublicClient(wagmiConfig);
 
-    const contract = {
-        address: contractAddress,
-        abi: zigZagZogABI,
-      } as const
-
-      const gameNumber = await publicClient.readContract({
-        ...contract,
-        functionName: 'currentGameNumber',
-      });      
-
-      const result = await multicall(wagmiConfig, {
-        contracts: [
-          {
-            ...contract,
-            functionName: 'GameState',
-            args: [gameNumber]
-          },
-          {
-            ...contract,
-            functionName: 'gameBalance',
-            args: [gameNumber]
-          },
-          {
-            ...contract,
-            functionName: 'currentGameNumber',
-          },
-          {
-            ...contract,
-            functionName: 'survivingPlays',
-            args: [gameNumber]
-          },
-          {
-            ...contract,
-            functionName: 'hasGameEnded',
-            args: [gameNumber]
-          },
-        ],
-      })
-      return result
-    }
 
 
    export const getPlayerState = async (contractAddress: string, playerAddress: string, gameNumber: bigint, roundNumber: bigint) => {
@@ -139,17 +74,17 @@ export const getZigZagZogInfo = async (contractAddress: string) => {
 
     // Helper function to get the current block number and calculate blocks remaining
 // Contract constants - loaded once and cached
-let CONTRACT_CONSTANTS: {       
-  playCost: bigint | null;
-  commitDuration: bigint | null;
-  revealDuration: bigint | null;
-  version: string | null;
-} = {
-  playCost: null,
-  commitDuration: null,
-  revealDuration: null,
-  version: null
-};
+// let CONTRACT_CONSTANTS: {       
+//   playCost: bigint | null;
+//   commitDuration: bigint | null;
+//   revealDuration: bigint | null;
+//   version: string | null;
+// } = {
+//   playCost: null,
+//   commitDuration: null,
+//   revealDuration: null,
+//   version: null
+// };
 
 
 export const buyPlays = async (contractAddress: string, value: bigint, client: WalletClient, gameNumber: bigint) => {
@@ -173,49 +108,6 @@ export const buyPlays = async (contractAddress: string, value: bigint, client: W
     return hash
 }
 
-interface GameInfo {
-  gameTimestamp: number;
-  roundNumber: bigint;
-  roundTimestamp: number;
-  gameBalance: bigint;
-  currentGameNumber: bigint;
-  survivingPlays: bigint;
-  hasGameEnded: boolean;
-}
-
-export const parseZigZagZogInfo = (result: any[]): GameInfo => {
-    const results = result.map((r) => r.result);
-    const [gameState, gameBalance, currentGameNumber, survivingPlays, hasGameEnded] = results;
-
-  return {
-    gameTimestamp: Number(gameState[0]) * (1000),
-    roundNumber: gameState[1],
-    roundTimestamp: Number(gameState[2])  * (1000),
-    gameBalance: gameBalance,
-    currentGameNumber: currentGameNumber,
-    survivingPlays: survivingPlays,
-    hasGameEnded: hasGameEnded,
-  };
-};
-
-export interface ContractConstants {
-  playCost: bigint;
-  commitDuration: number;
-  revealDuration: number;
-  version: string;
-}
-
-export const parseZigZagZogConstants = (result: any[]): ContractConstants => {
-    const results = result.map((r) => r.result);
-    const [playCost, commitDuration, revealDuration, version] = results;
-
-  return {
-    playCost,
-    commitDuration: Number(commitDuration) * 1000,
-    revealDuration: Number(revealDuration) * 1000,
-    version,
-  };
-};
 
 export interface Commitment {
   nonce: bigint;
@@ -250,4 +142,131 @@ export const revealChoices = async (contractAddress: string, client: WalletClien
         chain: g7Testnet,
     })
     return hash
+}
+
+export const claimWinning = async (contractAddress: string, gameNumber: bigint, client: WalletClient) => {
+  const account = client.account;
+    if (!account) {
+      throw new Error("No account provided");
+    }
+    const hash = await client.writeContract({
+      account,
+      address: contractAddress,
+      abi: zigZagZogABI,
+      functionName: 'claimWinnings',
+      args: [gameNumber],
+      chain: g7Testnet,
+    })
+    return hash
+}
+
+export const playerRecentGames = async (contractAddress: string, playerAddress: string) => {
+  const contract = {
+    address: contractAddress,
+    abi: zigZagZogABI,
+  } as const
+
+  const publicClient = getPublicClient(wagmiConfig);
+  const currentGameNumber = await publicClient.readContract({
+    ...contract,
+    functionName: 'currentGameNumber',
+  })
+  let calls = []
+  for (let i = currentGameNumber; i > 0 && i > Number(currentGameNumber) - 10; i--) {
+    calls.push({
+      ...contract,
+      functionName: 'purchasedPlays',
+      args: [i, playerAddress]
+    })
+  }
+  const result = await multicall(wagmiConfig, {
+    contracts: calls
+  })
+  const playedGames = result.map((r, idx) => ({gameNumber: calls[idx].args[0], plays: r.result})).filter((r) => Number(r.plays) > 0)
+  let detailCalls = []
+  for (let i = 0; i < playedGames.length; i++) {
+    detailCalls.push({
+      ...contract,
+      functionName: 'playerSurvivingPlays',
+      args: [playedGames[i].gameNumber, playerAddress]
+    })
+    detailCalls.push({
+      ...contract,
+      functionName: 'playerCashedOut',
+      args: [playedGames[i].gameNumber, playerAddress]
+    })
+    detailCalls.push({
+      ...contract,
+      functionName: 'GameState',
+      args: [playedGames[i].gameNumber]
+    })
+  }
+  const detailResult = await multicall(wagmiConfig, {
+    contracts: detailCalls
+  })
+  return playedGames.map((r, idx) => ({
+    ...r, 
+    survivingPlays: detailResult[idx * 3].result, 
+    cashedOut: detailResult[idx * 3 + 1].result, 
+    roundNumber: detailResult[idx * 3 + 2].result ? detailResult[idx * 3 + 2].result[1] : 0
+  }))
+}
+
+
+export const getRounds = async (contractAddress: string, gameNumber: string, lastRoundNumber: bigint, playerAddress: string) => {
+  const contract = {
+    address: contractAddress,
+    abi: zigZagZogABI,
+  } as const
+  // const publicClient = getPublicClient(wagmiConfig);
+  const calls = []
+  for (let i = lastRoundNumber; i > 0; i--) {
+    calls.push({
+      ...contract,
+      functionName: 'playerHasCommitted',
+      args: [gameNumber, i, playerAddress]
+    })
+    calls.push({
+      ...contract,
+      functionName: 'playerHasRevealed',
+      args: [gameNumber, i, playerAddress]
+    })
+    calls.push({
+      ...contract,
+      functionName: 'playerCirclesRevealed',
+      args: [gameNumber, i, playerAddress]
+    })
+    calls.push({
+      ...contract,
+      functionName: 'playerSquaresRevealed',
+      args: [gameNumber, i, playerAddress]
+    })
+    calls.push({
+      ...contract,
+      functionName: 'playerTrianglesRevealed',
+      args: [gameNumber, i, playerAddress]
+    })
+    calls.push({
+      ...contract,
+      functionName: 'circlesRevealed',
+      args: [gameNumber, i]
+    })
+    calls.push({
+      ...contract,
+      functionName: 'squaresRevealed',
+      args: [gameNumber, i]
+    })
+    calls.push({
+      ...contract,
+      functionName: 'trianglesRevealed',
+      args: [gameNumber, i]
+    })
+    
+    
+  }
+  const result = await multicall(wagmiConfig, {
+    contracts: calls
+  })
+  console.log(result)
+  return result
 }
