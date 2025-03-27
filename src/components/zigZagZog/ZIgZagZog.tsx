@@ -1,5 +1,5 @@
 import styles from "./ZigZagZog.module.css";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createWalletClient, custom, WalletClient } from "viem";
 import { thirdwebClientId, viemG7Testnet } from "../../config";
 import { useActiveAccount, useConnectModal } from 'thirdweb/react';
@@ -14,6 +14,7 @@ import { ShapeSelection } from "../../utils/signing";
 import ShapeSelector from "./ShapeSelector";
 import { canClaim, getRounds, getShareInfo } from "../../utils/playerState";
 import Navbar from "./Navbar";
+import Rounds from "./Rounds";
 // export const ZIG_ZAG_ZOG_ADDRESS = '0xc193Dc413358067B4D15fF20b50b59A9421eD1CD'
 // export const ZIG_ZAG_ZOG_ADDRESS = '0xA05C355eD4EbA9f20E43CCc018AD041E5E3BEa13'
 // export const ZIG_ZAG_ZOG_ADDRESS = '0xc2dc3596f6194dBBc3f9c2fB9Cc1547F4A92aa76' stuck because one player plays one shape
@@ -60,7 +61,7 @@ const ZigZagZog = () => {
             await currentGameNumber.refetch()
             await currentGameState.refetch()
             await currentGameAndRoundState.refetch()
-            await playerState.refetch()
+            // await playerState.refetch()
         }
     })
 
@@ -100,23 +101,35 @@ const ZigZagZog = () => {
         enabled: currentGameNumber.data !== undefined && activeAccount?.address !== undefined
     });
 
+    const queryClient = useQueryClient()
+
     const currentGameAndRoundState = useQuery({
         queryKey: ["gameAndRoundState", currentGameState.data, activeAccount?.address],
         queryFn: async () => {
-            if (!currentGameState.data || !gameConstants.data || !activeAccount?.address) {
+            if (!gameConstants.data || !activeAccount?.address || !currentGameNumber.data) {
                 return
             }
-            const state = await getGameAndRoundState(ZIG_ZAG_ZOG_ADDRESS, currentGameState.data, gameConstants.data, activeAccount?.address)
-            playerState.refetch()
+            const gameState = await getGameState(ZIG_ZAG_ZOG_ADDRESS, BigInt(currentGameNumber.data), activeAccount.address)
+            const state = await getGameAndRoundState(ZIG_ZAG_ZOG_ADDRESS, gameState, gameConstants.data, activeAccount?.address)
+            console.log('state', state)
+            queryClient.invalidateQueries({queryKey: ["playerState"]})
             return state
         },
-        enabled: currentGameState.data !== undefined && gameConstants.data !== undefined && activeAccount?.address !== undefined && currentGameNumber.data !== undefined,
+        enabled: gameConstants.data !== undefined && activeAccount?.address !== undefined && currentGameNumber.data !== undefined,
         refetchInterval: 10000,
     })
+    
+
+
+    useEffect(() => {
+        console.log('currentGameAndRoundState', currentGameAndRoundState.data)
+    }, [currentGameAndRoundState.data])
+
+
 
     useEffect(() => {
         if (currentGameNumber.data && currentGameAndRoundState.data?.activeRound) {
-            setSelected({circles: BigInt(0), squares: BigInt(0), triangles: BigInt(0)})
+            // setSelected({circles: BigInt(0), squares: BigInt(0), triangles: BigInt(0)})
         }
     }, [currentGameNumber.data, currentGameAndRoundState.data?.activeRound])
 
@@ -134,13 +147,17 @@ const ZigZagZog = () => {
                                             currentGameNumber.data, 
                                             BigInt(activeRound), 
                                             activeAccount?.address)
-            // console.log(rounds, activeRound)
             const survivingPlays = activeRound > 1 ? rounds[activeRound - 1 - 1].survivingPlays : shareInfo.survivingPlays //1-based index
             const hasCommitted = rounds[activeRound - 1].playerCommitted
             const hasRevealed = rounds[activeRound - 1].playerRevealed
-            console.log('hasPlayerCashedOut', currentGameState.data?.hasPlayerCashedOut)
+            // console.log('hasPlayerCashedOut', currentGameState.data?.hasPlayerCashedOut)
             // console.log('canClaim', currentGameAndRoundState.data.hasGameEnded, rounds[Number(currentGameState.data?.roundNumber) - 1].playerRevealed, rounds[Number(currentGameState.data?.gameNumber) - 1].survivingPlays > 0)
-            const playerCanClaim = (currentGameState.data && currentGameAndRoundState.data && !currentGameState.data.hasPlayerCashedOut) ? canClaim(rounds, currentGameState.data, currentGameAndRoundState.data) : false
+            let playerCanClaim = false
+            try {
+                playerCanClaim = (currentGameState.data && currentGameAndRoundState.data && !currentGameState.data.hasPlayerCashedOut) ? canClaim(rounds, currentGameState.data, currentGameAndRoundState.data) : false
+            } catch (e) {
+                console.log('playerCanClaimError', e)
+            }
             return {rounds, survivingPlays, hasCommitted, hasRevealed, playerCanClaim}
         },
         enabled: currentGameNumber.data !== undefined && activeAccount?.address !== undefined && currentGameAndRoundState.data !== undefined,
@@ -178,7 +195,7 @@ const ZigZagZog = () => {
             setCommitment(result)
             await currentGameState.refetch()
             await currentGameAndRoundState.refetch()
-            await playerState.refetch()
+            // await playerState.refetch()
         }
     })
 
@@ -205,7 +222,7 @@ const ZigZagZog = () => {
         onSuccess: async () => {
             await currentGameState.refetch()
             await currentGameAndRoundState.refetch()
-            await playerState.refetch()
+            // await playerState.refetch()
         }
     })
 
@@ -260,7 +277,7 @@ const ZigZagZog = () => {
         onSuccess: async () => {
             await currentGameState.refetch()
             await currentGameAndRoundState.refetch()
-            await playerState.refetch()
+            // await playerState.refetch()
         }
     })
 
@@ -272,17 +289,18 @@ const ZigZagZog = () => {
 
     return (
         <div className={styles.container}>
-            <Navbar />
+            <Navbar phase={currentGameAndRoundState.data?.isCommitPhase ? 'Commit' : currentGameAndRoundState.data?.isRevealPhase ? 'Reveal' : 'Idle'} timeLeft={currentGameAndRoundState.data?.timeLeft ?? 0} />
             <div className={styles.hStack}>
                 <div className={styles.vStack}>
                     {currentGameAndRoundState.data?.canBuyPlays && playerState.data?.survivingPlays !== undefined && (playerState.data.survivingPlays < 1 || currentGameAndRoundState.data?.hasGameEnded) && (
                         <div className={styles.buyButton} onClick={() => buyPlaysMutation.mutate()}>{buyPlaysMutation.isPending ? 'Buying...' : 'Buy Plays'}</div>
                     )}
 
-                    {playerState.data && playerState.data?.survivingPlays !== undefined && playerState.data.survivingPlays > 0 && !currentGameAndRoundState.data?.hasGameEnded && (<ShapeSelector selected={selected} 
-                        onSelect={setSelected} 
-                        playsCount={playerState.data.survivingPlays} 
-                        isCommitPhase={(currentGameAndRoundState.data?.isCommitPhase && !playerState.data?.hasCommitted) ?? false} 
+                    {playerState.data?.survivingPlays !== undefined && playerState.data.survivingPlays > 0 && !currentGameAndRoundState.data?.hasGameEnded && (
+                        <ShapeSelector selected={selected} 
+                            onSelect={setSelected} 
+                            playsCount={playerState.data.survivingPlays} 
+                            isCommitPhase={(currentGameAndRoundState.data?.isCommitPhase && !playerState.data?.hasCommitted) ?? false} 
                         // hasCommitted={playerState.data.rounds[currentGameAndRoundState.data?.activeRound].playerCommitted}
                         />)}
                     {currentGameAndRoundState.data?.isCommitPhase && !playerState.data?.hasCommitted && playerState.data?.survivingPlays !== undefined && (
@@ -312,6 +330,7 @@ const ZigZagZog = () => {
                     
                     </div> */}
             </div>
+            <Rounds rounds={playerState.data?.rounds && currentGameAndRoundState.data?.activeRound ? playerState.data?.rounds.slice(0, currentGameAndRoundState.data?.activeRound - (currentGameAndRoundState.data?.hasGameEnded ? 0 : 1)) : []} />
         </div>
     )
 }
