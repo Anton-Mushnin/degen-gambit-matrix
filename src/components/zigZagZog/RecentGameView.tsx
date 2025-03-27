@@ -39,12 +39,14 @@ const RecentGameView = ({game, player}: {game: {gameNumber: string, plays: strin
     })
 
     return (
-        <div className={styles.container}>
+        <>
+        {rounds.data && (<div className={styles.container}>
             <div className={styles.gameNumber}>Game {Number(game.gameNumber)}</div>
             <div className={styles.plays}>Plays {Number(game.plays)}</div>
             <div className={styles.survivingPlays}>Surviving Plays {Number(game.survivingPlays)}</div>
             {!game.cashedOut && <button onClick={() => claimWinningsMutation.mutate()}>Claim Winnings</button>}
-        </div>
+        </div>)}
+        </>
     )
 }
 
