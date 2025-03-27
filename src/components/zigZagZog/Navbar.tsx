@@ -10,6 +10,7 @@ const Navbar = () => {
         queryKey: ['balance', activeAccount?.address],
         queryFn: () => getBalance(wagmiConfig, {address: activeAccount?.address ?? ''}),
         refetchOnWindowFocus: true,
+        refetchInterval: 3000,
     })
 
     return (
