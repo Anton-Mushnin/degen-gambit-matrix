@@ -147,7 +147,7 @@ const ZigZagZog = () => {
                                             currentGameNumber.data, 
                                             BigInt(activeRound), 
                                             activeAccount?.address)
-            const survivingPlays = activeRound > 1 ? rounds[activeRound - 1 - 1].survivingPlays : shareInfo.survivingPlays //1-based index
+            const survivingPlays = activeRound > 1 ? rounds[activeRound - 1 - 1].survivingPlays : shareInfo.purchasedPlays //1-based index
             const hasCommitted = rounds[activeRound - 1].playerCommitted
             const hasRevealed = rounds[activeRound - 1].playerRevealed
             // console.log('hasPlayerCashedOut', currentGameState.data?.hasPlayerCashedOut)
@@ -158,7 +158,7 @@ const ZigZagZog = () => {
             } catch (e) {
                 console.log('playerCanClaimError', e)
             }
-            return {rounds, survivingPlays, hasCommitted, hasRevealed, playerCanClaim}
+            return {rounds, survivingPlays, hasCommitted, hasRevealed, playerCanClaim, shareInfo}
         },
         enabled: currentGameNumber.data !== undefined && activeAccount?.address !== undefined && currentGameAndRoundState.data !== undefined,
     })
@@ -303,7 +303,7 @@ const ZigZagZog = () => {
                             isCommitPhase={(currentGameAndRoundState.data?.isCommitPhase && !playerState.data?.hasCommitted) ?? false} 
                         // hasCommitted={playerState.data.rounds[currentGameAndRoundState.data?.activeRound].playerCommitted}
                         />)}
-                    {currentGameAndRoundState.data?.isCommitPhase && !playerState.data?.hasCommitted && playerState.data?.survivingPlays !== undefined && (
+                    {currentGameAndRoundState.data?.isCommitPhase && !playerState.data?.hasCommitted && playerState.data?.survivingPlays !== undefined && playerState.data.survivingPlays > 0 && (
                         <div className={styles.commitButton} onClick={() => commitChoicesMutation.mutate()} style={{cursor: totalShapes(selected) === playerState.data?.survivingPlays ? 'pointer' : 'not-allowed'}}>
                             {commitChoicesMutation.isPending ? 'Committing...' : `${totalShapes(selected) === playerState.data?.survivingPlays ? 'Commit Choices' : `${-totalShapes(selected) + playerState.data?.survivingPlays} plays left`}`}
                         </div>
@@ -330,7 +330,11 @@ const ZigZagZog = () => {
                     
                     </div> */}
             </div>
-            <Rounds rounds={playerState.data?.rounds && currentGameAndRoundState.data?.activeRound ? playerState.data?.rounds.slice(0, currentGameAndRoundState.data?.activeRound - (currentGameAndRoundState.data?.hasGameEnded ? 0 : 1)) : []} />
+            <Rounds 
+                rounds={playerState.data?.rounds && currentGameAndRoundState.data?.activeRound ? playerState.data?.rounds.slice(0, currentGameAndRoundState.data?.activeRound - (currentGameAndRoundState.data?.hasGameEnded ? 0 : 1)) : []} 
+                shareInfo={playerState.data?.shareInfo} 
+                hasGameEnded={currentGameAndRoundState.data?.hasGameEnded ?? false}
+            />
         </div>
     )
 }

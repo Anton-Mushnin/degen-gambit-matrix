@@ -130,7 +130,7 @@ export const getShareInfo = async (contractAddress: string, gameNumber: string, 
         contracts: [
           {
             ...contract,
-            functionName: 'playerSurvivingPlays',
+            functionName: 'purchasedPlays',
             args: [BigInt(gameNumber), playerAddress]
           },
           {
@@ -140,9 +140,9 @@ export const getShareInfo = async (contractAddress: string, gameNumber: string, 
           }
         ]
       })
-      const [survivingPlays, gameBalance] = result.map((r) => r.result)
+      const [purchasedPlays, gameBalance] = result.map((r) => r.result)
       return {
-        survivingPlays: Number(survivingPlays),
+        purchasedPlays: Number(purchasedPlays),
         gameBalance: Number(gameBalance),
       }
 }

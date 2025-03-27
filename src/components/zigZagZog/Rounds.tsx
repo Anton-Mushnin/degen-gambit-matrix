@@ -2,7 +2,15 @@ import styles from "./Rounds.module.css";
 import { RoundState } from "../../utils/playerState";
 import { EliminationResult } from "../../utils/gameAndRoundState";
 
-const Rounds = ({rounds}: {rounds: RoundState[]}) => {
+interface ShareInfo {
+    purchasedPlays: number;
+    gameBalance: number;
+}
+
+const Rounds = ({rounds, shareInfo, hasGameEnded}: {rounds: RoundState[], shareInfo: ShareInfo | undefined, hasGameEnded: boolean}) => {
+    
+
+
     return (
         <div className={styles.container}>
             <div className={styles.roundContainer}>
@@ -14,7 +22,11 @@ const Rounds = ({rounds}: {rounds: RoundState[]}) => {
                         <span style={{textDecoration: `${round.eliminationResult === EliminationResult.SquareEliminated ? 'line-through' : 'none'}`}}>{round.totalShapes.squares} squares</span>
                         <span style={{textDecoration: `${round.eliminationResult === EliminationResult.TriangleEliminated ? 'line-through' : 'none'}`}}>{round.totalShapes.triangles} triangles</span>
                         <span>{round.eliminationResult.toString()}</span>
-                        <span>Surviving Plays: {round.survivingPlays}</span>
+                        {shareInfo && shareInfo.purchasedPlays > 0 && <span>Surviving Plays: {round.survivingPlays}</span>}
+                        {hasGameEnded && shareInfo && shareInfo.purchasedPlays > 0 && index === rounds.length - 2 && round.survivingPlays === 0 && <span>loss</span>}
+                        {hasGameEnded && shareInfo && shareInfo.purchasedPlays > 0 && index === rounds.length - 2 && round.survivingPlays > 0 && <span>win</span>}
+
+                        {hasGameEnded && shareInfo && shareInfo.purchasedPlays === 0 && index === rounds.length - 2 && <span>Game Ended</span>}
                     </div>
                     )
                 ))}
