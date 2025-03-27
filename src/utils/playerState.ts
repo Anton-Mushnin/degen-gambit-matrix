@@ -59,7 +59,7 @@ export const getRounds = async (contractAddress: string, gameNumber: string, las
     return parseRoundResults(result.map((r) => r.result))
   }
 
-interface RoundState {
+export interface RoundState {
   roundNumber: number;
   playerCommitted: boolean;
   playerRevealed: boolean;
