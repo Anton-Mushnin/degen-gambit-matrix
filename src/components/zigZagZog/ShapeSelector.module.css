@@ -2,6 +2,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 48px;
+
 }
 
 .shapeContainer {
@@ -9,9 +11,48 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    /* position: relative; */
 }
 
 .shape {
     display: flex;
+    position: relative;
 }
 
+.shapeCount {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 32px;
+    /* transform: translateY(50%); */
+}
+
+
+.plusButton {
+    font-size: 18px;
+    cursor: pointer;
+    border: 1px solid white;
+    user-select: none;
+    flex: 1;
+    display: flex;
+    align-items: end;
+    justify-content: center;
+    height: 32px;
+    /* min-height: 40px; */
+}
+
+.caption {
+    font-size: 18px;
+    text-align: center;
+    height: fit-content;
+}
+
+.buttons {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+}
