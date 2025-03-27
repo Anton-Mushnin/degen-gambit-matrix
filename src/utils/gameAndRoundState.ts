@@ -94,13 +94,13 @@ export const calculateEliminationResult = ({
     let totalSurvivingPlays = 0;
     if (elimResult === EliminationResult.CircleEliminated) {
       playerSurvivingPlays = roundState.playerSquaresRevealed + roundState.playerTrianglesRevealed;
-      totalSurvivingPlays = roundState.squarePlayerCount + roundState.trianglePlayerCount;
+      totalSurvivingPlays = roundState.squaresRevealed + roundState.trianglesRevealed;
     } else if (elimResult === EliminationResult.SquareEliminated) {
       playerSurvivingPlays = roundState.playerCirclesRevealed + roundState.playerTrianglesRevealed;
-      totalSurvivingPlays = roundState.circlePlayerCount + roundState.trianglePlayerCount;
+      totalSurvivingPlays = roundState.circlesRevealed + roundState.trianglesRevealed;
     } else if (elimResult === EliminationResult.TriangleEliminated) {
       playerSurvivingPlays = roundState.playerCirclesRevealed + roundState.playerSquaresRevealed;
-      totalSurvivingPlays = roundState.circlePlayerCount + roundState.squarePlayerCount;
+      totalSurvivingPlays = roundState.circlesRevealed + roundState.squaresRevealed;
     }
 
     if (totalSurvivingPlays <= 2) {
@@ -179,7 +179,7 @@ export const calculateEliminationResult = ({
     const hasActiveRoundStarted = activeRound === Number(gameState.roundNumber);
 
     
-    const {roundTimestamp } = gameState;
+    const { roundTimestamp } = gameState;
     let isCommitPhase = !hasActiveRoundStarted && !hasGameEnded;
     let isRevealPhase = false;
     let canBuyPlays = hasGameEnded;
