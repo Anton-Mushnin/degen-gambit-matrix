@@ -89,6 +89,8 @@ export const commitChoices = async (shapes: ShapeSelection, roundNumber: bigint,
             args: [BigInt(gameNumber), BigInt(roundNumber), signedMessage],
             chain: g7Testnet,
           })
+
+        console.log('Hash:', hash);
         
         // Store shapes and nonce for later reveal
         // localStorage.setItem(`commitment_${ZIG_ZAG_ZOG_ADDRESS}_${client.account.address}_${gameNumber}_${roundNumber}`, JSON.stringify({

@@ -1,3 +1,13 @@
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    width: 100vw;
+    height: 100vh;
+}
+
 .hStack {
     display: flex;
     flex-direction: row;
@@ -6,6 +16,7 @@
     width: 100vw;
     gap: 10px;
     padding: 10px;
+    flex: 1;
 }
 
 .vStack {
@@ -18,12 +29,12 @@
 
 .buyButton {
     background-color: #000;
-    color: #fff;
+    color: #cecaca;
     padding: 20px;
     border-radius: 5px;
     cursor: pointer;
     font-size: 24px;
-    border: 1px solid #fff;
+    border: 1px solid #9a9999;
 }
 
 .debugInfo {

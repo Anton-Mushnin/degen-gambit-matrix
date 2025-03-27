@@ -4,7 +4,6 @@ import { multicall } from '@wagmi/core';
 import { EliminationResult, GameAndRoundState, RoundRevealState } from './gameAndRoundState.ts';
 import { calculateEliminationResult } from './gameAndRoundState.ts';
 import { GameState } from './gameState.ts';
-import { PlayerState } from './zigZagZog.ts';
 
 export const getRounds = async (contractAddress: string, gameNumber: string, lastRoundNumber: bigint, playerAddress: string) => {
     const contract = {

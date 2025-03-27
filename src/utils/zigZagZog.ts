@@ -1,5 +1,5 @@
 import { zigZagZogABI } from '../ABIs/ZigZagZog.abi.ts';
-import { createPublicClient, formatUnits, http, WalletClient } from 'viem';
+import { WalletClient } from 'viem';
 import { g7Testnet, wagmiConfig } from '../config';
 import { getPublicClient } from '@wagmi/core';
 import { multicall } from '@wagmi/core';
@@ -204,12 +204,14 @@ export const playerRecentGames = async (contractAddress: string, playerAddress: 
   const detailResult = await multicall(wagmiConfig, {
     contracts: detailCalls
   })
-  return playedGames.map((r, idx) => ({
-    ...r, 
-    survivingPlays: detailResult[idx * 3].result, 
-    cashedOut: detailResult[idx * 3 + 1].result, 
-    roundNumber: detailResult[idx * 3 + 2].result ? detailResult[idx * 3 + 2].result[1] : 0
-  }))
+  return playedGames.map((r, idx) => {
+    const gameState = detailResult[idx * 3 + 2].result as unknown as {Array: bigint[]}
+    return { ...r, 
+      survivingPlays: detailResult[idx * 3].result, 
+      cashedOut: detailResult[idx * 3 + 1].result, 
+      roundNumber: gameState ? Number(gameState.Array[1]) : 0
+    }
+  })  
 }
 
 

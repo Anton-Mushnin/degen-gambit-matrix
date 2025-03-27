@@ -13,6 +13,7 @@ import { commitChoices } from "../../utils/signing";
 import { ShapeSelection } from "../../utils/signing";
 import ShapeSelector from "./ShapeSelector";
 import { canClaim, getRounds, getShareInfo } from "../../utils/playerState";
+import Navbar from "./Navbar";
 // export const ZIG_ZAG_ZOG_ADDRESS = '0xc193Dc413358067B4D15fF20b50b59A9421eD1CD'
 // export const ZIG_ZAG_ZOG_ADDRESS = '0xA05C355eD4EbA9f20E43CCc018AD041E5E3BEa13'
 // export const ZIG_ZAG_ZOG_ADDRESS = '0xc2dc3596f6194dBBc3f9c2fB9Cc1547F4A92aa76' stuck because one player plays one shape
@@ -270,45 +271,47 @@ const ZigZagZog = () => {
 
 
     return (
-        <div className={styles.hStack}>
-
-            <div className={styles.vStack}>
-                {currentGameAndRoundState.data?.canBuyPlays && playerState.data?.survivingPlays !== undefined && (playerState.data.survivingPlays < 1 || currentGameAndRoundState.data?.hasGameEnded) && (
-                    <div className={styles.buyButton} onClick={() => buyPlaysMutation.mutate()}>{buyPlaysMutation.isPending ? 'Buying...' : 'Buy Plays'}</div>
+        <div className={styles.container}>
+            <Navbar />
+            <div className={styles.hStack}>
+                <div className={styles.vStack}>
+                    {currentGameAndRoundState.data?.canBuyPlays && playerState.data?.survivingPlays !== undefined && (playerState.data.survivingPlays < 1 || currentGameAndRoundState.data?.hasGameEnded) && (
+                        <div className={styles.buyButton} onClick={() => buyPlaysMutation.mutate()}>{buyPlaysMutation.isPending ? 'Buying...' : 'Buy Plays'}</div>
                     )}
 
-                {playerState.data && playerState.data?.survivingPlays !== undefined && playerState.data.survivingPlays > 0 && !currentGameAndRoundState.data?.hasGameEnded && (<ShapeSelector selected={selected} 
-                    onSelect={setSelected} 
-                    playsCount={playerState.data.survivingPlays} 
-                    isCommitPhase={(currentGameAndRoundState.data?.isCommitPhase && !playerState.data?.hasCommitted) ?? false} 
-                    // hasCommitted={playerState.data.rounds[currentGameAndRoundState.data?.activeRound].playerCommitted}
-                />)}
-                {currentGameAndRoundState.data?.isCommitPhase && !playerState.data?.hasCommitted && playerState.data?.survivingPlays !== undefined && (
-                    <div className={styles.commitButton} onClick={() => commitChoicesMutation.mutate()} style={{cursor: totalShapes(selected) === playerState.data?.survivingPlays ? 'pointer' : 'not-allowed'}}>
-                        {commitChoicesMutation.isPending ? 'Committing...' : `${totalShapes(selected) === playerState.data?.survivingPlays ? 'Commit Choices' : `${-totalShapes(selected) + playerState.data?.survivingPlays} plays left`}`}
+                    {playerState.data && playerState.data?.survivingPlays !== undefined && playerState.data.survivingPlays > 0 && !currentGameAndRoundState.data?.hasGameEnded && (<ShapeSelector selected={selected} 
+                        onSelect={setSelected} 
+                        playsCount={playerState.data.survivingPlays} 
+                        isCommitPhase={(currentGameAndRoundState.data?.isCommitPhase && !playerState.data?.hasCommitted) ?? false} 
+                        // hasCommitted={playerState.data.rounds[currentGameAndRoundState.data?.activeRound].playerCommitted}
+                        />)}
+                    {currentGameAndRoundState.data?.isCommitPhase && !playerState.data?.hasCommitted && playerState.data?.survivingPlays !== undefined && (
+                        <div className={styles.commitButton} onClick={() => commitChoicesMutation.mutate()} style={{cursor: totalShapes(selected) === playerState.data?.survivingPlays ? 'pointer' : 'not-allowed'}}>
+                            {commitChoicesMutation.isPending ? 'Committing...' : `${totalShapes(selected) === playerState.data?.survivingPlays ? 'Commit Choices' : `${-totalShapes(selected) + playerState.data?.survivingPlays} plays left`}`}
+                        </div>
+                        )}
+                    {currentGameAndRoundState.data?.isRevealPhase && commitment && !playerState.data?.hasRevealed && (
+                        <div className={styles.commitButton} onClick={() => revealChoicesMutation.mutate()}>{revealChoicesMutation.isPending ? 'Revealing...' : 'Reveal Choices'}</div>
+                    )}
+                    {playerState.data?.playerCanClaim && (
+                        <div className={styles.buyButton} onClick={() => claimWinningMutation.mutate()}>{claimWinningMutation.isPending ? 'Claiming...' : 'Claim Winning'}</div>
+                    )}
+                    <div className={styles.debugInfo}>
+                        {currentGameAndRoundState.data?.isRevealPhase && 'Reveal Phase'}
                     </div>
-                    )}
-                {currentGameAndRoundState.data?.isRevealPhase && commitment && !playerState.data?.hasRevealed && (
-                    <div className={styles.commitButton} onClick={() => revealChoicesMutation.mutate()}>{revealChoicesMutation.isPending ? 'Revealing...' : 'Reveal Choices'}</div>
-                    )}
-                {playerState.data?.playerCanClaim && (
-                    <div className={styles.buyButton} onClick={() => claimWinningMutation.mutate()}>{claimWinningMutation.isPending ? 'Claiming...' : 'Claim Winning'}</div>
-                    )}
-                <div className={styles.debugInfo}>
-                    {currentGameAndRoundState.data?.isRevealPhase && 'Reveal Phase'}
-                </div>
-                <div className={styles.debugInfo}>
-                    {currentGameAndRoundState.data?.isCommitPhase && 'Commit Phase'}
-                </div>
-                <div className={styles.debugInfo}>
-                    {!!currentGameAndRoundState.data?.timeLeft && `Time left: ${currentGameAndRoundState.data.timeLeft}ms`}
-                </div>
+                    <div className={styles.debugInfo}>
+                        {currentGameAndRoundState.data?.isCommitPhase && 'Commit Phase'}
+                    </div>
+                    <div className={styles.debugInfo}>
+                        {!!currentGameAndRoundState.data?.timeLeft && `Time left: ${currentGameAndRoundState.data.timeLeft}ms`}
+                    </div>
 
+                </div>
+                {/* <div className={styles.vStack}>
+                    <button onClick={() => buyPlaysMutation.mutate()}>Buy Plays</button>
+                    
+                    </div> */}
             </div>
-            {/* <div className={styles.vStack}>
-                <button onClick={() => buyPlaysMutation.mutate()}>Buy Plays</button>
-
-            </div> */}
         </div>
     )
 }
