@@ -711,7 +711,7 @@ export const zigZagZogABI = [
           "type": "uint256"
         }
       ],
-      "name": "squaredRevealed",
+      "name": "squaresRevealed",
       "outputs": [
         {
           "internalType": "uint256",
@@ -784,6 +784,47 @@ export const zigZagZogABI = [
           "internalType": "uint256",
           "name": "",
           "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "gameNumber",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "roundNumber",
+          "type": "uint256"
+        }
+      ],
+      "name": "getRoundOutcome",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "bool",
+              "name": "circleEliminated",
+              "type": "bool"
+            },
+            {
+              "internalType": "bool",
+              "name": "squareEliminated",
+              "type": "bool"
+            },
+            {
+              "internalType": "bool",
+              "name": "triangleEliminated",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct ZigZagZog.EliminationResult",
+          "name": "",
+          "type": "tuple"
         }
       ],
       "stateMutability": "view",
