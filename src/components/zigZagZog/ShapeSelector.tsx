@@ -38,7 +38,7 @@ const ShapeSelector = ({playsCount, selected, onSelect, isCommitPhase}: {playsCo
             <div className={styles.shapeContainer}>
                 <div className={styles.shape}>
                     <Circle stroke={getStrokeColor(selected.circles)} />
-                    <div className={styles.shapeCount}>{selected.circles}</div>
+                    <div className={styles.shapeCount}>{Number(selected.circles)}</div>
                 </div>
                 <div className={styles.buttons}>
                     <div className={styles.plusButton} onClick={() => handleShapeClick("circles", -1)}><div className={styles.caption}>less</div></div>
@@ -48,7 +48,7 @@ const ShapeSelector = ({playsCount, selected, onSelect, isCommitPhase}: {playsCo
             <div className={styles.shapeContainer}>
                 <div className={styles.shape}>
                     <Triangle fill={getStrokeColor(selected.triangles)} />
-                    <div className={styles.shapeCount}>{selected.triangles}</div>
+                    <div className={styles.shapeCount}>{Number(selected.triangles)}</div>
                 </div>
                 <div className={styles.buttons}>
                     <div className={styles.plusButton} onClick={() => handleShapeClick("triangles", -1)}><div className={styles.caption}>less</div></div>
@@ -58,7 +58,7 @@ const ShapeSelector = ({playsCount, selected, onSelect, isCommitPhase}: {playsCo
             <div className={styles.shapeContainer}>
                 <div className={styles.shape}>
                     <Square stroke={getStrokeColor(selected.squares)} />
-                    <div className={styles.shapeCount}>{selected.squares}</div>
+                    <div className={styles.shapeCount}>{Number(selected.squares)}</div>
                 </div>
                 <div className={styles.buttons}>
                     <div className={styles.plusButton} onClick={() => handleShapeClick("squares", -1)}><div className={styles.caption}>less</div></div>
