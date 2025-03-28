@@ -1,0 +1,15 @@
+.container {
+    display: flex;
+    align-items: center;
+    justify-content: start;
+}
+
+.round {
+    display: flex;
+    flex-direction: column;
+}
+
+.shape {
+    display: flex;
+}
+
