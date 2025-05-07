@@ -104,15 +104,16 @@ const DegenGambit = () => {
             }
             default: {
                 return {output: [
-                    "=== DEGEN GAMBIT COMMANDS ===",
-                    "Game Flow:",
-                    "  spin     - Spin the wheel",
-                    "  spin boost - Spin the wheel with a boost",
-                    "",
-                    "Other:",
-                    "  getsome  - Visit getsome.game7.io to get some tokens",
-                    "  clear    - Clear the terminal (⌘K or Ctrl+K)",
-                    "=============================",
+                    "┌─────────────────────────────────────────────┐",
+                    "│             AVAILABLE COMMANDS              │",
+                    "├─────────────────────────────────────────────┤",
+                    "│  getsome     - visit getsome.game7.io to    │",
+                    "│                get some tokens              │",
+                    "│  spin        - spin the wheel               │",
+                    "│  spin boost  - spin the wheel with a boost  │",
+                    "│  clear       - Clear the terminal           │",
+                    "│                (⌘K or Ctrl+K)               │",
+                    "└─────────────────────────────────────────────┘",
                 ],
                 };
             }
