@@ -1,9 +1,11 @@
 import { http, createConfig } from '@wagmi/core'
 import { defineChain, type Chain } from 'viem'
-
+import { privateKeyToAccount } from 'viem/accounts'
 
 export const thirdwebClientId = import.meta.env.VITE_THIRDWEB_CLIENT_ID
 export const privateKey = import.meta.env.VITE_PRIVATE_KEY
+export const privateKeyAddress = privateKey ? privateKeyToAccount(privateKey).address : undefined
+
 
 export const TESTNET = {
     chainId: 13746,
