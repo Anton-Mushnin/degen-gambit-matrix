@@ -1,4 +1,4 @@
-import { privateKey, thirdwebClientId, thirdWebG7Testnet } from '../config';
+import { privateKey, privateKeyAddress, thirdwebClientId, thirdWebG7Testnet } from '../config';
 import { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { createThirdwebClient } from 'thirdweb';
@@ -8,6 +8,8 @@ import styles from './MatrixTerminal.module.css';
 import RandomNumbers from './RandomNumbers';
 import { Chain } from 'thirdweb/chains';
 import { useQueryClient } from '@tanstack/react-query';
+import { createPublicClient, http } from 'viem';
+import { mainnet } from 'viem/chains';
 
 const color = '#a1eeb5';
 const glow = '#0dda9f';
@@ -96,9 +98,34 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
         connect({client});
     }
     if (activeAccount && !welcomeShown) {
-        setText(`Wake up, ${activeAccount.address}`);
-        setIsSystemTyping(true);
-        setWelcomeShown(true);
+        const resolveAndSetWelcome = async () => {
+            const addressToUse = privateKeyAddress || activeAccount.address;
+            let displayName = addressToUse;
+            
+            try {
+                // Use viem's public client to resolve ENS name
+                const publicClient = createPublicClient({
+                  chain: mainnet,
+                  transport: http()
+                });
+                console.log('resolving ens', addressToUse)
+                const ensName = await publicClient.getEnsName({
+                  address: addressToUse as `0x${string}`
+                });
+                console.log(ensName)
+                if (ensName) {
+                    displayName = ensName;
+                }
+            } catch (error) {
+                console.error("Error resol=-ving ENS:", error);
+            }
+            
+            setText(`Wake up, ${displayName}`);
+            setIsSystemTyping(true);
+            setWelcomeShown(true);
+        };
+        
+        resolveAndSetWelcome();
     }
   }, [activeAccount, connect, client, welcomeShown]);
 
