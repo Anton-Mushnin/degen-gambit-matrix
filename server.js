@@ -80,7 +80,7 @@ app.get('/api/blockProducer/status', async (req, res) => {
 });
 
 app.post('/api/blockProducer', async (req, res) => {
-    console.log("blockProducer route called")
+  console.log("blockProducer route called")
   try {
     // Get block producer private key from environment variables
     const blockProducerKey = process.env.BLOCK_PRODUCER_PRIVATE_KEY;
