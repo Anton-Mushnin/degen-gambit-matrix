@@ -152,7 +152,7 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
               }
             }
         } else if (result?.outcome) {
-            if (autoSpin && input.startsWith('spin') && privateKey) {
+            if (autoSpin && input.startsWith('spin')) {
               setTimeout(() => {
                 const gambitBalance = queryClient.getQueryData(['accountGambitBalance', activeAccount?.address]) as {value: bigint};
                 const isBoosted = gambitBalance && gambitBalance.value > BigInt(1);
@@ -176,7 +176,7 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
             }, 8000);
         }
     } catch (error: any) {
-      if (autoSpin && input.startsWith('spin') && privateKey) {
+      if (autoSpin && input.startsWith('spin')) {
           const gambitBalance = queryClient.getQueryData(['accountGambitBalance', activeAccount?.address]) as {value: bigint};
           const isBoosted = gambitBalance && gambitBalance.value > BigInt(1);
           handleInput('spin' + (isBoosted ? ' boost' : ''));
