@@ -437,7 +437,7 @@ export const getCurrentBlock = async () => {
 };
 
 export const getCostToSpin = async (degenAddress: string) => {
-  if (!degenAddress) return;
+  if (!degenAddress) return null;
   
   const contract = {
     address: contractAddress,
@@ -459,7 +459,7 @@ export const getCostToSpin = async (degenAddress: string) => {
 };
 
 export const getHasPrize = async (degenAddress: string) => {
-  if (!degenAddress) return;
+  if (!degenAddress) return null;
 
   const contract = {
     address: contractAddress,
@@ -477,7 +477,7 @@ export const getHasPrize = async (degenAddress: string) => {
 };
 
 export const getCurrentDailyStreakLength = async (degenAddress: string) => {
-  if (!degenAddress) return;
+  if (!degenAddress) return null;
 
   const contract = {
     address: contractAddress,
@@ -499,7 +499,7 @@ export const getCurrentDailyStreakLength = async (degenAddress: string) => {
 };
 
 export const getCurrentWeeklyStreakLength = async (degenAddress: string) => {
-  if (!degenAddress) return;
+  if (!degenAddress) return null;
 
   const contract = {
     address: contractAddress,
@@ -521,7 +521,7 @@ export const getCurrentWeeklyStreakLength = async (degenAddress: string) => {
 };
 
 export const getLastSpinBlock = async (contractAddress: string, degenAddress: string) => {
-  if (!degenAddress) return;
+  if (!degenAddress) return null;
 
   const contract = {
     address: contractAddress,
