@@ -5,7 +5,7 @@ import { getSupply, getCurrentBlock, getCostToSpin, getCurrentDailyStreakLength,
 import { useActiveAccount } from 'thirdweb/react';
 import Row from './Row';
 import { useDegenGambitInfo } from '../hooks/useDegenGambitInfo';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { privateKeyToAccount } from 'viem/accounts';
 import { useAccountToUse } from '../hooks/useAccountToUse';
@@ -44,10 +44,10 @@ const ContractInfo = () => {
         };
     }
 
-    const isAccepting = useQuery({
-        queryKey: ['isAccepting'],
-        queryFn: () => queryClient.isMutating({mutationKey: ['accept']}) > 0
-    });
+    // const isAccepting = useQuery({
+    //     queryKey: ['isAccepting'],
+    //     queryFn: () => queryClient.isMutating({mutationKey: ['accept']}) > 0
+    // });
     
 
 

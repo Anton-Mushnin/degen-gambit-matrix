@@ -1,5 +1,5 @@
 import { MatrixTerminal } from "./MatrixTerminal";
-import { contractAddress, privateKey, thirdwebClientId, viemG7Testnet, wagmiConfig } from '../config';
+import { contractAddress, privateKey, thirdwebClientId, wagmiConfig } from '../config';
 import { spin, _accept, _acceptThirdWebClient } from "../utils/degenGambit";
 import { useActiveAccount } from "thirdweb/react";
 import { useEffect, useState } from "react";
@@ -7,7 +7,6 @@ import { numbers } from "../config/symbols";
 import Matrix from "./Matrix";
 import { privateKeyToAccount } from "viem/accounts";
 import { createWalletClient, http, WalletClient } from "viem";
-import { custom } from "viem";
 import { Account } from "thirdweb/wallets";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createThirdwebClient, ThirdwebClient } from "thirdweb";

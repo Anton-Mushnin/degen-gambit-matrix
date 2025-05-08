@@ -1,4 +1,4 @@
-import { privateKey, thirdwebClientId, thirdWebG7Testnet } from '../config';
+import { thirdwebClientId, thirdWebG7Testnet } from '../config';
 import { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { createThirdwebClient } from 'thirdweb';
