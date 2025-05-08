@@ -1,4 +1,4 @@
-import { privateKey, thirdwebClientId, thirdWebG7Testnet } from '../config';
+import { thirdwebClientId, thirdWebG7Testnet } from '../config';
 import { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { createThirdwebClient } from 'thirdweb';
@@ -8,6 +8,7 @@ import styles from './MatrixTerminal.module.css';
 import RandomNumbers from './RandomNumbers';
 import { Chain } from 'thirdweb/chains';
 import { useQueryClient } from '@tanstack/react-query';
+import { useAccountToUse } from '../hooks/useAccountToUse';
 
 const color = '#a1eeb5';
 const glow = '#0dda9f';
@@ -71,6 +72,7 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
   const [text, setText] = useState('');
   const [isSpinning, setIsSpinning] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false)
+  const { displayName } = useAccountToUse();
 
   const [rerenderKey, setRerenderKey] = useState(0);
   const queryClient = useQueryClient();
@@ -95,12 +97,12 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
     if (!activeAccount) {
         connect({client});
     }
-    if (activeAccount && !welcomeShown) {
-        setText(`Wake up, ${activeAccount.address}`);
+    if (displayName && !welcomeShown) {
+        setText(`Wake up, ${displayName}`);
         setIsSystemTyping(true);
         setWelcomeShown(true);
     }
-  }, [activeAccount, connect, client, welcomeShown]);
+  }, [activeAccount, connect, client, welcomeShown, displayName]);
 
   useEffect(() => {
     if (activeWallet) {
@@ -150,7 +152,7 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
               }
             }
         } else if (result?.outcome) {
-            if (autoSpin && input.startsWith('spin') && privateKey) {
+            if (autoSpin && input.startsWith('spin')) {
               setTimeout(() => {
                 const gambitBalance = queryClient.getQueryData(['accountGambitBalance', activeAccount?.address]) as {value: bigint};
                 const isBoosted = gambitBalance && gambitBalance.value > BigInt(1);
@@ -174,7 +176,7 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
             }, 8000);
         }
     } catch (error: any) {
-      if (autoSpin && input.startsWith('spin') && privateKey) {
+      if (autoSpin && input.startsWith('spin')) {
           const gambitBalance = queryClient.getQueryData(['accountGambitBalance', activeAccount?.address]) as {value: bigint};
           const isBoosted = gambitBalance && gambitBalance.value > BigInt(1);
           handleInput('spin' + (isBoosted ? ' boost' : ''));

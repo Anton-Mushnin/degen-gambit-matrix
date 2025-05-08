@@ -3,6 +3,13 @@ import { getPublicClient } from '@wagmi/core'
 import { degenGambitABI } from '../ABIs/DegenGambit.abi.ts';
 import { multicall } from '@wagmi/core';
 import { createPublicClient, formatUnits, http, WalletClient } from 'viem';
+import { checkAndCreateBlockIfNeeded } from './blockProducer';
+import { waitForReceipt } from 'thirdweb/transaction';
+import { sendTransaction, prepareContractCall } from 'thirdweb/transaction';
+import { Account } from 'thirdweb/wallets';
+
+import { ThirdwebClient } from 'thirdweb';
+import { viemAdapter } from 'thirdweb/adapters/viem';
 
 // Define a more specific type for multicall results that matches the actual return type
 type WagmiMulticallSuccessResult<T> = {
@@ -287,7 +294,6 @@ export const getBlockInfo = async (contractAddress: string, account: string, for
 };
 
 export const _accept = async (contractAddress: string, client: WalletClient) => {
-  
   const account = client.account;
   if (!account) {
     throw new Error("No account provided");
@@ -302,12 +308,10 @@ export const _accept = async (contractAddress: string, client: WalletClient) => 
     args: [],
     chain: viemG7Testnet,
   })
-  
-
 }
 
-export const spin = async (contractAddress: string, boost: boolean, client: WalletClient) => {
-  const account = client.account;
+
+export const _acceptThirdWebClient = async (contractAddress: string, account: Account | undefined, client: ThirdwebClient) => {
   if (!account) {
     throw new Error("No account provided");
   }
@@ -316,8 +320,114 @@ export const spin = async (contractAddress: string, boost: boolean, client: Wall
     address: contractAddress,
     abi: degenGambitABI,
   } as const;
-  
+
   const degenAddress = account.address ?? "";
+  const publicClient = createPublicClient({
+    chain: wagmiConfig.chains[0],
+    transport: http()
+  });
+
+  try {
+    // First check if we can get the outcome to see if there's something to accept
+    let canAccept = false;
+    try {
+      // Read the outcome but don't store it if we're not using it
+      await publicClient.readContract({
+        ...viemContract,
+        functionName: 'inspectOutcome',
+        args: [degenAddress],
+      });
+      canAccept = true;
+    } catch (error) {
+      // If we can't get the outcome, we might not be able to accept
+      console.error("Error checking outcome:", error);
+    }
+
+    if (!canAccept) {
+      return {
+        description: "Nothing to accept. Spin first!",
+        success: false,
+      };
+    }
+
+    const contract = viemAdapter.contract.fromViem({
+      viemContract: viemContract,
+      chain: {
+        ...viemG7Testnet,
+        rpc: viemG7Testnet.rpcUrls["default"].http[0],
+        blockExplorers: [{
+          name: "Game7",
+          url: viemG7Testnet.blockExplorers.default.url
+        }],
+        testnet: true
+      },
+      client,
+    });
+
+    // Call the accept function to claim any prize
+    const tx = prepareContractCall({
+      contract,
+      method: "accept",
+      params: [],
+    });
+
+    const transactionResult = await sendTransaction({
+      transaction: tx,
+      account,
+    });
+
+    const receipt = await waitForReceipt(transactionResult);
+
+    return {
+      description: "Outcome accepted successfully.",
+      success: true,
+      receipt,
+    };
+  } catch (error: unknown) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    
+    // Handle specific error cases
+    if (errorMsg.includes('DeadlineExceeded')) {
+      return {
+        description: "Too late! The deadline to accept this outcome has passed.",
+        success: false,
+        error: errorMsg,
+      };
+    }
+
+    return {
+      description: "Failed to accept: " + errorMsg,
+      success: false,
+      error: errorMsg,
+    };
+  }
+};
+
+export const spin = async (contractAddress: string, boost: boolean, account: Account | undefined, client: WalletClient | ThirdwebClient) => {
+
+  // if (client instanceof WalletClient) {
+  // const account = client.account;
+  // if (!account) {
+  //   throw new Error("No account provided");
+  // }
+
+  const viemContract = {
+    address: contractAddress,
+    abi: degenGambitABI,
+  } as const;
+
+
+  let degenAddress;
+
+
+  if ('writeContract' in client) {
+    const _account = client.account;
+    degenAddress = _account?.address ?? "";
+  } else {
+    degenAddress = account?.address ?? "";
+  }
+  
+  // const degenAddress = account.address ?? "";
 
   
   const publicClient = createPublicClient({
@@ -339,20 +449,63 @@ export const spin = async (contractAddress: string, boost: boolean, client: Wall
     ],
   });
 
+
+
+  
+
   const [
     decimals,
     spinCost,
   ] = result.filter(item => item.status === "success").map(item => item.result);
 
-  const hash = await client.writeContract({
-    account,
-    address: contractAddress,
-    value: typeof spinCost === 'bigint' ? spinCost : BigInt(0),
-    abi: degenGambitABI,
-    functionName: 'spin',
-    args: [boost],
-    chain: viemG7Testnet,
-  })
+  let hash: string | null = null;
+  if ('writeContract' in client) {
+    const account = client.account;
+    if (!account) {
+        throw new Error("No account provided");
+    }
+
+    hash = await client.writeContract({
+      account,
+      address: contractAddress,
+      value: typeof spinCost === 'bigint' ? spinCost : BigInt(0),
+      abi: degenGambitABI,
+      functionName: 'spin',
+      args: [boost],
+      chain: viemG7Testnet,
+    })
+  } else if (account) {
+    const contract = viemAdapter.contract.fromViem({
+      viemContract: viemContract,
+      chain: {
+        ...viemG7Testnet,
+        rpc: viemG7Testnet.rpcUrls["default"].http[0],
+        blockExplorers: [{
+          name: "Game7",
+          url: viemG7Testnet.blockExplorers.default.url
+        }],
+        testnet: true
+      },
+      client,
+    });
+  
+    // Execute the spin
+    const tx = prepareContractCall({
+      contract,
+      method: "spin",
+      params: [boost],
+      value: typeof spinCost === 'bigint' ? spinCost : BigInt(0),
+    });
+  
+    const transactionResult = await sendTransaction({
+      transaction: tx,
+      account,
+    });
+  
+    const receipt = await waitForReceipt(transactionResult);
+    hash = receipt.transactionHash;
+  }
+
 
 
   // After spin is confirmed, check the outcome
@@ -360,6 +513,14 @@ export const spin = async (contractAddress: string, boost: boolean, client: Wall
   let retries = 0;
   while (!outcome) {
     try {
+      // Check if we need to create a new block before checking outcome
+      const blockCheck = await checkAndCreateBlockIfNeeded(1);
+      if (blockCheck.created) {
+        console.log("Created a new block to help with outcome processing:", blockCheck.message);
+      } else if (blockCheck.timeDiff !== undefined && blockCheck.timeDiff > 3) {
+        console.log(`Latest block is ${blockCheck.timeDiff}s old, but no new block was created: ${blockCheck.message}`);
+      }
+      
       outcome = await publicClient.readContract({
         ...viemContract,
         functionName: 'inspectOutcome',
@@ -371,8 +532,11 @@ export const spin = async (contractAddress: string, boost: boolean, client: Wall
       const knownErrors = ['WaitForTick()', 'InvalidBlockNumber', '0xd5dc642d'];
 
       if (!knownErrors.some(err => errorMsg.includes(err))) {
+        console.error("Unknown error while checking outcome:", errorMsg);
         return { description: errorMsg };
       }
+      
+      console.log(`Waiting for outcome, retry ${retries + 1}/30...`);
       retries += 1;
       if (retries > 30) {
         return { description: "Something went wrong. Please try again." };
@@ -437,7 +601,7 @@ export const getCurrentBlock = async () => {
 };
 
 export const getCostToSpin = async (degenAddress: string) => {
-  if (!degenAddress) return;
+  if (!degenAddress) return null;
   
   const contract = {
     address: contractAddress,
@@ -459,7 +623,7 @@ export const getCostToSpin = async (degenAddress: string) => {
 };
 
 export const getHasPrize = async (degenAddress: string) => {
-  if (!degenAddress) return;
+  if (!degenAddress) return null;
 
   const contract = {
     address: contractAddress,
@@ -477,7 +641,7 @@ export const getHasPrize = async (degenAddress: string) => {
 };
 
 export const getCurrentDailyStreakLength = async (degenAddress: string) => {
-  if (!degenAddress) return;
+  if (!degenAddress) return null;
 
   const contract = {
     address: contractAddress,
@@ -499,7 +663,7 @@ export const getCurrentDailyStreakLength = async (degenAddress: string) => {
 };
 
 export const getCurrentWeeklyStreakLength = async (degenAddress: string) => {
-  if (!degenAddress) return;
+  if (!degenAddress) return null;
 
   const contract = {
     address: contractAddress,
@@ -521,7 +685,7 @@ export const getCurrentWeeklyStreakLength = async (degenAddress: string) => {
 };
 
 export const getLastSpinBlock = async (contractAddress: string, degenAddress: string) => {
-  if (!degenAddress) return;
+  if (!degenAddress) return null;
 
   const contract = {
     address: contractAddress,

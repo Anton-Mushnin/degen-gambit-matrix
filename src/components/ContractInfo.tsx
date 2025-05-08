@@ -5,9 +5,10 @@ import { getSupply, getCurrentBlock, getCostToSpin, getCurrentDailyStreakLength,
 import { useActiveAccount } from 'thirdweb/react';
 import Row from './Row';
 import { useDegenGambitInfo } from '../hooks/useDegenGambitInfo';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { privateKeyToAccount } from 'viem/accounts';
+import { useAccountToUse } from '../hooks/useAccountToUse';
 
 
 export const privateKey = import.meta.env.VITE_PRIVATE_KEY
@@ -16,7 +17,7 @@ const privateKeyAddress = privateKey ? privateKeyToAccount(privateKey).address :
 const ContractInfo = () => {
     const contractInfo = useDegenGambitInfo(contractAddress);
     const activeAccount = useActiveAccount()
-
+    const { displayName } = useAccountToUse();
     const [degenAddress, setDegenAddress] = useState<string | undefined>(privateKeyAddress);
 
     useEffect(() => {
@@ -28,7 +29,7 @@ const ContractInfo = () => {
     const queryClient = useQueryClient();
 
     const getBlocksLeft = async () => {
-        if (!contractInfo.data?.blocksToAct) return;
+        if (!contractInfo.data?.blocksToAct) return null;
         const currentBlock = queryClient.getQueryData(['currentBlock']) as {value: bigint, formatted: string, decimals: number};
         const lastSpinBlock = queryClient.getQueryData(['lastSpinBlock', activeAccount?.address ?? '']) as {value: bigint, formatted: string, decimals: number};
         const deadline = lastSpinBlock.value + BigInt(contractInfo.data?.blocksToAct);
@@ -43,10 +44,10 @@ const ContractInfo = () => {
         };
     }
 
-    const isAccepting = useQuery({
-        queryKey: ['isAccepting'],
-        queryFn: () => queryClient.isMutating({mutationKey: ['accept']}) > 0
-    });
+    // const isAccepting = useQuery({
+    //     queryKey: ['isAccepting'],
+    //     queryFn: () => queryClient.isMutating({mutationKey: ['accept']}) > 0
+    // });
     
 
 
@@ -62,7 +63,7 @@ const ContractInfo = () => {
 
             <div style={{height: '20px'}} />
             {degenAddress && <div className={styles.item}>
-                <span>{`Degen ${degenAddress.slice(0, 6)}...${degenAddress.slice(-4)}`}</span>
+                <span>{`Degen: ${displayName}`}</span>
             </div>}
             <Row queryKey={['accountBalance', degenAddress ?? '']} label="TG7T: " queryFn={() => getBalance(wagmiConfig, {address: degenAddress ?? ''})} />
             <Row queryKey={['accountGambitBalance', degenAddress ?? '']} label="GAMBIT: " queryFn={() => getBalance(wagmiConfig, {address: degenAddress ?? '', token: contractAddress})} />
@@ -73,9 +74,9 @@ const ContractInfo = () => {
             <Row queryKey={['blocksLeft', degenAddress ?? '']} label="Blocks Left: " queryFn={() => getBlocksLeft()} animation={false}/>
             <Row queryKey={['dailyStreak', degenAddress ?? '']} label="Daily Streak: " queryFn={() => getCurrentDailyStreakLength(degenAddress ?? '')} />
             <Row queryKey={['weeklyStreak', degenAddress ?? '']} label="Weekly Streak: " queryFn={() => getCurrentWeeklyStreakLength(degenAddress ?? '')} />
-            {isAccepting.data === true && <div className={styles.item}>
+            {/* {isAccepting.data === true && <div className={styles.item}>
                 <span>{`accepting reward...`}</span>
-            </div>}       
+            </div>}        */}
         </div>
     );
 };

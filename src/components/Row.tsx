@@ -10,7 +10,7 @@ interface RowProps {
     formatted: string
     value: bigint
     decimals: number
-  } | undefined>
+  } | null>
   refetchInterval?: number
   animation?: boolean
   onDataUpdate?: (data: any) => void
