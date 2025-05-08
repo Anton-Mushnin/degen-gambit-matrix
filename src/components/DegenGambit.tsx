@@ -1,6 +1,6 @@
 import { MatrixTerminal } from "./MatrixTerminal";
-import { contractAddress, privateKey, viemG7Testnet, wagmiConfig } from '../config';
-import { spin, _accept } from "../utils/degenGambit";
+import { contractAddress, privateKey, thirdwebClientId, viemG7Testnet, wagmiConfig } from '../config';
+import { spin, _accept, _acceptThirdWebClient } from "../utils/degenGambit";
 import { useActiveAccount } from "thirdweb/react";
 import { useEffect, useState } from "react";
 import { numbers } from "../config/symbols";
@@ -8,7 +8,9 @@ import Matrix from "./Matrix";
 import { privateKeyToAccount } from "viem/accounts";
 import { createWalletClient, http, WalletClient } from "viem";
 import { custom } from "viem";
+import { Account } from "thirdweb/wallets";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createThirdwebClient, ThirdwebClient } from "thirdweb";
 
 declare global {
     interface Window {
@@ -24,6 +26,8 @@ const DegenGambit = () => {
     const [userNumbers, setUserNumbers] = useState<number[]>(numbers);
     const [isWin, setIsWin] = useState(false);
 
+    const client = createThirdwebClient({ clientId: thirdwebClientId });
+
 
     const acceptMutation = useMutation({
         mutationKey: ['accept'],
@@ -31,6 +35,11 @@ const DegenGambit = () => {
         onSuccess: (data: any) => {
             console.log(data);
         },
+    });
+
+    const acceptThirdWebMutation = useMutation({
+        mutationKey: ['accept'],
+        mutationFn: () => _acceptThirdWebClient(contractAddress, activeAccount, client),
     });
 
     useEffect(() => {
@@ -46,7 +55,8 @@ const DegenGambit = () => {
                 return {output: []};
             }
             case input.match(/^spin( boost)?$/)?.input: {
-                let _client: WalletClient | undefined;
+                let _client: WalletClient | ThirdwebClient | undefined;
+                let account: Account | undefined;
                 if (privateKey) {
                     _client = createWalletClient({
                         account: privateKeyToAccount(privateKey),
@@ -55,19 +65,16 @@ const DegenGambit = () => {
                     })
                 } else {
                     if (window.ethereum && activeAccount?.address) {
-                        _client = createWalletClient({
-                            account: activeAccount.address,
-                            chain: viemG7Testnet,
-                            transport: custom(window.ethereum)
-                        });
+                        _client = client;
                     }
+                    account = activeAccount;
                 }
                 if (!_client) {
                     return {output: ["No account selected"]};
                 }
                 
                 // Execute the spin
-                const spinResult = await spin(contractAddress, input === "spin boost", _client);
+                const spinResult = await spin(contractAddress, input === "spin boost", account, _client);
                 
                 setTimeout(() => {
                     setIsWin(!!spinResult.prize && (Number(spinResult.prize) > 0));
@@ -76,7 +83,11 @@ const DegenGambit = () => {
                 setTimeout(() => {
                     setIsWin(false);
                     if (!!spinResult.prize && (Number(spinResult.prize) > 0) && AUTO_ACCEPT) {
-                        acceptMutation.mutate({client: _client});
+                        if (privateKey) {
+                            acceptMutation.mutate({client: _client as WalletClient});
+                        } else {
+                            acceptThirdWebMutation.mutate();
+                        }
                         queryClient.invalidateQueries({queryKey: ['isAccepting']});
                     }
                 }, 20000);
@@ -110,7 +121,6 @@ const DegenGambit = () => {
                     "│  getsome     - visit getsome.game7.io to    │",
                     "│                get some tokens              │",
                     "│  spin        - spin the wheel               │",
-                    "│  spin boost  - spin the wheel with a boost  │",
                     "│  clear       - Clear the terminal           │",
                     "│                (⌘K or Ctrl+K)               │",
                     "└─────────────────────────────────────────────┘",
