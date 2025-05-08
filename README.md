@@ -2,8 +2,6 @@
 
 A Matrix-style terminal interface for interacting with fully-onchain games, starting with the DegenGambit contract.
 
-![Matrix Terminal Interface](https://i.imgur.com/placeholder.png)
-
 ## Overview
 
 This project is a Proof of Concept (POC) for a stylized, immersive interface to fully-onchain games. It provides a Matrix-inspired terminal UI that connects to blockchain games, starting with DegenGambit. The long-term vision is to create an adaptable interface that can work with any fully-onchain game contract using AI for dynamic integration.
