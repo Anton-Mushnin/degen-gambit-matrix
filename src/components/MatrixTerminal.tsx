@@ -1,4 +1,4 @@
-import { privateKey, privateKeyAddress, thirdwebClientId, thirdWebG7Testnet } from '../config';
+import { privateKey, thirdwebClientId, thirdWebG7Testnet } from '../config';
 import { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { createThirdwebClient } from 'thirdweb';
@@ -8,8 +8,7 @@ import styles from './MatrixTerminal.module.css';
 import RandomNumbers from './RandomNumbers';
 import { Chain } from 'thirdweb/chains';
 import { useQueryClient } from '@tanstack/react-query';
-import { createPublicClient, http } from 'viem';
-import { mainnet } from 'viem/chains';
+import { useAccountToUse } from '../hooks/useAccountToUse';
 
 const color = '#a1eeb5';
 const glow = '#0dda9f';
@@ -73,6 +72,7 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
   const [text, setText] = useState('');
   const [isSpinning, setIsSpinning] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false)
+  const { displayName } = useAccountToUse();
 
   const [rerenderKey, setRerenderKey] = useState(0);
   const queryClient = useQueryClient();
@@ -97,37 +97,12 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
     if (!activeAccount) {
         connect({client});
     }
-    if (activeAccount && !welcomeShown) {
-        const resolveAndSetWelcome = async () => {
-            const addressToUse = privateKeyAddress || activeAccount.address;
-            let displayName = addressToUse;
-            
-            try {
-                // Use viem's public client to resolve ENS name
-                const publicClient = createPublicClient({
-                  chain: mainnet,
-                  transport: http()
-                });
-                console.log('resolving ens', addressToUse)
-                const ensName = await publicClient.getEnsName({
-                  address: addressToUse as `0x${string}`
-                });
-                console.log(ensName)
-                if (ensName) {
-                    displayName = ensName;
-                }
-            } catch (error) {
-                console.error("Error resol=-ving ENS:", error);
-            }
-            
-            setText(`Wake up, ${displayName}`);
-            setIsSystemTyping(true);
-            setWelcomeShown(true);
-        };
-        
-        resolveAndSetWelcome();
+    if (displayName && !welcomeShown) {
+        setText(`Wake up, ${displayName}`);
+        setIsSystemTyping(true);
+        setWelcomeShown(true);
     }
-  }, [activeAccount, connect, client, welcomeShown]);
+  }, [activeAccount, connect, client, welcomeShown, displayName]);
 
   useEffect(() => {
     if (activeWallet) {
