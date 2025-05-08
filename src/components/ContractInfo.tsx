@@ -74,9 +74,9 @@ const ContractInfo = () => {
             <Row queryKey={['blocksLeft', degenAddress ?? '']} label="Blocks Left: " queryFn={() => getBlocksLeft()} animation={false}/>
             <Row queryKey={['dailyStreak', degenAddress ?? '']} label="Daily Streak: " queryFn={() => getCurrentDailyStreakLength(degenAddress ?? '')} />
             <Row queryKey={['weeklyStreak', degenAddress ?? '']} label="Weekly Streak: " queryFn={() => getCurrentWeeklyStreakLength(degenAddress ?? '')} />
-            {isAccepting.data === true && <div className={styles.item}>
+            {/* {isAccepting.data === true && <div className={styles.item}>
                 <span>{`accepting reward...`}</span>
-            </div>}       
+            </div>}        */}
         </div>
     );
 };
