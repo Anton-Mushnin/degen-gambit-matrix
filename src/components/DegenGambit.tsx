@@ -120,7 +120,7 @@ const DegenGambit = () => {
                     "│  getsome     - visit getsome.game7.io to    │",
                     "│                get some tokens              │",
                     "│  spin        - spin the wheel               │",
-                    "│  auto        - auto spin the wheel          │",
+                    "│  auto        - toggle auto spin             │",
                     "│  clear       - Clear the terminal           │",
                     "│                (⌘K or Ctrl+K)               │",
                     "└─────────────────────────────────────────────┘",
