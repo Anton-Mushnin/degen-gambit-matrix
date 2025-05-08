@@ -3,6 +3,7 @@ import { getPublicClient } from '@wagmi/core'
 import { degenGambitABI } from '../ABIs/DegenGambit.abi.ts';
 import { multicall } from '@wagmi/core';
 import { createPublicClient, formatUnits, http, WalletClient } from 'viem';
+import { checkAndCreateBlockIfNeeded } from './blockProducer';
 
 // Define a more specific type for multicall results that matches the actual return type
 type WagmiMulticallSuccessResult<T> = {
@@ -360,6 +361,14 @@ export const spin = async (contractAddress: string, boost: boolean, client: Wall
   let retries = 0;
   while (!outcome) {
     try {
+      // Check if we need to create a new block before checking outcome
+      const blockCheck = await checkAndCreateBlockIfNeeded(1);
+      if (blockCheck.created) {
+        console.log("Created a new block to help with outcome processing:", blockCheck.message);
+      } else if (blockCheck.timeDiff !== undefined && blockCheck.timeDiff > 3) {
+        console.log(`Latest block is ${blockCheck.timeDiff}s old, but no new block was created: ${blockCheck.message}`);
+      }
+      
       outcome = await publicClient.readContract({
         ...viemContract,
         functionName: 'inspectOutcome',
@@ -371,8 +380,11 @@ export const spin = async (contractAddress: string, boost: boolean, client: Wall
       const knownErrors = ['WaitForTick()', 'InvalidBlockNumber', '0xd5dc642d'];
 
       if (!knownErrors.some(err => errorMsg.includes(err))) {
+        console.error("Unknown error while checking outcome:", errorMsg);
         return { description: errorMsg };
       }
+      
+      console.log(`Waiting for outcome, retry ${retries + 1}/30...`);
       retries += 1;
       if (retries > 30) {
         return { description: "Something went wrong. Please try again." };
