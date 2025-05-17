@@ -16,14 +16,16 @@ interface ValueRowProps {
 const ValueRow = ({ label, data: _data, animation = true, blinkOnUpdate = false }: ValueRowProps) => {
     const [data, setData] = useState<{formatted: string, value: bigint} | undefined>(undefined)
     const [isUpdated, setIsUpdated] = useState(false)
-    const intervalRef = useRef<any| null>(null)
+    const animationFrameRef = useRef<number | null>(null)
     const animationTimeoutRef = useRef<any | null>(null)
+    const animationStartTimeRef = useRef<number>(0)
+    const animationDurationRef = useRef<number>(3000) // 3 seconds animation duration
 
     // Clean up any running animations
     const cleanupAnimations = () => {
-        if (intervalRef.current) {
-            clearInterval(intervalRef.current);
-            intervalRef.current = null;
+        if (animationFrameRef.current) {
+            cancelAnimationFrame(animationFrameRef.current);
+            animationFrameRef.current = null;
         }
         if (animationTimeoutRef.current) {
             clearTimeout(animationTimeoutRef.current);
@@ -52,29 +54,29 @@ const ValueRow = ({ label, data: _data, animation = true, blinkOnUpdate = false 
 
         animationTimeoutRef.current = setTimeout(() => {
             setIsUpdated(false);
-            const numberOfSteps = 100;
             const startValue = data.value;
             const endValue = _data.value;
             const totalDelta = endValue - startValue;
-            let currentStep = 0;
+            animationStartTimeRef.current = performance.now();
 
-            intervalRef.current = setInterval(() => {
-                currentStep++;
-                
-                if (currentStep >= numberOfSteps) {
+            const animate = (currentTime: number) => {
+                const elapsed = currentTime - animationStartTimeRef.current;
+                const progress = Math.min(elapsed / animationDurationRef.current, 1);
+
+                if (progress < 1) {
+                    const currentValue = startValue + (totalDelta * BigInt(Math.floor(progress * 100))) / BigInt(100);
+                    setData({
+                        formatted: formatUnits(currentValue, _data.decimals ?? 18),
+                        value: currentValue
+                    });
+                    animationFrameRef.current = requestAnimationFrame(animate);
+                } else {
                     setData(_data);
                     cleanupAnimations();
-                    return;
                 }
+            };
 
-                const progress = currentStep / numberOfSteps;
-                const currentValue = startValue + (totalDelta * BigInt(Math.floor(progress * 100))) / BigInt(100);
-                
-                setData({
-                    formatted: formatUnits(currentValue, _data.decimals ?? 18),
-                    value: currentValue
-                });
-            }, 30);
+            animationFrameRef.current = requestAnimationFrame(animate);
         }, blinkOnUpdate ? 2000 : 0);
 
         return cleanupAnimations;
