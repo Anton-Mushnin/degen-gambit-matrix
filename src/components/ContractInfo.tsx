@@ -1,18 +1,43 @@
-import { contractAddress, wagmiConfig } from '../config';
-import styles from './ContractInfo.module.css';
-import { getBalance } from '@wagmi/core';
-import { getSupply, getCurrentBlock, getCostToSpin, getCurrentDailyStreakLength, getCurrentWeeklyStreakLength, getLastSpinBlock } from '../utils/degenGambit';
-import { useActiveAccount } from 'thirdweb/react';
-import Row from './Row';
-import { useDegenGambitInfo } from '../hooks/useDegenGambitInfo';
+import { useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useEffect, useState, useRef } from 'react';
+import { getBalance } from '@wagmi/core';
+import { useActiveAccount } from 'thirdweb/react';
 import { privateKeyToAccount } from 'viem/accounts';
+
+import { contractAddress, wagmiConfig } from '../config';
 import { useAccountToUse } from '../hooks/useAccountToUse';
 import useBlocksLeft from '../hooks/useBlocksLeft';
+import { useDegenGambitInfo } from '../hooks/useDegenGambitInfo';
+import { getCostToSpin, getCurrentBlock, getCurrentDailyStreakLength, getCurrentWeeklyStreakLength, getLastSpinBlock, getSupply } from '../utils/degenGambit';
+import QueryValueRow from './matrixUI/QueryValueRow';
+import ValueRow from './matrixUI/ValueRow';
+import styles from './ContractInfo.module.css';
 
 export const privateKey = import.meta.env.VITE_PRIVATE_KEY
 const privateKeyAddress = privateKey ? privateKeyToAccount(privateKey).address : undefined
+
+interface QueryDataItem {
+    type: 'query';
+    label: string;
+    queryKey: string[];
+    queryFn: () => Promise<{ formatted: string; value: bigint; decimals: number; } | null>;
+    refetchInterval?: number;
+    animation?: boolean;
+    onDataUpdate?: (data: any) => void;
+}
+
+interface StaticDataItem {
+    type: 'static';
+    label: string;
+    data: {
+        formatted: string;
+        value: bigint;
+        decimals: number;
+    };
+    animation?: boolean;
+}
+
+type DataItem = QueryDataItem | StaticDataItem;
 
 const ContractInfo = () => {
     const contractInfo = useDegenGambitInfo(contractAddress);
@@ -54,74 +79,135 @@ const ContractInfo = () => {
         prevBlocksLeftRef.current = currentValue;
     }, [blocksLeft, queryClient]);
 
+    const contractData: DataItem[] = [
+        {
+            type: 'query',
+            label: 'Pot: ',
+            queryKey: ['contractBalance', contractAddress],
+            queryFn: () => getBalance(wagmiConfig, {address: contractAddress}),
+            onDataUpdate: () => {
+                queryClient.invalidateQueries({queryKey: ['degenGambitInfo', contractAddress]});
+            }
+        },
+        {
+            type: 'query',
+            label: 'Gambit Supply: ',
+            queryKey: ['gambitSupply', contractAddress],
+            queryFn: () => getSupply(contractAddress)
+        },
+        {
+            type: 'query',
+            label: 'Current Block: ',
+            queryKey: ['currentBlock'],
+            queryFn: () => getCurrentBlock(),
+            refetchInterval: 5000,
+            animation: false,
+            onDataUpdate: handleCurrentBlockUpdate
+        }
+    ];
+
+    const degenData: DataItem[] = degenAddress ? [
+        {
+            type: 'static',
+            label: 'Degen: ',
+            data: {
+                formatted: displayName ?? '',
+                value: BigInt(0),
+                decimals: 0
+            },
+            animation: false
+        },
+        {
+            type: 'query',
+            label: 'TG7T: ',
+            queryKey: ['accountBalance', degenAddress],
+            queryFn: () => getBalance(wagmiConfig, {address: degenAddress})
+        },
+        {
+            type: 'query',
+            label: 'GAMBIT: ',
+            queryKey: ['accountGambitBalance', degenAddress],
+            queryFn: () => getBalance(wagmiConfig, {address: degenAddress, token: contractAddress})
+        },
+        {
+            type: 'query',
+            label: 'Cost to Spin: ',
+            queryKey: ['costToSpin', degenAddress],
+            queryFn: () => getCostToSpin(degenAddress),
+            animation: false
+        },
+        {
+            type: 'query',
+            label: 'Last Spin Block: ',
+            queryKey: ['lastSpinBlock', degenAddress],
+            queryFn: () => getLastSpinBlock(contractAddress, degenAddress),
+            animation: false,
+            onDataUpdate: handleLastSpinBlockUpdate
+        },
+        {
+            type: 'query',
+            label: 'Blocks Left: ',
+            queryKey: ['blocksLeft', degenAddress, blocksLeft?.value?.toString() ?? ''],
+            queryFn: getBlocksLeft,
+            animation: false
+        },
+        {
+            type: 'query',
+            label: 'Daily Streak: ',
+            queryKey: ['dailyStreak', degenAddress],
+            queryFn: () => getCurrentDailyStreakLength(degenAddress)
+        },
+        {
+            type: 'query',
+            label: 'Weekly Streak: ',
+            queryKey: ['weeklyStreak', degenAddress],
+            queryFn: () => getCurrentWeeklyStreakLength(degenAddress)
+        }
+    ] : [];
+
     return (
         <div className={styles.container}>
-            <Row 
-                queryKey={['contractBalance', contractAddress]} 
-                label="Pot: " 
-                queryFn={() => getBalance(wagmiConfig, {address: contractAddress})} 
-                onDataUpdate={() => {
-                    queryClient.invalidateQueries({queryKey: ['degenGambitInfo', contractAddress]});
-                }}
-            />
-            <Row 
-                queryKey={['gambitSupply', contractAddress]} 
-                label="Gambit Supply: " 
-                queryFn={() => getSupply(contractAddress)} 
-            />
-            <Row 
-                queryKey={['currentBlock']} 
-                label="Current Block: " 
-                queryFn={() => getCurrentBlock()} 
-                refetchInterval={5000} 
-                animation={false} 
-                onDataUpdate={handleCurrentBlockUpdate}
-            />
-
+            {contractData.map((item, index) => (
+                item.type === 'query' ? (
+                    <QueryValueRow
+                        key={index}
+                        label={item.label}
+                        queryKey={item.queryKey}
+                        queryFn={item.queryFn}
+                        refetchInterval={item.refetchInterval}
+                        animation={item.animation}
+                        onDataUpdate={item.onDataUpdate}
+                    />
+                ) : (
+                    <ValueRow
+                        key={index}
+                        label={item.label}
+                        data={item.data}
+                        animation={item.animation}
+                    />
+                )
+            ))}
             <div style={{height: '20px'}} />
-            {degenAddress && <div className={styles.item}>
-                <span>{`Degen: ${displayName}`}</span>
-            </div>}
-            <Row 
-                queryKey={['accountBalance', degenAddress ?? '']} 
-                label="TG7T: " 
-                queryFn={() => getBalance(wagmiConfig, {address: degenAddress ?? ''})} 
-            />
-            <Row 
-                queryKey={['accountGambitBalance', degenAddress ?? '']} 
-                label="GAMBIT: " 
-                queryFn={() => getBalance(wagmiConfig, {address: degenAddress ?? '', token: contractAddress})} 
-            />
-            <Row 
-                queryKey={['costToSpin', degenAddress ?? '']} 
-                label="Cost to Spin: " 
-                queryFn={() => getCostToSpin(degenAddress ?? '')}  
-                animation={false}
-            />
-            <Row 
-                queryKey={['lastSpinBlock', degenAddress ?? '']} 
-                label="Last Spin Block: " 
-                queryFn={() => getLastSpinBlock(contractAddress, degenAddress ?? '')} 
-                animation={false} 
-                onDataUpdate={handleLastSpinBlockUpdate}
-            />
-            <Row 
-                queryKey={['blocksLeft', degenAddress ?? '', blocksLeft?.value?.toString()]} 
-                label="Blocks Left: " 
-                queryFn={getBlocksLeft} 
-                animation={false}
-            />
-            
-            <Row 
-                queryKey={['dailyStreak', degenAddress ?? '']} 
-                label="Daily Streak: " 
-                queryFn={() => getCurrentDailyStreakLength(degenAddress ?? '')} 
-            />
-            <Row 
-                queryKey={['weeklyStreak', degenAddress ?? '']} 
-                label="Weekly Streak: " 
-                queryFn={() => getCurrentWeeklyStreakLength(degenAddress ?? '')} 
-            />
+            {degenData.map((item, index) => (
+                item.type === 'query' ? (
+                    <QueryValueRow
+                        key={index}
+                        label={item.label}
+                        queryKey={item.queryKey}
+                        queryFn={item.queryFn}
+                        refetchInterval={item.refetchInterval}
+                        animation={item.animation}
+                        onDataUpdate={item.onDataUpdate}
+                    />
+                ) : (
+                    <ValueRow
+                        key={index}
+                        label={item.label}
+                        data={item.data}
+                        animation={item.animation}
+                    />
+                )
+            ))}
         </div>
     );
 };
