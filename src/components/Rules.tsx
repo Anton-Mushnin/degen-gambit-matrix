@@ -14,15 +14,15 @@ const Rules = () => {
                 <div className={styles.constant}>Cost to spin: {contractInfo.data?.costToSpin}</div>
                 <div className={styles.constant}>Cost to respin: {contractInfo.data?.costToRespin}</div>
             </div>
-            <div className={styles.prizes}>
-                <div className={styles.prize}>Rewards:</div>
+            <div className={styles.constants}>
+                <div className={styles.constant}>Rewards:</div>
                 {contractInfo.data?.prizes.map((prize, index) => (
-                    <div key={index} className={styles.prize}>{prize}</div>
+                    <div key={index} className={styles.constant}>{prize}</div>
                 ))}
             </div>
-            <div className={styles.symbols}>
-                <div className={styles.symbol}>{`Minor symbols: ${numbers.slice(1, 16).join(', ')}`}</div>
-                <div className={styles.symbol}>{`Major symbols: ${numbers.slice(-3).join(', ')}`}</div>
+            <div className={styles.constants}>
+                <div className={styles.constant}>{`Minor symbols: ${numbers.slice(1, 16).join(', ')}`}</div>
+                <div className={styles.constant}>{`Major symbols: ${numbers.slice(-3).join(', ')}`}</div>
             </div>
         </div>
     )
