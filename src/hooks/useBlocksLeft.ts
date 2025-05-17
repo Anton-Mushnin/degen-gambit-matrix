@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 
 // Type for block data
 type BlockData = {
@@ -12,7 +11,6 @@ type BlockData = {
 export const useBlocksLeft = (degenAddress: string | undefined, blocksToAct: number | undefined) => {
     const [currentBlock, setCurrentBlock] = useState<BlockData | null>(null);
     const [lastSpinBlock, setLastSpinBlock] = useState<BlockData | null>(null);
-    const queryClient = useQueryClient();
 
     // Calculate blocks left as derived state
     const blocksLeft = useMemo(() => {
@@ -25,18 +23,15 @@ export const useBlocksLeft = (degenAddress: string | undefined, blocksToAct: num
         }
         
         const deadline = lastSpinBlock.value + BigInt(blocksToAct);
-        const blocksLeftValue = Math.max(Math.min(Number(deadline - currentBlock.value), blocksToAct), 0);
-        
-        if (blocksLeftValue === 0) {
-            queryClient.invalidateQueries({queryKey: ['costToSpin']});
-        }   
+        const _blocksLeft = Number(deadline - currentBlock.value);
+        const blocksLeftValue = Math.max(Math.min(_blocksLeft, blocksToAct), 0);
         
         return {
             value: BigInt(blocksLeftValue),
             formatted: blocksLeftValue.toString(),
             decimals: 0,
         };
-    }, [currentBlock, lastSpinBlock, blocksToAct, queryClient]);
+    }, [currentBlock, lastSpinBlock, blocksToAct]);
 
     // Handler functions to update the state
     const handleCurrentBlockUpdate = (data: BlockData) => {
