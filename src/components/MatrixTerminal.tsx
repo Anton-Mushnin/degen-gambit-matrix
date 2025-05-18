@@ -1,6 +1,5 @@
 import { thirdwebClientId, thirdWebG7Testnet } from '../config';
 import { useState, useEffect, useRef } from 'react';
-import styled from 'styled-components';
 import { createThirdwebClient } from 'thirdweb';
 import { useActiveAccount, useActiveWallet, useConnectModal } from 'thirdweb/react';
 import { TerminalOutput } from './TerminalOutput';
@@ -9,49 +8,6 @@ import RandomNumbers from './RandomNumbers';
 import { Chain } from 'thirdweb/chains';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAccountToUse } from '../hooks/useAccountToUse';
-
-const color = '#a1eeb5';
-const glow = '#0dda9f';
-
-const Container = styled.div`
-    width: 100%;
-    font-family: 'NimbusMono', 'Courier New', Courier, monospace;
-    box-sizing: border-box;
-
-    display: flex;
-    flex-direction: column;
-    align-items: start;
-    justify-content: start;
-    max-height: calc(100vh - 400px);
-    height: calc(100vh - 400px);
-    padding: 40px;
-    gap: 0px;
-    color: ${color};
-    text-shadow: 0 0 12px ${glow};
-    font-size: 16px;
-    overflow-y: auto;
-    scroll-behavior: smooth;
-
-    /* Hide scrollbar for Chrome, Safari and Opera */
-    &::-webkit-scrollbar {
-        display: none;
-    }
-    
-    /* Hide scrollbar for IE, Edge and Firefox */
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
-`;
-
-const Cursor = styled.span`
-  font-size: 12px;
-  animation: blink 1s step-end infinite;
-  color: ${color};
-  text-shadow: 0 0 10px ${glow};
-  
-  @keyframes blink {
-    50% { opacity: 0; }
-  }
-`;
 
 interface MatrixTerminalProps {
   onUserInput?: (input: string) => Promise<{output: string[], outcome?: bigint[], isPrize?: boolean}>;
@@ -238,8 +194,7 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
   }, [isSystemTyping, userInput, handleInput, inputHistory, inputHistoryIndex]);
 
   return (
-    <Container ref={containerRef}>
-        
+    <div className={styles.container} ref={containerRef}>
         <div className={styles.history}>
             {history.map((input, index) => (
                 <pre key={index} className={styles.pre}>
@@ -251,7 +206,7 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
         {!isSystemTyping && !isSpinning && outcome.length === 0 && !isProcessing && (
             <div className={styles.inputLine}>
                 <div className={styles.inputText}>{`>${userInput}`.replace(/ /g, '\u00A0')}</div>
-                <Cursor>█</Cursor>
+                <span className={styles.cursor}>█</span>
             </div>
         )}
         {isSystemTyping && (
@@ -273,6 +228,6 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
                 ))}
             </div>
         )}
-    </Container>
+    </div>
   );
 }; 
