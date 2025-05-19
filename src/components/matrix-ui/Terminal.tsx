@@ -3,30 +3,28 @@ import { TerminalOutput } from '../TerminalOutput';
 import styles from '../MatrixTerminal.module.css';
 
 interface TerminalProps {
-    newText: {
-        text: string;
-        setText: (text: string) => void;
-        toType: boolean;
-    }
-    onSubmit: (input: string) => void;  // Handler for user input
+    queue: {
+        length: number;
+        shift: () => { text: string; toType: boolean } | undefined;
+    };
+    onSubmit: (input: string) => void;  
     isProcessing: boolean;          // Whether terminal is processing input
     children?: React.ReactNode; 
 }
 
-export const Terminal = ({ newText, onSubmit, isProcessing, children }: TerminalProps) => {
+export const Terminal = ({ queue, onSubmit, isProcessing, children }: TerminalProps) => {
   const [userInput, setUserInput] = useState('');
   const [history, setHistory] = useState<string[]>([]);
   const [inputHistory, setInputHistory] = useState<string[]>([]);
   const [inputHistoryIndex, setInputHistoryIndex] = useState(-1);
 
-  const [isSystemTyping, setIsSystemTyping] = useState(true);
-  const [text, setText] = useState(newText.text);
+  const [isSystemTyping, setIsSystemTyping] = useState(false);
+  const [text, setText] = useState('');
 
   const [rerenderKey, setRerenderKey] = useState(0);
 
   // Add ref for the container
   const containerRef = useRef<HTMLDivElement>(null);
-
 
   // Add scroll to bottom effect when history changes
   useEffect(() => {
@@ -35,26 +33,29 @@ export const Terminal = ({ newText, onSubmit, isProcessing, children }: Terminal
     }
   }, [history, isSystemTyping, isProcessing, children]);
 
-
+  // Process queue items
   useEffect(() => {
-    console.log('newText', newText);
-    if (!newText.text) {
-        return;
+    if (queue.length === 0 || isSystemTyping) {
+      return;
     }
+
+    const newText = queue.shift();
+    if (!newText) {
+      return;
+    }
+
     if (newText.toType) {
       setText(newText.text);
+      setIsSystemTyping(true);
     } else {
       setHistory(prev => [...prev, newText.text]);
     }
-  }, [newText]);
-
+  }, [queue.length, isSystemTyping]);
 
   useEffect(() => {
     if (!isSystemTyping && text) {
       setHistory(prev => [...prev, text]);
-      // Clear the text after adding it to history to prevent re-adding
       setText('');
-      newText.setText('');
     }
   }, [isSystemTyping, text]);
 
