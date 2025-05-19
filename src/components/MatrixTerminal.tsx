@@ -1,13 +1,16 @@
-import { thirdwebClientId, thirdWebG7Testnet } from '../config';
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { Chain } from 'thirdweb/chains';
 import { createThirdwebClient } from 'thirdweb';
 import { useActiveAccount, useActiveWallet, useConnectModal } from 'thirdweb/react';
-import { TerminalOutput } from './TerminalOutput';
-import styles from './MatrixTerminal.module.css';
-import RandomNumbers from './RandomNumbers';
-import { Chain } from 'thirdweb/chains';
-import { useQueryClient } from '@tanstack/react-query';
+
+import { thirdwebClientId, thirdWebG7Testnet } from '../config';
 import { useAccountToUse } from '../hooks/useAccountToUse';
+import { Terminal } from './matrix-ui/Terminal';
+import RandomNumbers from './RandomNumbers';
+import styles from './MatrixTerminal.module.css';
+
+const phrasesToType = ['Wake up', 'The Matrix', 'Prize'];
 
 interface MatrixTerminalProps {
   onUserInput?: (input: string) => Promise<{output: string[], outcome?: bigint[], isPrize?: boolean}>;
@@ -15,26 +18,22 @@ interface MatrixTerminalProps {
 }
 
 export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) => {
-  const [userInput, setUserInput] = useState('');
-  const [history, setHistory] = useState<string[]>([]);
-  const [inputHistory, setInputHistory] = useState<string[]>([]);
-  const [inputHistoryIndex, setInputHistoryIndex] = useState(-1);
 
   const [isSystemTyping, setIsSystemTyping] = useState(true);
   const { connect } = useConnectModal();
   const activeAccount = useActiveAccount();
   const activeWallet = useActiveWallet();
   const client = createThirdwebClient({ clientId: thirdwebClientId });
-  const [text, setText] = useState('');
   const [isSpinning, setIsSpinning] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false)
   const { displayName } = useAccountToUse();
 
-  const [rerenderKey, setRerenderKey] = useState(0);
   const queryClient = useQueryClient();
   const [outcome, setOutcome] = useState<string[]>([]);
 
   const [autoSpin, setAutoSpin] = useState(false);
+
+  const [outputQueue, setOutputQueue] = useState<{text: string, toType: boolean}[]>([]);
 
   // Add ref for the container
   const containerRef = useRef<HTMLDivElement>(null);
@@ -54,7 +53,7 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
         connect({client});
     }
     if (displayName && !welcomeShown) {
-        setText(`Wake up, ${displayName}`);
+        setOutputQueue(prev => [...prev, {text: `Wake up, ${displayName}`, toType: true}]);
         setIsSystemTyping(true);
         setWelcomeShown(true);
     }
@@ -69,23 +68,16 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
     }
   }, [activeWallet]);
 
-  useEffect(() => {
-    if (!isSystemTyping && text) {
-      setHistory(prev => [...prev, text]);
-      // Clear the text after adding it to history to prevent re-adding
-      setText('');
-    }
-  }, [isSystemTyping, text]);
 
   const handleInput = async (input: string) => {
     if (input === 'clear') {
-      setHistory([]);
+      setOutputQueue([]);
       return;
     }
 
     if (input === 'auto') {
       setAutoSpin(!autoSpin);
-      setHistory(prev => [...prev, `Auto spin: ${!autoSpin}`]); //todo: make it better way to show this
+      setOutputQueue(prev => [...prev, {text: `Auto spin: ${!autoSpin}`, toType: true}]);
       return;
     }
 
@@ -95,17 +87,11 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
     setIsProcessing(true)
     try {
         const result = await onUserInput?.(input);
-        const notTerminalPhrases = ['Wake up', 'The Matrix', 'Prize'];
 
         if (result?.output && !result.outcome) {
             const outputText = result.output.join('\n');
             if (outputText) { 
-              if (notTerminalPhrases.some((str) => outputText.startsWith(str))) {
-                setText(outputText);
-                setIsSystemTyping(true);
-              } else {
-                setHistory(prev => [...prev, outputText])
-              }
+                setOutputQueue(prev => [...prev, {text: outputText, toType: false}]);
             }
         } else if (result?.outcome) {
             if (autoSpin && input.startsWith('spin')) {
@@ -118,15 +104,11 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
             const outcomeValues = result.outcome.map(item => numbers[Number(item)].toString());
             setOutcome(outcomeValues);
             setTimeout(() => {
-                setHistory(prev => [...prev, outcomeValues.join(' ')]);
+                console.log('outcomeValues', outcomeValues);
+                setOutputQueue(prev => [...prev, {text: outcomeValues.join(' '), toType: false}]);
                 const outputText = result.output.join('\n');
                 if (outputText) { 
-                  if (notTerminalPhrases.some((str) => outputText.startsWith(str))) {
-                    setText(outputText);
-                    setIsSystemTyping(true);
-                  } else {
-                    setHistory(prev => [...prev, outputText])
-                  }
+                  setOutputQueue(prev => [...prev, {text: outputText, toType: phrasesToType.some(str => outputText.startsWith(str))}]);
                 }
                 setOutcome([]);
             }, 8000);
@@ -138,96 +120,41 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
           handleInput('spin' + (isBoosted ? ' boost' : ''));
       }
         const errorMessage = error.message ?? String(error);
-        setHistory(prev => [...prev, errorMessage])
+        setOutputQueue(prev => [...prev, {text: errorMessage, toType: false}]);
     } finally {
         setIsSpinning(false);
         setIsProcessing(false);
     }
   };
 
-  useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-        e.stopPropagation();
-      if (!isSystemTyping) {
-        if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-          e.preventDefault(); 
-          setHistory([]);
-          return;
-        }
-        if (e.key === 'ArrowUp') {
-            e.preventDefault();
-            if (inputHistory[inputHistoryIndex + 1]) {
-                setUserInput(inputHistory[inputHistoryIndex + 1]);
-                setInputHistoryIndex(prev => prev + 1);
-            }
-          return;
-        }
-        if (e.key === 'ArrowDown') {
-            e.preventDefault();
-            if (inputHistory[inputHistoryIndex - 1]) {
-                setUserInput(inputHistory[inputHistoryIndex - 1]);
-                setInputHistoryIndex(prev => prev - 1);
-            } else {
-                setUserInput('');
-                setInputHistoryIndex(-1);
-            }
-          return;
-        }
-        if (e.key === 'Enter') {
-          setHistory(prev => [...prev, `>${userInput}`]);
-          if (userInput) {
-            setInputHistory(prev => [userInput, ...prev]);
-          }
-          setInputHistoryIndex(-1);
-          setUserInput('');
-          handleInput(userInput);
-        } else if (e.key === 'Backspace') {
-          setUserInput(prev => prev.slice(0, -1));
-        } else if (e.key.length === 1) {  // Single character keys only
-          setUserInput(prev => prev + e.key);
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [isSystemTyping, userInput, handleInput, inputHistory, inputHistoryIndex]);
 
   return (
-    <div className={styles.container} ref={containerRef}>
-        <div className={styles.history}>
-            {history.map((input, index) => (
-                <pre key={index} className={styles.pre}>
-                    {input}
-                </pre>
-            ))}
-        </div>
 
-        {!isSystemTyping && !isSpinning && outcome.length === 0 && !isProcessing && (
-            <div className={styles.inputLine}>
-                <div className={styles.inputText}>{`>${userInput}`.replace(/ /g, '\u00A0')}</div>
-                <span className={styles.cursor}>█</span>
-            </div>
-        )}
-        {isSystemTyping && (
-            <div onClick={() => setRerenderKey(rerenderKey + 1)}>
-                <TerminalOutput text={text} key={rerenderKey} setIsSystemTyping={setIsSystemTyping} />
-            </div>
-        )}
-        {isSpinning && (
-            <div className={styles.spinningContainer}>
-                <RandomNumbers />
-                <RandomNumbers />
-                <RandomNumbers />
-            </div>
-        )}
-        {outcome.length > 0 && (
-            <div className={styles.spinningContainer}>
-                {outcome.map((item, index) => (
-                    <RandomNumbers key={index} result={item} duration={2000 + index * 2000} />
-                ))}
-            </div>
-        )}
-    </div>
+        <Terminal queue={{
+                    length: outputQueue.length, 
+                    shift: () => {
+                        const item = outputQueue.shift();
+                        setOutputQueue([...outputQueue]); // Trigger re-render
+                        return item;
+                    }
+                }} 
+                  onSubmit={handleInput} 
+                  isProcessing={isProcessing || isSpinning || outcome.length > 0}>
+
+          {isSpinning && (
+              <div className={styles.spinningContainer}>
+                  <RandomNumbers />
+                  <RandomNumbers />
+                  <RandomNumbers />
+              </div>
+          )}
+          {outcome.length > 0 && (
+              <div className={styles.spinningContainer}>
+                  {outcome.map((item, index) => (
+                      <RandomNumbers key={index} result={item} duration={2000 + index * 2000} />
+                  ))}
+              </div>
+          )}
+        </Terminal>
   );
 }; 
