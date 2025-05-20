@@ -1,0 +1,126 @@
+// External library imports
+import { Account } from "thirdweb/wallets";
+import { ThirdwebClient } from "thirdweb";
+import { createWalletClient, http, type WalletClient } from "viem";
+import { privateKeyToAccount } from "viem/accounts";
+
+// Local imports
+import { contractAddress, privateKey, wagmiConfig } from '../../config';
+import { spin } from "../../utils/degenGambit";
+import { CommandDefinition } from '../types';
+
+export type SpinResult = {
+    description: string;
+    outcome?: readonly bigint[];
+    prize?: string;
+    prizeType?: number;
+    receipt?: string | null;
+};
+
+export type DegenGambitCommandParams = {
+    activeAccount: Account | undefined;
+    client: ThirdwebClient;
+    onSpinResult?: (result: SpinResult) => void;
+    onSetNumbers?: (numbers: number[]) => void;
+    getCurrentNumbers: () => Promise<number[]>;
+};
+
+export const degenGambitCommands: CommandDefinition<DegenGambitCommandParams>[] = [
+    {
+        pattern: {
+            pattern: /^getsome$/,
+            name: 'getsome',
+            description: 'Visit getsome.game7.io to get some tokens',
+            usage: 'getsome'
+        },
+        handler: async ({ params }) => {
+            window.open(
+                `https://getsome.game7.io?network=testnet&address=${params.activeAccount?.address}`,
+                "_blank"
+            );
+            return { output: [] };
+        }
+    },
+    {
+        pattern: {
+            pattern: /^spin( boost)?$/,
+            name: 'spin',
+            description: 'Spin the wheel (optionally with boost)',
+            usage: 'spin [boost]'
+        },
+        handler: async ({ input, params }) => {
+            const { activeAccount, client, onSpinResult } = params;
+            
+            let _client: WalletClient | ThirdwebClient | undefined;
+            let account: Account | undefined;
+            
+            if (privateKey) {
+                _client = createWalletClient({
+                    account: privateKeyToAccount(privateKey),
+                    chain: wagmiConfig.chains[0],
+                    transport: http()
+                });
+            } else {
+                if (window.ethereum && activeAccount?.address) {
+                    _client = client;
+                }
+                account = activeAccount;
+            }
+
+            if (!_client) {
+                return { output: ["No account selected"] };
+            }
+
+            const isBoost = input === "spin boost";
+            const spinResult = await spin(contractAddress, isBoost, account, _client);
+
+            // Notify component of result
+            onSpinResult?.(spinResult);
+
+            return {
+                output: [spinResult.description],
+                data: {
+                    outcome: spinResult.outcome ? [...spinResult.outcome.slice(0, 3)] : undefined,
+                    isPrize: spinResult.prize ? Number(spinResult.prize) > 0 : undefined
+                }
+            };
+        }
+    },
+    {
+        pattern: {
+            pattern: /^set \d+ \d+$/,
+            name: 'set',
+            description: 'Set a number at a specific index',
+            usage: 'set <index> <number>'
+        },
+        handler: async ({ input, params }) => {
+            const { onSetNumbers, getCurrentNumbers } = params;
+            const [, indexStr, numberStr] = input.split(' ');
+            const index = parseInt(indexStr);
+            const number = parseInt(numberStr);
+
+            const currentNumbers = await getCurrentNumbers();
+
+            if (index < 0 || index >= currentNumbers.length) {
+                return { 
+                    output: [`Invalid index. Must be between 0 and ${currentNumbers.length - 1}`] 
+                };
+            }
+
+            const newNumbers = [...currentNumbers];
+            newNumbers[index] = number;
+            
+            // Notify component of new numbers
+            onSetNumbers?.(newNumbers);
+            
+            return {
+                output: [
+                    "Minor symbols:", 
+                    newNumbers.slice(1, 16).join(', '), 
+                    "Major symbols:", 
+                    newNumbers.slice(-3).join(', ')
+                ]
+            };
+        }
+    }
+]; 
