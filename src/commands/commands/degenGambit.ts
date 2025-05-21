@@ -23,6 +23,7 @@ export type DegenGambitCommandParams = {
     onSpinResult?: (result: SpinResult) => void;
     onSetNumbers?: (numbers: number[]) => void;
     getCurrentNumbers: () => Promise<number[]>;
+    onAutoSpinToggle: () => void;
 };
 
 export const degenGambitCommands: CommandDefinition<DegenGambitCommandParams>[] = [
@@ -82,6 +83,19 @@ export const degenGambitCommands: CommandDefinition<DegenGambitCommandParams>[] 
                 outcome: spinResult.outcome ? [...spinResult.outcome.slice(0, 3)] : undefined,
                 isPrize: spinResult.prize ? Number(spinResult.prize) > 0 : undefined
             };
+        }
+    },
+    {
+        pattern: {
+            pattern: /^auto$/,
+            name: 'auto',
+            description: 'Toggle auto spin',
+            usage: 'auto'
+        },
+        handler: async ({ params }) => {
+            const { onAutoSpinToggle } = params;
+            onAutoSpinToggle?.();
+            return { output: [] };
         }
     },
     {

@@ -15,9 +15,10 @@ const phrasesToType = ['Wake up', 'The Matrix', 'Prize'];
 interface MatrixTerminalProps {
   onUserInput?: (input: string) => Promise<{output: string[], outcome?: bigint[], isPrize?: boolean}>;
   numbers: number[];
+  autoSpin: boolean;
 }
 
-export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) => {
+export const MatrixTerminal = ({ onUserInput, numbers, autoSpin }: MatrixTerminalProps) => {
 
   const [isSystemTyping, setIsSystemTyping] = useState(true);
   const { connect } = useConnectModal();
@@ -30,8 +31,6 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
 
   const queryClient = useQueryClient();
   const [outcome, setOutcome] = useState<string[]>([]);
-
-  const [autoSpin, setAutoSpin] = useState(false);
 
   const [outputQueue, setOutputQueue] = useState<{text: string, toType: boolean}[]>([]);
 
@@ -69,15 +68,17 @@ export const MatrixTerminal = ({ onUserInput, numbers }: MatrixTerminalProps) =>
   }, [activeWallet]);
 
 
+  useEffect(() => {
+    if (autoSpin !== undefined) {
+      setOutputQueue(prev => [...prev, {text: `Auto spin: ${autoSpin}`, toType: false}]);
+    }
+  }, [autoSpin]);
+
+
+
   const handleInput = async (input: string) => {
     if (input === 'clear') {
       setOutputQueue([]);
-      return;
-    }
-
-    if (input === 'auto') {
-      setAutoSpin(!autoSpin);
-      setOutputQueue(prev => [...prev, {text: `Auto spin: ${!autoSpin}`, toType: true}]);
       return;
     }
 
