@@ -20,10 +20,10 @@ export type SpinResult = {
 export type DegenGambitCommandParams = {
     activeAccount: Account | undefined;
     client: ThirdwebClient;
-    onSpinResult?: (result: SpinResult) => void;
     onSetNumbers?: (numbers: number[]) => void;
     getCurrentNumbers: () => Promise<number[]>;
     onAutoSpinToggle: () => void;
+    setIsWin: (isWin: boolean) => void;
 };
 
 export const degenGambitCommands: CommandDefinition<DegenGambitCommandParams>[] = [
@@ -50,7 +50,7 @@ export const degenGambitCommands: CommandDefinition<DegenGambitCommandParams>[] 
             usage: 'spin [boost]'
         },
         handler: async ({ input, params }) => {
-            const { activeAccount, client, onSpinResult } = params;
+            const { activeAccount, client, setIsWin } = params;
             
             let _client: WalletClient | ThirdwebClient | undefined;
             let account: Account | undefined;
@@ -75,8 +75,28 @@ export const degenGambitCommands: CommandDefinition<DegenGambitCommandParams>[] 
             const isBoost = input === "spin boost";
             const spinResult = await spin(contractAddress, isBoost, account, _client);
 
-            // Notify component of result
-            onSpinResult?.(spinResult);
+            // Handle win state and auto-accept
+            if (spinResult.prize && Number(spinResult.prize) > 0) {
+                // Set win state after 8 seconds
+                setTimeout(() => setIsWin(true), 8000);
+                
+                // Auto-accept after 20 seconds
+                setTimeout(async () => {
+                    setIsWin(false);
+                    
+                    // Auto-accept logic
+                    if (privateKey) {
+                        const acceptClient = createWalletClient({
+                            account: privateKeyToAccount(privateKey),
+                            chain: wagmiConfig.chains[0],
+                            transport: http()
+                        });
+                        await _accept(contractAddress, acceptClient);
+                    } else if (activeAccount) {
+                        await _acceptThirdWebClient(contractAddress, activeAccount, client);
+                    }
+                }, 20000);
+            }
 
             return {
                 output: [spinResult.description],
