@@ -16,6 +16,19 @@ export class CommandDispatcher<T = any> {
     }
 
     register(command: CommandDefinition<T>): void {
+        if (command.isDefault) {
+            // For default command, use a special key
+            if (this.registry.has('__default__')) {
+                throw new Error('Default command is already registered');
+            }
+            this.registry.set('__default__', command);
+            return;
+        }
+
+        if (!command.pattern) {
+            throw new Error('Non-default command must have a pattern');
+        }
+
         if (this.registry.has(command.pattern.name)) {
             throw new Error(`Command '${command.pattern.name}' is already registered`);
         }
@@ -52,7 +65,8 @@ export class CommandDispatcher<T = any> {
         try {
             // Find matching command
             for (const command of this.registry.values()) {
-                if (command.pattern.pattern.test(input)) {
+                if (command.isDefault) continue; // Skip default command in normal search
+                if (command.pattern?.pattern.test(input)) {
                     const allMiddleware = [
                         ...this.globalMiddleware,
                         ...(command.middleware || [])
@@ -66,7 +80,21 @@ export class CommandDispatcher<T = any> {
                 }
             }
 
-            // No command found
+            // If no command found, try default command
+            const defaultCommand = this.registry.get('__default__');
+            if (defaultCommand) {
+                const allMiddleware = [
+                    ...this.globalMiddleware,
+                    ...(defaultCommand.middleware || [])
+                ];
+                return this.executeMiddleware(
+                    context,
+                    allMiddleware,
+                    defaultCommand.handler
+                );
+            }
+
+            // No command and no default handler found
             return {
                 output: [
                     `Command not found: ${input}`,

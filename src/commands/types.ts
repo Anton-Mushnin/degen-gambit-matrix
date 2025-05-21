@@ -20,9 +20,10 @@ export type CommandPattern = {
 };
 
 export type CommandDefinition<T = any, R = any> = {
-    pattern: CommandPattern;
+    pattern?: CommandPattern;
     handler: CommandHandler<T, R>;
     middleware?: CommandMiddleware[];
+    isDefault?: boolean;
 };
 
 export type CommandMiddleware = (

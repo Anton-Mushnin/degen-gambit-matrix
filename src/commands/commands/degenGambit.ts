@@ -7,7 +7,7 @@ import { privateKeyToAccount } from "viem/accounts";
 // Local imports
 import { contractAddress, privateKey, wagmiConfig } from '../../config';
 import { spin } from "../../utils/degenGambit";
-import { CommandDefinition } from '../types';
+import { CommandDefinition, CommandPattern } from '../types';
 
 export type SpinResult = {
     description: string;
@@ -120,5 +120,27 @@ export const degenGambitCommands: CommandDefinition<DegenGambitCommandParams>[] 
                 ]
             };
         }
+    },
+    {
+        isDefault: true,
+        handler: async ({ input }) => {
+            const helpText = [
+                `Command not found: "${input}"`,
+                '',
+                'Available commands:',
+                ...degenGambitCommands
+                    .filter((cmd): cmd is CommandDefinition<DegenGambitCommandParams> & { pattern: CommandPattern } => 
+                        cmd.pattern !== undefined)
+                    .map(cmd => `• ${cmd.pattern.name}: ${cmd.pattern.description}`),
+                '',
+                'Usage examples:',
+                ...degenGambitCommands
+                    .filter((cmd): cmd is CommandDefinition<DegenGambitCommandParams> & { pattern: CommandPattern } => 
+                        cmd.pattern !== undefined)
+                    .map(cmd => `  ${cmd.pattern.usage}`)
+            ];
+
+            return { output: helpText };
+        }
     }
-]; 
+];
