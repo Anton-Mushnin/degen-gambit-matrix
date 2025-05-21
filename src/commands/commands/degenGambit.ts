@@ -6,7 +6,7 @@ import { privateKeyToAccount } from "viem/accounts";
 
 // Local imports
 import { contractAddress, privateKey, wagmiConfig } from '../../config';
-import { spin } from "../../utils/degenGambit";
+import { _accept, _acceptThirdWebClient, spin } from "../../utils/degenGambit";
 import { CommandDefinition, CommandPattern } from '../types';
 
 export type SpinResult = {
@@ -133,6 +133,46 @@ export const degenGambitCommands: CommandDefinition<DegenGambitCommandParams>[] 
                     newNumbers.slice(-3).join(', ')
                 ]
             };
+        }
+    },
+    {
+        pattern: {
+            pattern: /^accept$/,
+            name: 'accept',
+            description: 'Accept a pending prize',
+            usage: 'accept'
+        },
+        handler: async ({ params }) => {
+            const { activeAccount, client } = params;
+            
+            let _client: WalletClient | ThirdwebClient | undefined;
+            
+            if (privateKey) {
+                _client = createWalletClient({
+                    account: privateKeyToAccount(privateKey),
+                    chain: wagmiConfig.chains[0],
+                    transport: http()
+                });
+            } else {
+                if (window.ethereum && activeAccount?.address) {
+                    _client = client;
+                }
+            }
+
+            if (!_client) {
+                return { output: ["No account selected"] };
+            }
+
+            try {
+                if (privateKey) {
+                    await _accept(contractAddress, _client as WalletClient);
+                } else {
+                    await _acceptThirdWebClient(contractAddress, activeAccount, _client as ThirdwebClient);
+                }
+                return { output: ["Prize accepted successfully"] };
+            } catch (error: any) {
+                return { output: [`Failed to accept prize: ${error.message}`] };
+            }
         }
     },
     {
