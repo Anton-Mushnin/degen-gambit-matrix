@@ -79,10 +79,8 @@ export const degenGambitCommands: CommandDefinition<DegenGambitCommandParams>[] 
 
             return {
                 output: [spinResult.description],
-                data: {
-                    outcome: spinResult.outcome ? [...spinResult.outcome.slice(0, 3)] : undefined,
-                    isPrize: spinResult.prize ? Number(spinResult.prize) > 0 : undefined
-                }
+                outcome: spinResult.outcome ? [...spinResult.outcome.slice(0, 3)] : undefined,
+                isPrize: spinResult.prize ? Number(spinResult.prize) > 0 : undefined
             };
         }
     },
