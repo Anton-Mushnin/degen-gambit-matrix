@@ -18,15 +18,19 @@ export type SpinResult = {
 };
 
 export type DegenGambitCommandParams = {
-    activeAccount: Account | undefined;
-    client: ThirdwebClient;
     onSetNumbers?: (numbers: number[]) => void;
     getCurrentNumbers: () => Promise<number[]>;
     onAutoSpinToggle: () => void;
     setIsWin: (isWin: boolean) => void;
 };
 
-export const degenGambitCommands: CommandDefinition<DegenGambitCommandParams>[] = [
+export type TerminalCommandParams = {
+    activeAccount: Account | undefined;
+    client: ThirdwebClient;
+    gameParams: DegenGambitCommandParams;
+};
+
+export const degenGambitCommands: CommandDefinition<TerminalCommandParams>[] = [
     {
         pattern: {
             pattern: /^getsome$/,
@@ -50,7 +54,8 @@ export const degenGambitCommands: CommandDefinition<DegenGambitCommandParams>[] 
             usage: 'spin [boost]'
         },
         handler: async ({ input, params }) => {
-            const { activeAccount, client, setIsWin } = params;
+            const { activeAccount, client, gameParams } = params;
+            const { setIsWin } = gameParams;
             
             let _client: WalletClient | ThirdwebClient | undefined;
             let account: Account | undefined;
@@ -113,7 +118,7 @@ export const degenGambitCommands: CommandDefinition<DegenGambitCommandParams>[] 
             usage: 'auto'
         },
         handler: async ({ params }) => {
-            const { onAutoSpinToggle } = params;
+            const { onAutoSpinToggle } = params.gameParams;
             onAutoSpinToggle?.();
             return { output: [] };
         }
@@ -126,7 +131,7 @@ export const degenGambitCommands: CommandDefinition<DegenGambitCommandParams>[] 
             usage: 'set <index> <number>'
         },
         handler: async ({ input, params }) => {
-            const { onSetNumbers, getCurrentNumbers } = params;
+            const { onSetNumbers, getCurrentNumbers } = params.gameParams;
             const [, indexStr, numberStr] = input.split(' ');
             const index = parseInt(indexStr);
             const number = parseInt(numberStr);
@@ -203,13 +208,13 @@ export const degenGambitCommands: CommandDefinition<DegenGambitCommandParams>[] 
                 '',
                 'Available commands:',
                 ...degenGambitCommands
-                    .filter((cmd): cmd is CommandDefinition<DegenGambitCommandParams> & { pattern: CommandPattern } => 
+                    .filter((cmd): cmd is CommandDefinition<TerminalCommandParams> & { pattern: CommandPattern } => 
                         cmd.pattern !== undefined)
                     .map(cmd => `• ${cmd.pattern.name}: ${cmd.pattern.description}`),
                 '',
                 'Usage examples:',
                 ...degenGambitCommands
-                    .filter((cmd): cmd is CommandDefinition<DegenGambitCommandParams> & { pattern: CommandPattern } => 
+                    .filter((cmd): cmd is CommandDefinition<TerminalCommandParams> & { pattern: CommandPattern } => 
                         cmd.pattern !== undefined)
                     .map(cmd => `  ${cmd.pattern.usage}`)
             ];

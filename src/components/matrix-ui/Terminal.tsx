@@ -8,11 +8,11 @@ interface TerminalProps {
         shift: () => { text: string; toType: boolean } | undefined;
     };
     onSubmit: (input: string) => void;  
-    isProcessing: boolean;          // Whether terminal is processing input
+    isInputDisabled: boolean;          // Whether terminal is processing input
     children?: React.ReactNode; 
 }
 
-export const Terminal = ({ queue, onSubmit, isProcessing, children }: TerminalProps) => {
+export const Terminal = ({ queue, onSubmit, isInputDisabled, children }: TerminalProps) => {
   const [userInput, setUserInput] = useState('');
   const [history, setHistory] = useState<string[]>([]);
   const [inputHistory, setInputHistory] = useState<string[]>([]);
@@ -31,7 +31,7 @@ export const Terminal = ({ queue, onSubmit, isProcessing, children }: TerminalPr
     if (containerRef.current) {
       containerRef.current.scrollTop = containerRef.current.scrollHeight;
     }
-  }, [history, isSystemTyping, isProcessing, children]);
+  }, [history, isSystemTyping, isInputDisabled, children]);
 
   // Process queue items
   useEffect(() => {
@@ -125,7 +125,7 @@ export const Terminal = ({ queue, onSubmit, isProcessing, children }: TerminalPr
             ))}
         </div>
 
-        {!isSystemTyping && !isProcessing && (
+        {!isSystemTyping && !isInputDisabled && (
             <div className={styles.inputLine}>
                 <div className={styles.inputText}>{`>${userInput}`.replace(/ /g, '\u00A0')}</div>
                 <span className={styles.cursor}>█</span>
