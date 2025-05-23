@@ -1,5 +1,4 @@
-
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { numbers } from "../config/symbols";
 import Matrix from "./Matrix";          
 import { useQueryClient } from "@tanstack/react-query";
@@ -25,7 +24,7 @@ const DegenGambit = () => {
     const { address: playerAddress } = useAccountToUse();
     
     const [gameState, gameActions] = useDegenGambitGame();
-    const { userNumbers, isWin, autoSpin } = gameState;
+    const { isWin, autoSpin } = gameState;
     
     const [isSpinning, setIsSpinning] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
@@ -33,28 +32,16 @@ const DegenGambit = () => {
     
     
 
-    const getCurrentNumbers = useCallback(async () => {
-        return userNumbers;
-    }, [userNumbers]);
-
     const gameParams: DegenGambitCommandParams = {
         onSetNumbers: gameActions.setUserNumbers,
-        getCurrentNumbers,
+        getCurrentNumbers: gameActions.getCurrentNumbers,
         onAutoSpinToggle: gameActions.toggleAutoSpin,
         setIsWin: gameActions.setIsWin,
+        autoSpin: autoSpin,
     }
     
 
     const { outputQueue, setOutputQueue, handleInput } = useTerminal(gameParams);
-
-
-
-    useEffect(() => {
-        if (autoSpin !== undefined) {
-            setOutputQueue(prev => [...prev, {text: `Auto spin: ${autoSpin}`, toType: false}]);
-        }
-    }, [autoSpin]);
-
     
     
     const _handleInput = async (input: string) => {

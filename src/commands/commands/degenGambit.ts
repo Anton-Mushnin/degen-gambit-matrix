@@ -19,9 +19,10 @@ export type SpinResult = {
 
 export type DegenGambitCommandParams = {
     onSetNumbers?: (numbers: number[]) => void;
-    getCurrentNumbers: () => Promise<number[]>;
+    getCurrentNumbers: () => number[];
     onAutoSpinToggle: () => void;
     setIsWin: (isWin: boolean) => void;
+    autoSpin: boolean;
 };
 
 export type TerminalCommandParams = {
@@ -118,9 +119,10 @@ export const degenGambitCommands: CommandDefinition<TerminalCommandParams>[] = [
             usage: 'auto'
         },
         handler: async ({ params }) => {
-            const { onAutoSpinToggle } = params.gameParams;
+            const { onAutoSpinToggle, autoSpin } = params.gameParams;
+            const output = [`Auto spin: ${!autoSpin}`];
             onAutoSpinToggle?.();
-            return { output: [] };
+            return { output };
         }
     },
     {
@@ -136,7 +138,7 @@ export const degenGambitCommands: CommandDefinition<TerminalCommandParams>[] = [
             const index = parseInt(indexStr);
             const number = parseInt(numberStr);
 
-            const currentNumbers = await getCurrentNumbers();
+            const currentNumbers = getCurrentNumbers();
 
             if (index < 0 || index >= currentNumbers.length) {
                 return { 

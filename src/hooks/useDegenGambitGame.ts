@@ -11,6 +11,7 @@ interface GameActions {
     setUserNumbers: (numbers: number[]) => void;
     setIsWin: (isWin: boolean) => void;
     toggleAutoSpin: () => void;
+    getCurrentNumbers: () => number[];
 }
 
 export const useDegenGambitGame = (): [GameState, GameActions] => {
@@ -22,6 +23,10 @@ export const useDegenGambitGame = (): [GameState, GameActions] => {
         setAutoSpin(prev => !prev);
     }, []);
 
+    const getCurrentNumbers = useCallback(() => {
+        return userNumbers;
+    }, [userNumbers]);
+
     const gameState: GameState = {
         userNumbers,
         isWin,
@@ -32,6 +37,7 @@ export const useDegenGambitGame = (): [GameState, GameActions] => {
         setUserNumbers,
         setIsWin,
         toggleAutoSpin,
+        getCurrentNumbers,
     };
 
     return [gameState, gameActions];
