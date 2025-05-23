@@ -31,6 +31,12 @@ export type TerminalCommandParams = {
     gameParams: DegenGambitCommandParams;
 };
 
+declare global {
+    interface Window {
+        ethereum?: any;
+    }
+}
+
 export const degenGambitCommands: CommandDefinition<TerminalCommandParams>[] = [
     {
         pattern: {
