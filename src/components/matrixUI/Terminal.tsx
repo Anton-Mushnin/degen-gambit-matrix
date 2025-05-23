@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { TerminalOutput } from '../TerminalOutput';
-import styles from '../MatrixTerminal.module.css';
+import { TerminalOutput } from '../degen-gambit/TerminalOutput';
+import styles from './Terminal.module.css';
 
 interface TerminalProps {
     queue: {

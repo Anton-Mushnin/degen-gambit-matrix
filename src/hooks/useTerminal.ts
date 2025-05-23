@@ -12,7 +12,7 @@ import { degenGambitCommands, DegenGambitCommandParams, TerminalCommandParams } 
 import { loggingMiddleware, errorHandlingMiddleware } from '../commands/middleware';
 
 // Custom hooks
-import { useAccountToUse } from './useAccountToUse';
+import { useAccountToUse } from './degen-gambit/useAccountToUse';
 
 export const useTerminal = (gameParams: DegenGambitCommandParams) => {
     const activeAccount = useActiveAccount();

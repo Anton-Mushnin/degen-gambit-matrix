@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { watchContractEvent } from '@wagmi/core';
-import { contractAddress } from '../config';
-import { degenGambitABI } from '../ABIs/DegenGambit.abi.ts';
-import { wagmiConfig } from '../config';
+import { contractAddress } from '../../config/index.ts';
+import { degenGambitABI } from '../../ABIs/DegenGambit.abi.ts';
+import { wagmiConfig } from '../../config/index.ts';
 import { formatEther, formatUnits } from 'viem';
 import styles from './Stream.module.css';
-import { useDegenGambitInfo } from '../hooks/useDegenGambitInfo';
+import { useDegenGambitInfo } from '../../hooks/degen-gambit/useDegenGambitInfo.ts';
 import { useQueryClient } from '@tanstack/react-query';
 import { useActiveAccount } from 'thirdweb/react';
 

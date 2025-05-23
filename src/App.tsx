@@ -1,6 +1,6 @@
 import { ThirdwebProvider } from 'thirdweb/react';
 import './styles/fonts.css';
-import { TerminalOutput } from './components/TerminalOutput';
+import { TerminalOutput } from './components/degen-gambit/TerminalOutput';
 import Home from './components/Home';
 
 function App() {

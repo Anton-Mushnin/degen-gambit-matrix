@@ -1,9 +1,9 @@
 import { useState, useCallback } from 'react';
-import { numbers } from '../config/symbols';
+import { numbers } from '../../config/symbols';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAccountToUse } from './useAccountToUse';
-import { useTerminal } from './useTerminal';
-import { DegenGambitCommandParams } from '../commands/commands/degenGambit';
+import { useTerminal } from '../useTerminal';
+import { DegenGambitCommandParams } from '../../commands/commands/degenGambit';
 
 const phrasesToType = ['Wake up', 'The Matrix', 'Prize'];
 

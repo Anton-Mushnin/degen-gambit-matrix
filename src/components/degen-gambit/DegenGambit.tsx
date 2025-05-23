@@ -1,6 +1,6 @@
-import { useDegenGambitGame } from '../hooks/useDegenGambitGame';
-import Matrix from "./Matrix";          
-import { Terminal } from "./matrix-ui/Terminal";
+import { useDegenGambitGame } from '../../hooks/degen-gambit/useDegenGambitGame';
+import Matrix from "../matrixUI/Matrix";          
+import { Terminal } from "../matrixUI/Terminal";
 import RandomNumbers from "./RandomNumbers";
 import styles from './MatrixTerminal.module.css';
 

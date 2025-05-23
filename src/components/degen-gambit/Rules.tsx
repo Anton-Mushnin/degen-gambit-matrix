@@ -1,7 +1,7 @@
-import { useDegenGambitInfo } from '../hooks/useDegenGambitInfo';
-import { contractAddress } from '../config';
+import { useDegenGambitInfo } from '../../hooks/degen-gambit/useDegenGambitInfo';
+import { contractAddress } from '../../config';
 import styles from './Rules.module.css';
-import { numbers } from '../config/symbols';
+import { numbers } from '../../config/symbols';
 
 const Rules = () => {
     const contractInfo = useDegenGambitInfo(contractAddress);

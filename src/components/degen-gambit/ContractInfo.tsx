@@ -4,13 +4,13 @@ import { getBalance } from '@wagmi/core';
 import { useActiveAccount } from 'thirdweb/react';
 import { privateKeyToAccount } from 'viem/accounts';
 
-import { contractAddress, wagmiConfig } from '../config';
-import { useAccountToUse } from '../hooks/useAccountToUse';
-import useBlocksLeft from '../hooks/useBlocksLeft';
-import { useDegenGambitInfo } from '../hooks/useDegenGambitInfo';
-import { getCostToSpin, getCurrentBlock, getCurrentDailyStreakLength, getCurrentWeeklyStreakLength, getLastSpinBlock, getSupply } from '../utils/degenGambit';
-import QueryValueRow from './matrixUI/QueryValueRow';
-import ValueRow from './matrixUI/ValueRow';
+import { contractAddress, wagmiConfig } from '../../config';
+import { useAccountToUse } from '../../hooks/degen-gambit/useAccountToUse';
+import useBlocksLeft from '../../hooks/useBlocksLeft';
+import { useDegenGambitInfo } from '../../hooks/degen-gambit/useDegenGambitInfo';
+import { getCostToSpin, getCurrentBlock, getCurrentDailyStreakLength, getCurrentWeeklyStreakLength, getLastSpinBlock, getSupply } from '../../utils/degenGambit';
+import QueryValueRow from '../matrixUI/QueryValueRow';
+import ValueRow from '../matrixUI/ValueRow';
 import styles from './ContractInfo.module.css';
 
 export const privateKey = import.meta.env.VITE_PRIVATE_KEY
