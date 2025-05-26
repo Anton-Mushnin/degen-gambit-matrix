@@ -27,8 +27,8 @@ export function useAccountToUse(): UseAccountToUseResult {
       try {
         setIsLoading(true);
         setError(null);
-        
-        const addressToUse = privateKeyAddress || activeAccount?.address;
+        console.log('activeAccount', activeAccount);
+        const addressToUse = activeAccount?.address || privateKeyAddress;
         setAddress(addressToUse);
         
         if (!addressToUse) {
