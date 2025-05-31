@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
@@ -87,7 +87,7 @@ contract RockPaperScissors is ReentrancyGuard, Ownable {
     }
 
     // Constructor
-    constructor(address _feeCollector) Ownable(msg.sender) {
+    constructor(address _feeCollector) Ownable() {
         require(_feeCollector != address(0), "Invalid fee collector");
         feeCollector = _feeCollector;
     }
