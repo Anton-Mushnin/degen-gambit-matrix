@@ -1,0 +1,173 @@
+# Cursor Rules Template and Guide
+
+## Rule Structure
+
+### 1. YAML Frontmatter
+Every rule must start with YAML frontmatter (between `---` markers) containing:
+```yaml
+---
+description: Brief description of what the rule does
+globs: ["**/*"]  # File patterns this rule applies to
+alwaysApply: true/false  # Whether rule should always be applied
+---
+```
+
+### 2. Rule Content
+The main content can use Markdown formatting and supports:
+- Headers (# for main sections, ## for subsections)
+- Lists (both ordered and unordered)
+- Code blocks (``` for multi-line, ` for inline)
+- Links and references
+- File references using @ symbol (e.g., @src/components/example.tsx)
+
+## Rule Types
+
+### 1. Documentation Rules
+Use these to provide context about code structure:
+```markdown
+# Component Documentation
+
+- @src/components/Component.tsx
+  - Purpose: Main component for X functionality
+  - Props: 
+    - prop1: string - Description
+    - prop2: number - Description
+  - Usage examples:
+    ```tsx
+    <Component prop1="value" prop2={42} />
+    ```
+```
+
+### 2. Code Style Rules
+Define coding standards and patterns:
+```markdown
+# Code Style Guidelines
+
+## Naming Conventions
+- Components: PascalCase (e.g., `UserProfile.tsx`)
+- Functions: camelCase (e.g., `handleSubmit`)
+- Constants: UPPER_SNAKE_CASE (e.g., `MAX_RETRY_COUNT`)
+
+## File Organization
+- One component per file
+- Related utilities in same directory
+- Types in separate `types.ts` file
+```
+
+### 3. Architecture Rules
+Document system design and patterns:
+```markdown
+# Architecture Patterns
+
+## Component Hierarchy
+- @src/App.tsx
+  - @src/components/Layout.tsx
+    - @src/components/Header.tsx
+    - @src/components/Content.tsx
+  - @src/components/Footer.tsx
+
+## Data Flow
+1. User action triggers event
+2. Event handler updates state
+3. State change triggers re-render
+4. Components receive new props
+```
+
+## Best Practices
+
+1. **Be Specific**
+   - Use precise glob patterns
+   - Include clear examples
+   - Reference specific files when possible
+
+2. **Keep it Organized**
+   - Use clear section headers
+   - Group related information
+   - Include a table of contents for long rules
+
+3. **Make it Actionable**
+   - Provide concrete examples
+   - Include code snippets
+   - Explain the "why" behind rules
+
+4. **Stay Current**
+   - Update rules when patterns change
+   - Remove obsolete rules
+   - Version control your rules
+
+## Common Patterns
+
+### 1. Component Documentation
+```markdown
+# @src/components/Example.tsx
+
+## Purpose
+Brief description of component's role
+
+## Props
+- prop1: type - description
+- prop2: type - description
+
+## Usage
+```tsx
+<Example prop1="value" prop2={42} />
+```
+
+## Dependencies
+- @src/hooks/useExample.ts
+- @src/utils/helpers.ts
+```
+
+### 2. API Documentation
+```markdown
+# API Endpoints
+
+## Authentication
+- POST /api/auth/login
+  - Body: { username: string, password: string }
+  - Response: { token: string }
+
+## Data
+- GET /api/data
+  - Query: { page: number, limit: number }
+  - Response: { items: Array<Item>, total: number }
+```
+
+### 3. Testing Guidelines
+```markdown
+# Testing Standards
+
+## Unit Tests
+- One test file per component
+- Test file naming: Component.test.tsx
+- Location: __tests__ directory
+
+## Test Structure
+```tsx
+describe('Component', () => {
+  it('should render correctly', () => {
+    // Test code
+  });
+  
+  it('should handle user interaction', () => {
+    // Test code
+  });
+});
+```
+
+## Rule Maintenance
+
+1. **Regular Review**
+   - Review rules quarterly
+   - Update outdated patterns
+   - Remove unused rules
+
+2. **Version Control**
+   - Track rule changes in git
+   - Include rule updates in PRs
+   - Document major rule changes
+
+3. **Team Collaboration**
+   - Share rule updates with team
+   - Collect feedback on rules
+   - Update based on team needs 

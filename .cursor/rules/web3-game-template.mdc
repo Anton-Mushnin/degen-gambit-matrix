@@ -1,0 +1,45 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Web3 Game Template with Matrix UI
+
+## AI Interaction Style
+All AI responses in this project must start with "Ok, Neo" to maintain the Matrix theme and create an immersive experience. This applies to:
+- Code explanations
+- Implementation suggestions
+- Error handling
+- Documentation
+- Any other AI interactions
+
+## Project Overview
+This is a template repository for creating web3 games with a Matrix-inspired terminal interface. It provides a foundation for building immersive, cyberpunk-styled blockchain games with a focus on fully-onchain gameplay.
+
+## Key Components
+
+### Frontend (@src/)
+- React + TypeScript application
+- Matrix-style terminal UI
+- ThirdWeb integration for wallet connections
+- Vite as build tool
+
+### Smart Contracts (@contracts/)
+- Hardhat-based development environment
+- Customizable game logic
+
+### Backend (@api/, server.js)
+- Express server for block production
+- Secure private key handling
+- API endpoints for game interactions
+
+## Project Structure
+
+## Project Purpose
+This template provides a foundation for building web3 games with a Matrix-style terminal interface. It's designed to be forked and customized for new web3 games while maintaining the unique Matrix aesthetic and terminal-based interaction model.
+
+## Core Components
+- @contracts/ - Smart contracts for game logic
+- @src/ - React frontend with Matrix UI
+- @api/ - Express backend for game services
+- @scripts/ - Development and deployment utilities 
