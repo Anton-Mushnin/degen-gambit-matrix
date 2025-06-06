@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useActiveAccount } from 'thirdweb/react';
 import { createPublicClient, http } from 'viem';
 import { mainnet } from 'viem/chains';
-import { privateKeyAddress } from '../config';
+import { privateKeyAddress } from '../../config';
 
 interface UseAccountToUseResult {
   displayName: string;

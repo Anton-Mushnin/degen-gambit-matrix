@@ -4,9 +4,9 @@ import { getPublicClient } from '@wagmi/core';
 
 // You'll need to import your contract ABI
 
-import { g7Testnet, wagmiConfig } from '../config/index.ts';
+import { g7Testnet, wagmiConfig } from '../../config/index.ts';
 import { formatEther } from 'viem';
-import { getDegenGambitInfo } from '../utils/degenGambit.ts';
+import { getDegenGambitInfo } from '../../utils/degenGambit.ts';
 
 const calculateAverageBlockTime = async () => {
   const publicClient = getPublicClient(wagmiConfig);
