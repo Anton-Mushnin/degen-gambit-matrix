@@ -107,7 +107,7 @@ export const degenGambitCommands: CommandDefinition<TerminalCommandParams>[] = [
                     } else if (activeAccount) {
                         await _acceptThirdWebClient(contractAddress, activeAccount, client);
                     }
-                }, 20000);
+                }, 18000);
             }
 
             return {
