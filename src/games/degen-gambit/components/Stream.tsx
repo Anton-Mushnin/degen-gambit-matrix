@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { watchContractEvent } from '@wagmi/core';
-import { contractAddress } from '../../config/index.ts';
-import { degenGambitABI } from '../../ABIs/DegenGambit.abi.ts';
-import { wagmiConfig } from '../../config/index.ts';
+import { contractAddress } from '../../../config/index.ts';
+import { degenGambitABI } from '../../../ABIs/DegenGambit.abi.ts';
+import { wagmiConfig } from '../../../config/index.ts';
 import { formatEther, formatUnits } from 'viem';
 import styles from './Stream.module.css';
-import { useDegenGambitInfo } from '../../hooks/degen-gambit/useDegenGambitInfo.ts';
+import { useDegenGambitInfo } from '../hooks/useDegenGambitInfo.ts';
 import { useQueryClient } from '@tanstack/react-query';
 import { useActiveAccount } from 'thirdweb/react';
 
@@ -55,7 +55,7 @@ const Stream: React.FC = () => {
           }
         }
 
-
+        console.log(logs);
         logs.forEach(log => {
             if (log.args.player) {
                 const {player, bonus} = log.args;
@@ -93,6 +93,7 @@ const Stream: React.FC = () => {
         if (logs.some((log) => log.args.player === activeAccount?.address)) {
           queryClient.invalidateQueries({queryKey: ['accountBalance']});
         }
+        console.log(logs);
         logs.forEach(log => {
             const {player, value} = log.args;
             if (!player || !value) return;
@@ -141,6 +142,7 @@ const Stream: React.FC = () => {
         if (logs.some((log) => log.args.player === activeAccount?.address)) {
           queryClient.invalidateQueries({queryKey: ['accountGambitBalance']});
         }
+        console.log(logs);
         logs.forEach(log => {
             const {player} = log.args;
             if (!player) return;
@@ -162,6 +164,10 @@ const Stream: React.FC = () => {
       unwatchWeeklyStreak();
     };
   }, [contractInfo.data, activeAccount?.address]);
+
+  useEffect(() => {
+    console.log(events);
+  }, [events]);
 
   return (
       <div className={styles.container} ref={containerRef}>

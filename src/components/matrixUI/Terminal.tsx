@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { TerminalOutput } from '../degen-gambit/TerminalOutput';
+import { TerminalOutput } from './TerminalOutput';
 import styles from './Terminal.module.css';
 
 interface TerminalProps {

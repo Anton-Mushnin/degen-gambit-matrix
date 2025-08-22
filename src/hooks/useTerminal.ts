@@ -8,11 +8,12 @@ import { useActiveAccount, useActiveWallet, useConnectModal } from "thirdweb/rea
 // Local imports
 import { thirdwebClientId, thirdWebG7Testnet } from '../config';
 import { CommandDispatcher } from '../commands/dispatcher';
-import { degenGambitCommands, DegenGambitCommandParams, TerminalCommandParams } from '../commands/commands/degenGambit';
+import { CommandDefinition } from '../commands/types';
+import { degenGambitCommands, DegenGambitCommandParams, TerminalCommandParams } from '../games/degen-gambit/commands/degenGambit';
 import { loggingMiddleware, errorHandlingMiddleware } from '../commands/middleware';
 
 // Custom hooks
-import { useAccountToUse } from './degen-gambit/useAccountToUse';
+import { useAccountToUse } from '../games/degen-gambit/hooks/useAccountToUse';
 
 export const useTerminal = (gameParams: DegenGambitCommandParams) => {
     const activeAccount = useActiveAccount();
@@ -26,7 +27,7 @@ export const useTerminal = (gameParams: DegenGambitCommandParams) => {
     // Create and configure command dispatcher
     const dispatcher = useMemo(() => {
         const d = new CommandDispatcher<TerminalCommandParams>();
-        degenGambitCommands.forEach(cmd => d.register(cmd));
+        degenGambitCommands.forEach((cmd: CommandDefinition<TerminalCommandParams>) => d.register(cmd));
         d.use(loggingMiddleware);
         d.use(errorHandlingMiddleware);
         return d;

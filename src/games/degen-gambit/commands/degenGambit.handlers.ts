@@ -5,8 +5,8 @@ import { createWalletClient, http, type WalletClient } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 
 // Local imports
-import { contractAddress, privateKey, wagmiConfig } from '../../config';
-import { _accept, _acceptThirdWebClient, spin } from "../../utils/degenGambit";
+import { contractAddress, privateKey, wagmiConfig } from '../../../config';
+import { _accept, _acceptThirdWebClient, spin } from "../../../utils/degenGambit";
 
 export type SpinResult = {
     description: string;

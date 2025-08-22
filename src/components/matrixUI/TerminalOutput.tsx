@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import styles from './MatrixTerminal.module.css';
+import styles from './Terminal.module.css';
 
 const color = '#a1eeb5';
 const glow = '#0dda9f';

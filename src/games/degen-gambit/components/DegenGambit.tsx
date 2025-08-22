@@ -1,6 +1,6 @@
-import { useDegenGambitGame } from '../../hooks/degen-gambit/useDegenGambitGame';
-import Matrix from "../matrixUI/Matrix";          
-import { Terminal } from "../matrixUI/Terminal";
+import { useDegenGambitGame } from '../hooks/useDegenGambitGame';
+import Matrix from "../../../components/matrixUI/Matrix";          
+import { Terminal } from "../../../components/matrixUI/Terminal";
 import RandomNumbers from "./RandomNumbers";
 import styles from './MatrixTerminal.module.css';
 
@@ -34,7 +34,7 @@ const DegenGambit = () => {
                 )}
                 {outcome.length > 0 && (
                     <div className={styles.spinningContainer}>
-                        {outcome.map((item, index) => (
+                                        {outcome.map((item: string, index: number) => (
                             <RandomNumbers key={index} result={item} duration={2000 + index * 2000} />
                         ))}
                     </div>

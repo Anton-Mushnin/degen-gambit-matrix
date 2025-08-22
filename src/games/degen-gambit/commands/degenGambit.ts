@@ -1,5 +1,5 @@
 // Local imports
-import { CommandDefinition, CommandPattern } from '../types';
+import { CommandDefinition, CommandPattern } from '../../../commands/types';
 import { 
     handleGetSome, 
     handleSpin, 

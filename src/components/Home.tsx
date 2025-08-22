@@ -1,8 +1,6 @@
-import ContractInfo from "./degen-gambit/ContractInfo";
-import DegenGambit from "./degen-gambit/DegenGambit";
+import { ContractInfo, DegenGambit, Rules, Stream } from "../games/degen-gambit";
 import styles from "./Home.module.css";
-import Rules from "./degen-gambit/Rules";
-import Stream from "./degen-gambit/Stream";
+
 const Home = () => {
     return (
         <div className={styles.container}>
