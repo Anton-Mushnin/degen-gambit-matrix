@@ -8,11 +8,25 @@ import {
     CommandResult 
 } from './types';
 
+// Game context interface for command routing
+export interface GameContextForCommands {
+    activeGameId: string | null;
+    switchGameByName: (gameName: string) => boolean;
+    getGameNames: () => string[];
+    getGameCommands: () => CommandDefinition<any>[];
+}
+
 export class CommandDispatcher<T = any> {
     private registry: CommandRegistry<T> = new Map();
     private globalMiddleware: CommandMiddleware[] = [];
+    private gameContext: GameContextForCommands | null = null;
 
     constructor() {
+    }
+
+    // Set game context for game-aware command routing
+    setGameContext(gameContext: GameContextForCommands): void {
+        this.gameContext = gameContext;
     }
 
     register(command: CommandDefinition<T>): void {
@@ -35,8 +49,18 @@ export class CommandDispatcher<T = any> {
         this.registry.set(command.pattern.name, command);
     }
 
+    // Register multiple commands at once
+    registerCommands(commands: CommandDefinition<T>[]): void {
+        commands.forEach(cmd => this.register(cmd));
+    }
+
     unregister(commandName: string): void {
         this.registry.delete(commandName);
+    }
+
+    // Clear all registered commands
+    clearCommands(): void {
+        this.registry.clear();
     }
 
     use(middleware: CommandMiddleware): void {
@@ -59,12 +83,42 @@ export class CommandDispatcher<T = any> {
         return execute(0);
     }
 
+    // Get all available commands (global + game-specific)
+    private getAllAvailableCommands(): CommandDefinition<T>[] {
+        const globalCommands = Array.from(this.registry.values());
+        const gameCommands = this.gameContext?.getGameCommands() || [];
+        return [...globalCommands, ...gameCommands];
+    }
+
     async dispatch(input: string, params: T): Promise<CommandResult> {
         const context: CommandContext<T> = { input, params };
 
         try {
+            // First check if it's a game switching command
+            if (this.gameContext) {
+                const gameNames = this.gameContext.getGameNames();
+                const inputLower = input.toLowerCase().trim();
+                
+                // Check if input matches a game name
+                if (gameNames.some(name => name.toLowerCase() === inputLower)) {
+                    const success = this.gameContext.switchGameByName(input);
+                    if (success) {
+                        return {
+                            output: [`Switched to game: ${input}`]
+                        };
+                    } else {
+                        return {
+                            output: [`Failed to switch to game: ${input}`]
+                        };
+                    }
+                }
+            }
+
+            // Get all available commands (global + current game)
+            const allCommands = this.getAllAvailableCommands();
+
             // Find matching command
-            for (const command of this.registry.values()) {
+            for (const command of allCommands) {
                 if (command.isDefault) continue; // Skip default command in normal search
                 if (command.pattern?.pattern.test(input)) {
                     const allMiddleware = [
@@ -80,7 +134,7 @@ export class CommandDispatcher<T = any> {
                 }
             }
 
-            // If no command found, try default command
+            // If no command found, try default command from global registry first
             const defaultCommand = this.registry.get('__default__');
             if (defaultCommand) {
                 const allMiddleware = [
@@ -94,10 +148,33 @@ export class CommandDispatcher<T = any> {
                 );
             }
 
+            // Try default command from current game
+            if (this.gameContext) {
+                const gameCommands = this.gameContext.getGameCommands();
+                const gameDefaultCommand = gameCommands.find(cmd => cmd.isDefault);
+                if (gameDefaultCommand) {
+                    const allMiddleware = [
+                        ...this.globalMiddleware,
+                        ...(gameDefaultCommand.middleware || [])
+                    ];
+                    return this.executeMiddleware(
+                        context,
+                        allMiddleware,
+                        gameDefaultCommand.handler
+                    );
+                }
+            }
+
             // No command and no default handler found
+            const availableCommands = this.getAvailableCommandsList();
             return {
                 output: [
                     `Command not found: ${input}`,
+                    '',
+                    'Available commands:',
+                    ...availableCommands,
+                    '',
+                    this.gameContext ? `Current game: ${this.gameContext.activeGameId || 'none'}` : 'No game context'
                 ]
             };
         } catch (error) {
@@ -109,6 +186,42 @@ export class CommandDispatcher<T = any> {
                 ].filter(Boolean)
             };
         }
+    }
+
+    // Get a formatted list of available commands
+    private getAvailableCommandsList(): string[] {
+        const commands: string[] = [];
+        
+        // Global commands
+        const globalCommands = Array.from(this.registry.values())
+            .filter(cmd => !cmd.isDefault && cmd.pattern)
+            .map(cmd => `• ${cmd.pattern!.name}: ${cmd.pattern!.description}`);
+        
+        if (globalCommands.length > 0) {
+            commands.push('Global commands:');
+            commands.push(...globalCommands);
+        }
+
+        // Game commands
+        if (this.gameContext) {
+            const gameCommands = this.gameContext.getGameCommands()
+                .filter(cmd => !cmd.isDefault && cmd.pattern)
+                .map(cmd => `• ${cmd.pattern!.name}: ${cmd.pattern!.description}`);
+            
+            if (gameCommands.length > 0) {
+                commands.push('', `Current game commands (${this.gameContext.activeGameId}):`);
+                commands.push(...gameCommands);
+            }
+
+            // Available games
+            const gameNames = this.gameContext.getGameNames();
+            if (gameNames.length > 0) {
+                commands.push('', 'Available games:');
+                commands.push(...gameNames.map(name => `• ${name}: Switch to ${name} game`));
+            }
+        }
+
+        return commands;
     }
 
     getCommands(): CommandDefinition<T>[] {

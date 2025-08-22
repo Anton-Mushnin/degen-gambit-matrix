@@ -2,6 +2,7 @@ import { ThirdwebProvider } from 'thirdweb/react';
 import './styles/fonts.css';
 import { TerminalOutput } from './components/matrixUI/TerminalOutput';
 import Home from './components/Home';
+import { GameProvider } from './contexts/GameContext';
 
 function App() {
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
@@ -15,7 +16,9 @@ function App() {
         </div>
       ) : (
         <ThirdwebProvider>
-          <Home />
+          <GameProvider>
+            <Home />
+          </GameProvider>
         </ThirdwebProvider>
       )}
     </div>
