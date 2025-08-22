@@ -15,6 +15,8 @@ interface ContractEvent {
   blockNumber: number;
   eventType: 'spin' | 'accept' | 'respin' | 'dailyStreak' | 'weeklyStreak';
   description: string;
+  transactionHash: string;
+  logIndex: number;
 }
 
 const Stream: React.FC = () => {
@@ -24,6 +26,25 @@ const Stream: React.FC = () => {
   const queryClient = useQueryClient()
 
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Helper function to check if event already exists
+  const isEventDuplicate = (newEvent: ContractEvent, existingEvents: ContractEvent[]) => {
+    return existingEvents.some(
+      event => 
+        event.transactionHash === newEvent.transactionHash && 
+        event.logIndex === newEvent.logIndex
+    );
+  };
+
+  // Helper function to add event if not duplicate
+  const addEventIfUnique = (newEvent: ContractEvent) => {
+    setEvents(prev => {
+      if (isEventDuplicate(newEvent, prev)) {
+        return prev;
+      }
+      return [...prev, newEvent];
+    });
+  };
 
   // Add scroll to bottom effect when history changes
   useEffect(() => {
@@ -62,13 +83,15 @@ const Stream: React.FC = () => {
                 if (!contractInfo.data?.costToSpin || !contractInfo.data?.costToRespin) return;
                 const costToSpinFormatted = `${Math.random() < 0.2 ? contractInfo.data.costToSpin : contractInfo.data.costToRespin}`;
                 const description = `${player.slice(0, 6)}...${player?.slice(-4)} uploads ${costToSpinFormatted}${bonus ? ' and burns 1 GAMBIT' : ''}`;
-                setEvents(prev => [...prev, {
+                addEventIfUnique({
                     player,
                     description,
                     bonus: bonus as boolean,
                     blockNumber: Number(log.blockNumber),
-                    eventType: 'spin'
-                }]);
+                    eventType: 'spin',
+                    transactionHash: log.transactionHash,
+                    logIndex: log.logIndex
+                });
             }
         });
       },
@@ -100,12 +123,14 @@ const Stream: React.FC = () => {
             const ethValue = formatEther(value);
             const valueFormatted = ethValue === '1' ? `${ethValue} [GAMBIT]` : `${ethValue} WEI [TG7T]`;
             const description = `${player.slice(0, 6)}...${player?.slice(-4)} awarded ${valueFormatted}`;
-            setEvents(prev => [...prev, {
+            addEventIfUnique({
                 player,
                 description,
                 blockNumber: Number(log.blockNumber),
-                eventType: 'accept'
-            }]);
+                eventType: 'accept',
+                transactionHash: log.transactionHash,
+                logIndex: log.logIndex
+            });
         });
       },
     });
@@ -123,12 +148,14 @@ const Stream: React.FC = () => {
             const {player} = log.args;
             if (!player) return;
             const description = `${player.slice(0, 6)}...${player?.slice(-4)} claimed daily streak`;
-            setEvents(prev => [...prev, {
+            addEventIfUnique({
                 player,
                 description,
                 blockNumber: Number(log.blockNumber),
-                eventType: 'dailyStreak'
-            }]);
+                eventType: 'dailyStreak',
+                transactionHash: log.transactionHash,
+                logIndex: log.logIndex
+            });
         });
       },
     });
@@ -147,12 +174,14 @@ const Stream: React.FC = () => {
             const {player} = log.args;
             if (!player) return;
             const description = `${player.slice(0, 6)}...${player?.slice(-4)} claimed weekly streak`;
-            setEvents(prev => [...prev, {
+            addEventIfUnique({
                 player,
                 description,
                 blockNumber: Number(log.blockNumber),
-                eventType: 'weeklyStreak'
-            }]);
+                eventType: 'weeklyStreak',
+                transactionHash: log.transactionHash,
+                logIndex: log.logIndex
+            });
         });
       },
     });
