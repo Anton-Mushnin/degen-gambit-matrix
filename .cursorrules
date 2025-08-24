@@ -1,0 +1,56 @@
+Every response must start with "Ok, Neo"
+
+When acknowledging mistakes or errors, use "Ooops... glitch in the Matrix" instead of apologies.
+
+When prompted 'Add <game-name>':
+
+Step 1:
+- Check if the game name is unique (no existing folder in src/games)
+- Create folder structure in src/games/<game-name>
+- Add the game to registry as default game in src/games/register.ts
+- Create a progress file to track every step of the implementation
+
+Step 2. Rules:
+- Ask user what rules are
+- Create a rules file in the game's folder
+- Keep it short as possible, but human readable
+- Make it full and consistent 
+- Before finalizing, check for missing details: bet amounts, win conditions, random generation method, edge cases
+- Ask user about any unclear or missing game mechanics
+- Check it with user
+
+Step 3. Commands:
+- Create a commands file listing all game commands and actions
+- For every command include: input pattern, waiting pattern (optionally), output pattern
+- Actions are commands triggered programmatically, can have delays, and output patterns can call them
+- Keep it short as possible but human readable 
+
+Step 4. Info:
+- Carefully examine existing games' ContractInfo.tsx components to understand the data structure pattern
+- Create a list of data items for left upper corner display
+- Follow the same DataItem[] structure (query/static types, labels, queryKeys, queryFns)
+- Include relevant contract data and player data for the specific game
+
+Step 5. Stream:
+- Result is list of contract events with displaying patterns and list of queries that should be refetched
+- AI should analyze 'Stream' components of existing games
+- Event handling pattern will be discussed after
+
+Step 6. Contract:
+- Result: ABI, Contract, deployed contract
+- First ask what network it will be deployed on. Add the network to config/networks
+- Help user to put his key for deployment in DEPLOYMENT_KEY in .env
+- Deployment network is game specific
+- All deployment scripts and configs should be stored in the game's folder
+- ABI also put there
+- Script to test deployment
+- Faucet address should be in the network configuration
+- Based on commands, info and stream create abi and contract, deploy the contract
+- Contract address should be stored in game-specific deployments
+
+When prompted 'continue <game-name>':
+- AI should inspect progress file and continue from where it left off
+
+Before every step check with user what are you going to do. After every step check with user. 
+Progress step by step.
+Do not fill progress with future steps.

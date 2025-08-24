@@ -1,8 +1,11 @@
 import { gameRegistry } from './registry';
 import { degenGambitGame } from './degen-gambit';
+import { evenOddGame } from './even-odd';
 
 // Register all games
 export function registerGames() {
+    // Register Even-Odd as default game
+    gameRegistry.registerGame(evenOddGame);
     // Register DegenGambit
     gameRegistry.registerGame(degenGambitGame);
     
@@ -13,4 +16,4 @@ export function registerGames() {
 }
 
 // Export for easy access
-export { degenGambitGame }; 
+export { degenGambitGame, evenOddGame }; 
