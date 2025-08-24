@@ -1,5 +1,6 @@
 import { Game } from '../types';
 import { CommandDefinition } from '../../commands/types';
+import { getEvenOddAddress, isEvenOddDeployed, evenOddABI } from '../../config/contracts';
 
 // Placeholder components
 const PlaceholderComponent = () => null;
@@ -19,7 +20,22 @@ export const evenOddGame: Game = {
     },
     hooks: {},
     config: {
-        contractAddress: '',
+        // Contract address helper - call getEvenOddAddress(chainId) to get address for specific network
+        getContractAddress: getEvenOddAddress,
+        isDeployed: isEvenOddDeployed,
+        abi: evenOddABI,
+        // Contract constants
+        betAmount: 1000, // WEI
+        winPayout: 1400, // WEI 
+        revealDelay: 3, // blocks
+        // Deployed networks
+        deployedNetworks: {
+            'xai-testnet': {
+                chainId: 37714555429,
+                address: '0x6aEEccD5eB7f9bABA25F052d0608CC4E162786B8',
+                explorer: 'https://sepolia.xaiscan.io'
+            }
+        }
     },
 };
 
