@@ -62,6 +62,15 @@ module.exports = {
       blockConfirmations: 1,
       timeout: 60000,
     },
+    "xai-testnet": {
+      url: "https://testnet-v2.xai-chain.net/rpc",
+      accounts: [PRIVATE_KEY],
+      chainId: 37714555429,
+      gas: 12000000,
+      gasPrice: 1000000000, // 1 gwei
+      blockConfirmations: 1,
+      timeout: 60000,
+    },
   },
   solidity: {
     compilers: [
