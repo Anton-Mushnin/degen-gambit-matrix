@@ -1,5 +1,5 @@
 require("@nomiclabs/hardhat-ethers");
-require("dotenv").config();
+require("dotenv").config({ path: "../../../../.env" });
 
 const DEPLOYMENT_KEY = process.env.DEPLOYMENT_KEY;
 
