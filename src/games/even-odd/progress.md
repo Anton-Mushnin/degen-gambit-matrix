@@ -15,6 +15,15 @@
 - [x] Asked user about unclear mechanics
 - [x] Confirmed with user
 
+## Step 2.1: Randomness ✅
+- [x] Assessed security requirements (Production betting game with real money)
+- [x] Evaluated randomness options:
+  - PastBlockRandomness: ❌ Not secure enough for betting
+  - FutureBlockRandomness: ✅ Recommended - secure, cost-effective
+  - VRFRandomness: ⚠️ More secure but adds complexity/costs
+- [x] Explained security trade-offs (secure future blocks, 3-block wait, no oracle costs)
+- [x] Confirmed FutureBlockRandomness approach with user
+
 ## Step 3: Commands ✅
 - [x] Created commands file listing all game commands (commands.md)
 - [x] Included input pattern, waiting pattern, output pattern for each command
