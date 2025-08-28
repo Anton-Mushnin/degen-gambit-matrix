@@ -7,6 +7,19 @@ export const thirdwebClientId = import.meta.env.VITE_THIRDWEB_CLIENT_ID
 export const privateKey = import.meta.env.VITE_PRIVATE_KEY
 export const privateKeyAddress = privateKey ? privateKeyToAccount(privateKey).address : undefined
 
+// XAI Testnet configuration
+export const XAI_TESTNET = {
+    chainId: 37714555429,
+    name: 'xaiTestnet',
+    displayName: 'XAI Testnet v2',
+    rpcs: ['https://testnet-v2.xai-chain.net/rpc'],
+    blockExplorerUrls: ['https://sepolia.xaiscan.io'],
+    nativeCurrency: {
+      decimals: 18,
+      name: 'sXAI',
+      symbol: 'sXAI'
+    },
+  }
 
 export const TESTNET = {
     chainId: 13746,
@@ -43,9 +56,10 @@ export const g7Testnet = {
 
 
 export const wagmiConfig = createConfig({
-  chains: [g7Testnet],
+  chains: [g7Testnet, NETWORKS.XAI_TESTNET],
   transports: {
     [g7Testnet.id]: http(),
+    [NETWORKS.XAI_TESTNET.id]: http(),
   },
 })
 
@@ -67,6 +81,16 @@ export const thirdWebG7Testnet = {
   blockExplorers: [{
       name: "Game7",
       url: viemG7Testnet.blockExplorers.default.url
+  }],
+  testnet: true,
+}
+
+export const thirdWebXaiTestnet = {
+  ...NETWORKS.XAI_TESTNET,
+  rpc: NETWORKS.XAI_TESTNET.rpcUrls["default"].http[0],
+  blockExplorers: [{
+      name: "Xai Sepolia Explorer",
+      url: NETWORKS.XAI_TESTNET.blockExplorers.default.url
   }],
   testnet: true,
 }
