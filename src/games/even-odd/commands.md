@@ -44,7 +44,4 @@
 - **Output Pattern**: 
   - Success: "FREE SPIN bet committed: [CHOICE] (0 WEI). Auto-reveal in 3 blocks."
 
-### timeout-forfeit
-- **Trigger**: Called when reveal window expires (256+ blocks)
-- **Delay**: None  
-- **Output Pattern**: "⌛ Reveal window expired. Your bet has been forfeited." 
+ 
