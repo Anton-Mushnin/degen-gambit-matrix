@@ -28,9 +28,9 @@ Step 2.1 (optional) Randomness:
   - Casual/Demo games: Ask if immediate randomness is acceptable
   - Production games: Ask if secure randomness is needed
   - High-stakes: Ask if maximum security (Chainlink VRF) is required
-- Choose randomness template based on assessment:
-  - PastBlockRandomness: For immediate results, moderate security (past block hashes)
-  - FutureBlockRandomness: For secure random numbers with waiting
+- Choose randomness contract based on assessment:
+  - ImmediateRandomness: For immediate results, moderate security (past block hashes)
+  - CommitRevealRandomness: For secure random numbers with waiting
   - VRFRandomness: For maximum security applications (Chainlink VRF)
 - Explain chosen approach and security trade-offs to user:
   - Past block: Immediate, moderate security, miner influence possible
@@ -42,7 +42,7 @@ Step 2.1 (optional) Randomness:
 Step 3. Commands:
 - Create a commands file listing all game commands and actions
 - For every command include: input pattern, waiting pattern (optionally), output pattern
-- Actions are commands triggered programmatically, can have delays, and output patterns can call them
+- Actions are commands triggered programmatically (such as reveal, claim, free spin), can have delays, and output patterns can call them. 
 - Keep it short as possible but human readable 
 
 Step 4. Info:
@@ -52,21 +52,29 @@ Step 4. Info:
 - Include relevant contract data and player data for the specific game
 
 Step 5. Stream:
-- Result is list of contract events with displaying patterns and list of queries that should be refetched
+- Result is a list of contract events with displaying patterns and a list of queries that should be refetched
 - AI should analyze 'Stream' components of existing games
 - Event handling pattern will be discussed after
 
 Step 6. Contract:
-- Result: ABI, Contract, deployed contract
+- Result: ABI, Contract
 - First ask what network it will be deployed on. Add the network to config/networks
-- Help user to put his key for deployment in DEPLOYMENT_KEY in .env
-- Deployment network is game specific
-- All deployment scripts and configs should be stored in the game's folder
-- ABI also put there
-- Script to test deployment
 - Faucet address should be in the network configuration
-- Based on commands, info and stream create abi and contract, deploy the contract
-- Contract address should be stored in game-specific deployments
+- Deployment network is game specific
+- Carefully examine info.md, commands.md, stream.md. The contract should comply with that.
+- ABI should be stored in JSON and js files in game's folder
+- Contract should be stored in the contracts in the root
+- Compile the Contract
+
+
+Step 7. Contract deployment
+- Help user to put his key for deployment in DEPLOYMENT_KEY in .env
+- All deployment scripts and configs should be stored in the game's folder
+- Deploy
+- Contract address should be stored in game-specific deployments.md
+- Fund with 0.0000001
+- 3 scripts to test deployment: contract status, player status, play, ask to run
+
 
 When prompted 'continue <game-name>':
 - AI should inspect progress file and continue from where it left off
