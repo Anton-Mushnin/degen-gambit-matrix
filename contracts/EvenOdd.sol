@@ -49,12 +49,17 @@ contract EvenOdd is CommitRevealRandomness {
     
     function bet(string memory choice) external payable validChoice(choice) {
         bool isFreeSpin = hasFreeSpin[msg.sender];
+
+        if (this.hasCommit(msg.sender)) {
+            revert("Player already has a commit - EvenOdd");
+        }
         
         if (!isFreeSpin) {
             require(msg.value == BET_AMOUNT, "Bet amount must be exactly 1000 wei");
         } else {
             require(msg.value == 0, "Free spin requires no bet amount");
         }
+
         
         // Store the player's choice
         playerBets[msg.sender] = Bet({
@@ -69,14 +74,11 @@ contract EvenOdd is CommitRevealRandomness {
         }
         
         // Call move with Bytes32(0) to get randomness
-        this.move(bytes32(0), 256);
+        move(bytes32(0), 256);
     }
     
     function revealBet() external {
-        require(playerBets[msg.sender].timestamp > 0, "No bet found");
-        
-        // Get the stored choice
-        string memory choice = playerBets[msg.sender].choice;
+                // Get the stored choice
         
         // Reveal with empty bytes to get random number
         uint256 randomNumber = this.reveal("") % 100;
@@ -85,6 +87,7 @@ contract EvenOdd is CommitRevealRandomness {
         bool won = false;
         uint256 payout = 0;
         
+        string memory choice = playerBets[msg.sender].choice;
         if (keccak256(abi.encodePacked(choice)) == keccak256(abi.encodePacked("odd"))) {
             won = isOdd;
         } else {
@@ -115,14 +118,13 @@ contract EvenOdd is CommitRevealRandomness {
         emit BetResult(msg.sender, randomNumber, won, payout, false);
     }
     
-    function getGameStatus(address player) external view returns (string memory) {
-        if (hasFreeSpin[player]) {
-            return "Free Spin Active";
-        }
-        if (this.hasCommit(player)) {
-            return "Bet Pending";
-        }
-        return "Normal";
+    
+    function playerHasFreeSpin(address player) external view returns (bool) {
+        return hasFreeSpin[player];
+    }
+    
+    function playerHasCommit(address player) external view returns (bool) {
+        return this.hasCommit(player);
     }
     
     function getLastResult(address player) external view returns (string memory) {
