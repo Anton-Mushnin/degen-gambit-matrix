@@ -9,6 +9,12 @@ contract EvenOdd is CommitRevealRandomness {
     
     address public owner;
     
+    struct Bet {
+        string choice;
+        uint256 timestamp;
+        bool isFreeSpin;
+    }
+    
     struct LastResult {
         uint256 number;
         bool won;
@@ -16,6 +22,7 @@ contract EvenOdd is CommitRevealRandomness {
         bool isFreeSpin;
     }
     
+    mapping(address => Bet) public playerBets;
     mapping(address => LastResult) public lastResults;
     mapping(address => bool) public hasFreeSpin;
     
@@ -41,36 +48,38 @@ contract EvenOdd is CommitRevealRandomness {
     }
     
     function bet(string memory choice) external payable validChoice(choice) {
-        require(msg.value == BET_AMOUNT, "Bet amount must be exactly 1000 wei");
-        require(!this.hasCommit(msg.sender), "You have a pending bet");
+        bool isFreeSpin = hasFreeSpin[msg.sender];
         
-        // Commit the choice using CommitRevealRandomness
-        bytes32 choiceHash = keccak256(abi.encodePacked(choice, msg.sender));
-        this.move(choiceHash, 0); // No reveal delay needed
+        if (!isFreeSpin) {
+            require(msg.value == BET_AMOUNT, "Bet amount must be exactly 1000 wei");
+        } else {
+            require(msg.value == 0, "Free spin requires no bet amount");
+        }
+        
+        // Store the player's choice
+        playerBets[msg.sender] = Bet({
+            choice: choice,
+            timestamp: block.timestamp,
+            isFreeSpin: isFreeSpin
+        });
+        
+        // Clear free spin flag if it was used
+        if (isFreeSpin) {
+            hasFreeSpin[msg.sender] = false;
+        }
+        
+        // Call move with Bytes32(0) to get randomness
+        this.move(bytes32(0), 256);
     }
     
     function revealBet() external {
-        require(this.hasCommit(msg.sender), "No bet to reveal");
+        require(playerBets[msg.sender].timestamp > 0, "No bet found");
         
-        // Get the committed choice from the hash
-        (bytes32 committedHash,) = this.getCommitDetails(msg.sender);
+        // Get the stored choice
+        string memory choice = playerBets[msg.sender].choice;
         
-        // Try both odd and even to find the correct choice
-        string memory choice;
-        bytes32 oddHash = keccak256(abi.encodePacked("odd", msg.sender));
-        bytes32 evenHash = keccak256(abi.encodePacked("even", msg.sender));
-        
-        if (committedHash == oddHash) {
-            choice = "odd";
-        } else if (committedHash == evenHash) {
-            choice = "even";
-        } else {
-            revert("Invalid choice hash");
-        }
-        
-        // Reveal and get random number using CommitRevealRandomness
-        bytes memory choiceData = abi.encodePacked(choice);
-        uint256 randomNumber = this.reveal(choiceData) % 100;
+        // Reveal with empty bytes to get random number
+        uint256 randomNumber = this.reveal("") % 100;
         
         bool isOdd = randomNumber % 2 == 1;
         bool won = false;
@@ -84,6 +93,8 @@ contract EvenOdd is CommitRevealRandomness {
         
         if (won) {
             payout = WIN_PAYOUT;
+            // Send winnings to player
+            payable(msg.sender).transfer(WIN_PAYOUT);
             // Activate free spin
             hasFreeSpin[msg.sender] = true;
             emit FreeSpin(msg.sender, choice);
@@ -97,78 +108,11 @@ contract EvenOdd is CommitRevealRandomness {
             isFreeSpin: false
         });
         
+        // Clear the bet
+        delete playerBets[msg.sender];
+        
         // Emit result
         emit BetResult(msg.sender, randomNumber, won, payout, false);
-        
-        // Process free spin if available
-        if (hasFreeSpin[msg.sender]) {
-            _activateFreeSpin(msg.sender, choice);
-        }
-    }
-    
-    function _activateFreeSpin(address player, string memory choice) internal {
-        // Commit the free spin choice using CommitRevealRandomness
-        bytes32 choiceHash = keccak256(abi.encodePacked(choice, player));
-        this.move(choiceHash, 0); // No reveal delay needed
-        
-        hasFreeSpin[player] = false;
-    }
-    
-    function revealFreeSpin() external {
-        require(this.hasCommit(msg.sender), "No free spin to reveal");
-        
-        // Get the committed choice from the hash
-        (bytes32 committedHash,) = this.getCommitDetails(msg.sender);
-        
-        // Try both odd and even to find the correct choice
-        string memory choice;
-        bytes32 oddHash = keccak256(abi.encodePacked("odd", msg.sender));
-        bytes32 evenHash = keccak256(abi.encodePacked("even", msg.sender));
-        
-        if (committedHash == oddHash) {
-            choice = "odd";
-        } else if (committedHash == evenHash) {
-            choice = "even";
-        } else {
-            revert("Invalid choice hash");
-        }
-        
-        // Reveal and get random number using CommitRevealRandomness
-        bytes memory choiceData = abi.encodePacked(choice);
-        uint256 randomNumber = this.reveal(choiceData) % 100;
-        
-        bool isOdd = randomNumber % 2 == 1;
-        bool won = false;
-        uint256 payout = 0;
-        
-        if (keccak256(abi.encodePacked(choice)) == keccak256(abi.encodePacked("odd"))) {
-            won = isOdd;
-        } else {
-            won = !isOdd;
-        }
-        
-        if (won) {
-            payout = WIN_PAYOUT;
-            // Activate another free spin
-            hasFreeSpin[msg.sender] = true;
-            emit FreeSpin(msg.sender, choice);
-        }
-        
-        // Update last result
-        lastResults[msg.sender] = LastResult({
-            number: randomNumber,
-            won: won,
-            payout: payout,
-            isFreeSpin: true
-        });
-        
-        // Emit result
-        emit BetResult(msg.sender, randomNumber, won, payout, true);
-        
-        // Process another free spin if available
-        if (hasFreeSpin[msg.sender]) {
-            _activateFreeSpin(msg.sender, choice);
-        }
     }
     
     function getGameStatus(address player) external view returns (string memory) {
