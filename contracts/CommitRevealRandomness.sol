@@ -80,7 +80,7 @@ contract CommitRevealRandomness {
     /// @notice Commit data for later reveal
     /// @param dataHash The hash of data to commit (produced on frontend), optional
     /// @param revealWindow Number of blocks after commitBlock for reveal
-    function move(bytes32 dataHash, uint256 revealWindow) external {
+    function move(bytes32 dataHash, uint256 revealWindow) public {
         uint256 currentBlock = _blockNumber();
         CommitData storage commit = playerCommits[msg.sender];
         
