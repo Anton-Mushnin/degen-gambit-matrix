@@ -89,7 +89,7 @@ contract CommitRevealRandomness {
         
         // Check if player already has committed data
         if (commit.commitBlock != 0) {
-            revert AlreadyCommitted();
+            revert("Already committed");
         }
         
         // Store the provided hash directly (or empty if not provided)
@@ -109,7 +109,7 @@ contract CommitRevealRandomness {
         
         // Check if player has committed data
         if (commit.commitBlock == 0) {
-            revert NoCommitToReveal();
+            revert ("No commit to reveal");
         }
         
         // Check if reveal block has been mined
@@ -127,11 +127,11 @@ contract CommitRevealRandomness {
         // If a hash was committed, data must be provided and must match
         if (commit.committedHash != bytes32(0)) {
             if (data.length == 0) {
-                revert InvalidReveal();
+                revert("Invalid reveal");
             }
             bytes32 expectedHash = keccak256(abi.encodePacked(data, msg.sender));
             if (expectedHash != commit.committedHash) {
-                revert InvalidReveal();
+                revert("Invalid reveal");
             }
         }
         
@@ -139,7 +139,7 @@ contract CommitRevealRandomness {
         randomNumber = _entropy(msg.sender, commit.commitBlock);
         
         // Clear commit data after successful reveal
-        clearExpiredCommit();
+        delete playerCommits[msg.sender];
         
         emit DataRevealed(msg.sender, randomNumber, data);
     }
