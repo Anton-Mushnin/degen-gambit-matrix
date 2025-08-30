@@ -103,7 +103,7 @@ contract CommitRevealRandomness {
     /// @notice Reveal committed data and generate random number
     /// @param data The original data that was committed, optional
     /// @return randomNumber The generated random number
-    function reveal(bytes calldata data) external returns (uint256 randomNumber) {
+    function reveal(bytes memory data) public returns (uint256 randomNumber) {
         uint256 currentBlock = _blockNumber();
         CommitData storage commit = playerCommits[msg.sender];
         

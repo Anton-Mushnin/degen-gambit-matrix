@@ -49,10 +49,6 @@ contract EvenOdd is CommitRevealRandomness {
     
     function bet(string memory choice) external payable validChoice(choice) {
         bool isFreeSpin = hasFreeSpin[msg.sender];
-
-        if (this.hasCommit(msg.sender)) {
-            revert("Player already has a commit - EvenOdd");
-        }
         
         if (!isFreeSpin) {
             require(msg.value == BET_AMOUNT, "Bet amount must be exactly 1000 wei");
@@ -81,7 +77,10 @@ contract EvenOdd is CommitRevealRandomness {
                 // Get the stored choice
         
         // Reveal with empty bytes to get random number
-        uint256 randomNumber = this.reveal("") % 100;
+        bytes memory emptyBytes = abi.encodePacked("0x");
+        
+        // Reveal with empty bytes to get random number
+        uint256 randomNumber = reveal(emptyBytes) % 100;
         
         bool isOdd = randomNumber % 2 == 1;
         bool won = false;
