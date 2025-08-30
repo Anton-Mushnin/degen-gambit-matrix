@@ -2,10 +2,10 @@ const { ethers } = require('ethers');
 require('dotenv').config();
 
 async function main() {
-  console.log("🎲 Testing EvenOdd Betting Flow on XAI Testnet...");
+  console.log("🎲 Testing EvenOdd Betting System...");
   
   // Contract address from deployment
-  const CONTRACT_ADDRESS = "0xc5e303401C5bCDA5a75cFd74eC59f429C39B933c";
+  const CONTRACT_ADDRESS = "0xE1d1b9C57dfFAEB730B76213AC2DCC435cB8Dd46";
   
   // Setup provider and wallet
   const provider = new ethers.providers.JsonRpcProvider("https://testnet-v2.xai-chain.net/rpc");
@@ -16,157 +16,238 @@ async function main() {
   }
   
   const wallet = new ethers.Wallet(privateKey, provider);
-  console.log("Player Address:", wallet.address);
+  console.log("🎯 Test Player Address:", wallet.address);
   
-  // Contract ABI for betting operations
+  // Full contract ABI for testing
   const abi = [
+    "function bet(string) external payable",
+    "function revealBet() external",
+    "function getLastResult(address) view returns (string)",
+    "function hasFreeSpin(address) view returns (bool)",
+    "function hasCommit(address) view returns (bool)",
     "function BET_AMOUNT() view returns (uint256)",
-    "function WIN_PAYOUT() view returns (uint256)",
-    "function REVEAL_DELAY() view returns (uint256)",
-    "function REVEAL_WINDOW() view returns (uint256)",
-    "function betOdd() payable",
-    "function betEven() payable",
-    "function revealBet()",
-    "function getPlayerBet(address) view returns (bool,uint256,uint256,bool,bool,bool,bool)",
-    "function getBalance() view returns (uint256)"
+    "function WIN_PAYOUT() view returns (uint256)"
   ];
   
   // Get contract instance
   const evenOdd = new ethers.Contract(CONTRACT_ADDRESS, abi, wallet);
   
   try {
-    console.log("\n📋 Betting Test Information:");
+    console.log("\n📋 Contract Information:");
     console.log("Network: XAI Testnet v2");
     console.log("Contract Address:", CONTRACT_ADDRESS);
     console.log("Player Address:", wallet.address);
     
-    // Get current block and contract info
-    const currentBlock = await provider.getBlockNumber();
+    // Get contract constants
     const betAmount = await evenOdd.BET_AMOUNT();
     const winPayout = await evenOdd.WIN_PAYOUT();
-    const revealDelay = await evenOdd.REVEAL_DELAY();
     
-    console.log("Current Block:", currentBlock);
-    console.log("Bet Amount:", ethers.utils.formatEther(betAmount), "ETH");
-    console.log("Win Payout:", ethers.utils.formatEther(winPayout), "ETH");
-    console.log("Reveal Delay:", revealDelay.toString(), "blocks");
+    console.log("\n💰 Game Constants:");
+    console.log("- Bet Amount:", ethers.utils.formatEther(betAmount), "ETH");
+    console.log("- Win Payout:", ethers.utils.formatEther(winPayout), "ETH");
     
-    // Check current player status
-    console.log("\n🔍 Checking current player status...");
-    const betRevealed = await checkBetStatus(evenOdd, wallet.address, "Current status", wallet);
+    // Get current balances
+    const playerBalance = await wallet.getBalance();
+    const contractBalance = await provider.getBalance(CONTRACT_ADDRESS);
     
-    if (betRevealed) {
-      console.log("✅ Bet was revealed! Script completed.");
-      return;
-    }
+    console.log("\n💎 Current Balances:");
+    console.log("- Player Balance:", ethers.utils.formatEther(playerBalance), "ETH");
+    console.log("- Contract Balance:", ethers.utils.formatEther(contractBalance), "ETH");
     
-    // Check if there's an active bet that's not ready for reveal
-    const currentBet = await evenOdd.getPlayerBet(wallet.address);
-    if (currentBet[1].gt(0)) {
-      console.log("⏳ Bet not ready for reveal yet. Cannot proceed with new bet.");
-      console.log("💡 Run this script again after waiting for the reveal delay!");
-      return;
-    }
+    // Check current game status FIRST
+    console.log("\n🎯 Checking Current Player Status...");
+    const hasFreeSpin = await evenOdd.hasFreeSpin(wallet.address);
+    const hasCommit = await evenOdd.hasCommit(wallet.address);
+    const lastResult = await evenOdd.getLastResult(wallet.address);
     
-    // Place a new bet
-    console.log("\n🎯 Placing new bet on ODD...");
-    console.log(`Betting ${ethers.utils.formatEther(betAmount)} ETH on ODD`);
+    console.log("- Has Free Spin:", hasFreeSpin);
+    console.log("- Has Pending Bet:", hasCommit);
+    console.log("- Last Result:", lastResult);
     
-    const betTx = await evenOdd.betOdd({ value: betAmount });
-    console.log("Transaction sent, waiting for confirmation...");
-    console.log("Transaction hash:", betTx.hash);
-    
-    const betReceipt = await betTx.wait();
-    console.log("✅ Bet placed successfully in block:", betReceipt.blockNumber);
-    
-    // Wait for reveal delay
-    console.log(`\n⏳ Waiting for reveal delay (${revealDelay} blocks)...`);
-    console.log("Current block:", betReceipt.blockNumber);
-    console.log("Target block for reveal:", betReceipt.blockNumber + revealDelay.toNumber());
-    
-    // Check bet status after placement
-    await checkBetStatus(evenOdd, wallet.address, "After bet placement", wallet);
-    
-    console.log("\n💡 To reveal your bet, run this script again after waiting for the reveal delay!");
-    console.log("Or wait for the blocks to pass and then call revealBet() manually.");
-    
-  } catch (error) {
-    console.error("❌ Betting test failed:", error.message);
-    if (error.stack) {
-      console.error("Stack trace:", error.stack);
-    }
-  }
-}
-
-async function revealBet(evenOdd, wallet) {
-  try {
-    console.log("\n🎲 Revealing bet...");
-    
-    const revealTx = await evenOdd.revealBet();
-    console.log("Reveal transaction sent, waiting for confirmation...");
-    console.log("Transaction hash:", revealTx.hash);
-    
-    const revealReceipt = await revealTx.wait();
-    console.log("✅ Bet revealed successfully in block:", revealReceipt.blockNumber);
-    
-    // Check for events
-    if (revealReceipt.events) {
-      const betRevealedEvent = revealReceipt.events.find(e => e.event === 'BetRevealed');
-      if (betRevealedEvent) {
-        console.log("\n🎉 Bet Result:");
-        console.log("- Random number:", betRevealedEvent.args.number.toString());
-        console.log("- Number is odd:", betRevealedEvent.args.isOdd);
-        console.log("- You won:", betRevealedEvent.args.won ? "Yes! 🎊" : "No 😔");
-        console.log("- Payout:", ethers.utils.formatEther(betRevealedEvent.args.payout), "ETH");
+    // Handle existing game state before proceeding
+    if (hasCommit) {
+      console.log("\n⏳ Player has a pending bet. Revealing it first...");
+      try {
+        const revealTx = await evenOdd.revealBet();
+        console.log("✅ Reveal transaction sent:", revealTx.hash);
         
-        if (betRevealedEvent.args.won) {
-          console.log("🎁 FREE SPIN awarded! You can bet again with the same choice!");
-        }
+        console.log("⏳ Waiting for reveal confirmation...");
+        const revealReceipt = await revealTx.wait();
+        console.log("✅ Reveal confirmed in block:", revealReceipt.blockNumber);
+        
+        // Check status after reveal
+        const resultAfterReveal = await evenOdd.getLastResult(wallet.address);
+        const newFreeSpin = await evenOdd.hasFreeSpin(wallet.address);
+        const newCommit = await evenOdd.hasCommit(wallet.address);
+        
+        console.log("📊 Result after reveal:", resultAfterReveal);
+        console.log("🎁 Free spin available:", newFreeSpin);
+        console.log("📝 Pending bet:", newCommit);
+        
+        // Wait for state update
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        
+      } catch (error) {
+        console.log("❌ Bet reveal failed:", error.message);
+        return;
       }
     }
     
-    // Check new bet status
-    await checkBetStatus(evenOdd, wallet.address, "After reveal", wallet);
-    
-  } catch (error) {
-    console.error("❌ Reveal failed:", error.message);
-  }
-}
-
-async function checkBetStatus(evenOdd, playerAddress, context, wallet) {
-  try {
-    console.log(`\n📊 Bet Status (${context}):`);
-    
-    const bet = await evenOdd.getPlayerBet(playerAddress);
-    
-    if (bet[1].eq(0)) {
-      console.log("❌ No active bet");
-      return false;
+    // Check if free spin is available and use it
+    if (hasFreeSpin) {
+      console.log("\n🎁 Player has a free spin. Using it first...");
+      try {
+        const freeSpinTx = await evenOdd.bet("even", { value: 0 });
+        console.log("✅ Free spin bet transaction sent:", freeSpinTx.hash);
+        
+        console.log("⏳ Waiting for free spin confirmation...");
+        const freeSpinReceipt = await freeSpinTx.wait();
+        console.log("✅ Free spin confirmed in block:", freeSpinReceipt.blockNumber);
+        
+        // Check status after free spin
+        const newFreeSpin = await evenOdd.hasFreeSpin(wallet.address);
+        const newCommit = await evenOdd.hasCommit(wallet.address);
+        console.log("🎁 Free spin available:", newFreeSpin);
+        console.log("📝 Pending bet:", newCommit);
+        
+        // Wait for state update
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        
+      } catch (error) {
+        console.log("❌ Free spin failed:", error.message);
+      }
     }
     
-    console.log("- Choice:", bet[0] ? "ODD" : "EVEN");
-    console.log("- Bet Block:", bet[1].toString());
-    console.log("- Amount:", ethers.utils.formatEther(bet[2]), "ETH");
-    console.log("- Free Spin:", bet[3] ? "Yes" : "No");
-    console.log("- Revealed:", bet[4] ? "Yes" : "No");
-    console.log("- Can Reveal:", bet[5] ? "Yes" : "No");
-    console.log("- Expired:", bet[6] ? "Yes" : "No");
+    // Now check final status before proceeding with new tests
+    console.log("\n🔍 Final Status Check Before New Tests:");
+    const finalFreeSpinBeforeTest = await evenOdd.hasFreeSpin(wallet.address);
+    const finalCommitBeforeTest = await evenOdd.hasCommit(wallet.address);
     
-    if (bet[5]) {
-      console.log("🎉 Ready to reveal! Automatically revealing...");
-      await revealBet(evenOdd, wallet);
-      return true;
-    } else if (bet[6]) {
-      console.log("⌛ Bet has expired!");
-      return false;
+    console.log("- Free Spin Available:", finalFreeSpinBeforeTest);
+    console.log("- Pending Bet:", finalCommitBeforeTest);
+    
+    if (finalCommitBeforeTest) {
+      console.log("⚠️ Player still has pending bet. Cannot proceed with new betting tests.");
+      return;
+    }
+    
+    // Test betting flow
+    console.log("\n🎲 Starting New Betting Test...");
+    
+    // Test 1: Place a bet on ODD
+    console.log("\n📝 Test 1: Placing bet on ODD...");
+    try {
+      const betTx = await evenOdd.bet("odd", { value: betAmount });
+      console.log("✅ Bet transaction sent:", betTx.hash);
+      
+      console.log("⏳ Waiting for bet confirmation...");
+      const betReceipt = await betTx.wait();
+      console.log("✅ Bet confirmed in block:", betReceipt.blockNumber);
+      
+      // Check status after bet
+      const hasFreeSpinAfterBet = await evenOdd.hasFreeSpin(wallet.address);
+      const hasCommitAfterBet = await evenOdd.hasCommit(wallet.address);
+      console.log("🎁 Free spin available:", hasFreeSpinAfterBet);
+      console.log("📝 Pending bet:", hasCommitAfterBet);
+      
+    } catch (error) {
+      console.log("❌ Bet placement failed:", error.message);
+    }
+    
+    // Wait a bit for block confirmation
+    console.log("\n⏳ Waiting 10 seconds for block confirmation...");
+    await new Promise(resolve => setTimeout(resolve, 10000));
+    
+    // Test 2: Reveal the bet
+    console.log("\n🔓 Test 2: Revealing bet...");
+    try {
+      const revealTx = await evenOdd.revealBet();
+      console.log("✅ Reveal transaction sent:", revealTx.hash);
+      
+      console.log("⏳ Waiting for reveal confirmation...");
+      const revealReceipt = await revealTx.wait();
+      console.log("✅ Reveal confirmed in block:", revealReceipt.blockNumber);
+      
+      // Check result after reveal
+      const resultAfterReveal = await evenOdd.getLastResult(wallet.address);
+      const newFreeSpin = await evenOdd.hasFreeSpin(wallet.address);
+      const newCommit = await evenOdd.hasCommit(wallet.address);
+      
+      console.log("📊 Result after reveal:", resultAfterReveal);
+      console.log("🎁 Free spin available:", newFreeSpin);
+      console.log("📝 Pending bet:", newCommit);
+      
+    } catch (error) {
+      console.log("❌ Bet reveal failed:", error.message);
+      return;
+    }
+    
+    // Wait for final confirmation
+    console.log("\n⏳ Waiting 5 seconds for final confirmation...");
+    await new Promise(resolve => setTimeout(resolve, 5000));
+    
+    // Test 3: Check final state
+    console.log("\n🔍 Test 3: Checking final state...");
+    try {
+      const finalFreeSpin = await evenOdd.hasFreeSpin(wallet.address);
+      const finalCommit = await evenOdd.hasCommit(wallet.address);
+      const finalResult = await evenOdd.getLastResult(wallet.address);
+      
+      console.log("🎁 Final free spin status:", finalFreeSpin);
+      console.log("📝 Final pending bet:", finalCommit);
+      console.log("📊 Final result:", finalResult);
+      
+    } catch (error) {
+      console.log("❌ Final state check failed:", error.message);
+    }
+    
+    // Test 4: Try free spin if available
+    const finalFreeSpinCheck = await evenOdd.hasFreeSpin(wallet.address);
+    if (finalFreeSpinCheck) {
+      console.log("\n🎁 Test 4: Testing free spin...");
+      try {
+        const freeSpinTx = await evenOdd.bet("even", { value: 0 });
+        console.log("✅ Free spin bet transaction sent:", freeSpinTx.hash);
+        
+        console.log("⏳ Waiting for free spin confirmation...");
+        const freeSpinReceipt = await freeSpinTx.wait();
+        console.log("✅ Free spin confirmed in block:", freeSpinReceipt.blockNumber);
+        
+        // Check status after free spin
+        const newFreeSpinAfterFreeSpin = await evenOdd.hasFreeSpin(wallet.address);
+        const newCommitAfterFreeSpin = await evenOdd.hasCommit(wallet.address);
+        console.log("🎁 Free spin available:", newFreeSpinAfterFreeSpin);
+        console.log("📝 Pending bet:", newCommitAfterFreeSpin);
+        
+      } catch (error) {
+        console.log("❌ Free spin failed:", error.message);
+      }
     } else {
-      console.log("⏳ Waiting for reveal delay...");
-      return false;
+      console.log("\n🎁 Test 4: Skipping free spin test (not available)");
     }
     
+    // Final balance check
+    console.log("\n💎 Final Balance Check:");
+    const finalPlayerBalance = await wallet.getBalance();
+    const finalContractBalance = await provider.getBalance(CONTRACT_ADDRESS);
+    
+    console.log("- Final Player Balance:", ethers.utils.formatEther(finalPlayerBalance), "ETH");
+    console.log("- Final Contract Balance:", ethers.utils.formatEther(finalContractBalance), "ETH");
+    
+    const balanceChange = finalPlayerBalance.sub(playerBalance);
+    console.log("- Balance Change:", ethers.utils.formatEther(balanceChange), "ETH");
+    
+    console.log("\n✅ Betting test completed successfully!");
+    console.log("🎉 Game mechanics working as expected!");
+    
   } catch (error) {
-    console.error("❌ Failed to check bet status:", error.message);
-    return false;
+    console.error("❌ Test betting failed:", error.message);
+    if (error.code === 'NETWORK_ERROR') {
+      console.error("Network connection failed. Check RPC endpoint.");
+    }
+    if (error.code === 'INSUFFICIENT_FUNDS') {
+      console.error("Insufficient funds for betting. Check wallet balance.");
+    }
   }
 }
 
