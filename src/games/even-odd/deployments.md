@@ -7,28 +7,42 @@
 - **Explorer**: https://sepolia.xaiscan.io/
 - **Faucet**: https://faucet.quicknode.com/xai
 
-### ✅ Deployment Details - DEPLOYED
-- **Contract Address**: `0x6aEEccD5eB7f9bABA25F052d0608CC4E162786B8`
+### ✅ Deployment Details - DEPLOYED (FIXED VERSION - LATEST)
+- **Contract Address**: `0x5C1B3d2d3c3861bBe0f6f482Ac6fF8AabF3A2168`
 - **Deployer**: `0x4eD919172bD08D74831f2914aAAe8edA690d08Ab`
-- **Status**: Successfully deployed
+- **Status**: Successfully deployed (Fixed commit/reveal issue)
 - **Deployment Date**: January 16, 2025
+- **Block Number**: Latest
+- **Funding**: 0.000001 ETH for payouts
 
 ### Contract Constants
 - **Bet Amount**: 1000 WEI
 - **Win Payout**: 1400 WEI (1.4x multiplier)
-- **Reveal Delay**: 3 blocks
-- **Randomness Method**: Future block hash (commit-reveal pattern)
+- **Reveal Window**: 256 blocks (when block hashes become unreachable)
+- **Randomness Method**: CommitRevealRandomness with block hash entropy
 
 ### Deployment Command
 ```bash
-npx hardhat run scripts/deploy-even-odd.js --network xai-testnet
+npx hardhat run scripts/deploy-even-odd.cjs --network xai-testnet
 ```
 
 ### Contract Functions
-- `placeBet(bool choice)` - Main betting function (commit step)
+- `bet(string choice)` - Main betting function (commit step)
 - `revealBet()` - Reveal committed bet (reveal step)
-- `betOdd()` - Convenience function for odd bet
-- `betEven()` - Convenience function for even bet
-- `getPlayerState(address)` - Get player statistics and pending bet info
-- `getGameConstants()` - Get bet amount, payout, and reveal delay
-- `getContractBalance()` - Get contract balance 
+- `getGameStatus(address)` - Get player's current game status
+- `getLastResult(address)` - Get player's last bet result
+- `hasFreeSpin(address)` - Check if player has free spin available
+- `withdraw()` - Owner function to withdraw contract balance
+
+### Game Flow
+1. Player calls `bet("odd" or "even")` with 1000 WEI
+2. Contract stores choice and calls CommitRevealRandomness
+3. Player calls `revealBet()` to get random result
+4. If won: receives 1400 WEI + free spin flag activated
+5. Free spins can be used by calling `bet(choice, 0)` (no value needed)
+
+### Testing
+- ✅ Contract deployment successful
+- ✅ Contract funded successfully
+- ✅ Basic functionality tests passed
+- ✅ getGameStatus and getLastResult working 

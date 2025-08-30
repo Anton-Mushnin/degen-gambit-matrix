@@ -18,11 +18,10 @@
 ## Step 2.1: Randomness ✅
 - [x] Assessed security requirements (Production betting game with real money)
 - [x] Evaluated randomness options:
-  - PastBlockRandomness: ❌ Not secure enough for betting
-  - FutureBlockRandomness: ✅ Recommended - secure, cost-effective
+  - ImmediateRandomness: ❌ Not secure enough for betting
+  - CommitRevealRandomness: ✅ Recommended - secure, cost-effective
   - VRFRandomness: ⚠️ More secure but adds complexity/costs
-- [x] Explained security trade-offs (secure future blocks, 3-block wait, no oracle costs)
-- [x] Confirmed FutureBlockRandomness approach with user
+- [x] Confirmed CommitRevealRandomness approach with user
 
 ## Step 3: Commands ✅
 - [x] Created commands file listing all game commands (commands.md)
@@ -40,25 +39,40 @@
 - [x] Created list of contract events with displaying patterns (stream.md)
 - [x] Listed queries that should be refetched when events occur
 
-## Step 6: Contract ✅ DEPLOYED
-- [x] Asked what network to deploy on (Xai Testnet v2)
-- [x] Added network to config/networks (Chain ID: 37714555429)
-- [x] Helped user setup DEPLOYMENT_KEY in .env
-- [x] Created contract folder in game's folder for deployment stuff
-- [x] Created smart contract (contract/EvenOdd.sol) with future block hash randomness
-- [x] Created ABI file (contract/EvenOdd.abi.ts)
-- [x] Created deployment script (contract/deploy.js)
-- [x] Created test deployment script (contract/test-deployment.js)
-- [x] Created Hardhat config (contract/hardhat.config.js)
-- [x] Created deployments.md for contract address storage
-- [x] Upgraded randomness to use future block hash (commit-reveal pattern)
-- [x] Updated commands.md and stream.md for new pattern
-- [x] **DEPLOYED CONTRACT TO XAI TESTNET V2**
-- [x] **Contract Address: 0x6aEEccD5eB7f9bABA25F052d0608CC4E162786B8**
-- [x] Updated deployments.md with contract details
-- [x] Added contract address to UI configuration files
-- [x] Created constants.ts for easy frontend access
-- [x] Added to src/config/contracts.ts with helper functions
+## Step 6: Contract ✅
+- [x] Asked what network (XAI testnet)
+- [x] Network already configured in config/networks
+- [x] Created ABI files (JSON and TS) in game's folder
+- [x] Created smart contract in contracts root folder
+- [x] Contract complies with info.md, commands.md, and stream.md
+- [x] Implemented proper CommitRevealRandomness usage:
+  - Store player choices separately in contract
+  - Call move(bytes32(0), 256) for randomness
+  - Call reveal("") to get random numbers
+  - Use stored choice + random number for outcome
+- [x] Added proper payout logic (transfer winnings to player)
+- [x] Implemented free spin system (client handles free spin calls)
+- [x] Set reveal window to 256 blocks (when block hashes become unreachable)
+- [x] Compiled contract successfully
 
-🎉 **EVEN-ODD GAME IMPLEMENTATION COMPLETE!**
-All 6 steps successfully finished. Contract deployed and ready for frontend integration.
+## Step 7: Contract Deployment ✅
+- [x] Helped user set up deployment key in .env
+- [x] Updated deployment script to match current contract structure
+- [x] Deployed contract to XAI testnet successfully
+- [x] Contract address: 0x5C1B3d2d3c3861bBe0f6f482Ac6fF8AabF3A2168
+- [x] Funded contract with 0.000001 ETH for payouts
+- [x] Tested basic functionality (playerHasFreeSpin, playerHasCommit, getLastResult)
+- [x] Updated deployments.md with new contract information
+- [x] Updated progress.md to reflect current status
+- [x] Fixed test scripts with correct contract address and ABI
+- [x] Successfully ran all 3 test scripts:
+  - ✅ Contract status check: Contract active, funded, owner verified
+  - ✅ Player status check: Player connected, game status retrieved
+  - ✅ Betting test: Complete betting flow tested successfully:
+    - Bet placement: ✅ Working
+    - Bet reveal: ✅ Working (won with odd number 99)
+    - Free spin activation: ✅ Working
+    - Free spin usage: ✅ Working
+    - Payout system: ✅ Working (1400 WEI payout)
+    - Game state management: ✅ Working
+
