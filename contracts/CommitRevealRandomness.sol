@@ -10,7 +10,24 @@ pragma solidity ^0.8.19;
 /// @title CommitRevealRandomness
 /// @notice Provides secure random numbers using commit/reveal pattern
 /// @dev Players commit to data, then reveal to get random numbers
-/// @dev Uses keccak256 hash of committed data for randomness
+/// @dev Uses commit block hashes for randomness, with optional data validation
+/// @dev Two modes: with dataHash (secure commit-reveal) or without (simple randomness)
+/// @dev 
+/// @dev MODE 1: Secure Commit-Reveal (dataHash provided)
+/// @dev - Use case: Multiplayer games where moves are made simultaneously and hidden
+/// @dev - Player commits hash of their move/choice (e.g., game action, strategy)
+/// @dev - All players commit first, then reveal in reveal window
+/// @dev - Must reveal exact data to get random number, throws error if data doesn't match commit
+/// @dev 
+/// @dev MODE 2: Simple Randomness (dataHash = bytes32(0))
+/// @dev - Use case: Single player games or when no move verification needed
+/// @dev - Player gets random number without data validation
+/// @dev - Example usage:
+/// @dev   move(bytes32(0), 256) -> reveal("") -> random number
+/// @dev
+/// @dev RANDOMNESS: Always generated using commit block hash + player address
+/// @dev - Block hash is unpredictable at commit time
+/// @dev - Player address prevents identical results across players
 contract CommitRevealRandomness {
     
 
@@ -78,8 +95,13 @@ contract CommitRevealRandomness {
     }
     
     /// @notice Commit data for later reveal
-    /// @param dataHash The hash of data to commit (produced on frontend), optional
-    /// @param revealWindow Number of blocks after commitBlock for reveal
+    /// @dev Two modes of operation:
+    /// @dev 1. With dataHash: Secure commit-reveal pattern where player commits hash of data
+    /// @dev    and must reveal exact data to function don't throw error
+    /// @dev 2. Without dataHash: Simple randomness mode where player gets random number
+    /// @dev    without data validation
+    /// @param dataHash The hash of data to commit (produced on frontend), or bytes32(0) for simple mode
+    /// @param revealWindow Number of blocks after commitBlock for reveal. Max 256 blocks.
     function move(bytes32 dataHash, uint256 revealWindow) public {
         uint256 currentBlock = _blockNumber();
         CommitData storage commit = playerCommits[msg.sender];
@@ -101,7 +123,11 @@ contract CommitRevealRandomness {
     }
     
     /// @notice Reveal committed data and generate random number
-    /// @param data The original data that was committed, optional
+    /// @dev Handles both secure commit-reveal and simple randomness modes:
+    /// @dev - If dataHash was provided: validates revealed data matches committed hash
+    /// @dev - If no dataHash (bytes32(0)): accepts any data (including empty)
+    /// @dev Random number is always generated using commit block hash + player address
+    /// @param data The original data that was committed, or bytes32(0) for simple mode
     /// @return randomNumber The generated random number
     function reveal(bytes memory data) public returns (uint256 randomNumber) {
         uint256 currentBlock = _blockNumber();
@@ -145,6 +171,9 @@ contract CommitRevealRandomness {
     }
     
     /// @notice Generate entropy for random number generation
+    /// @dev Always uses commit block hash + player address for randomness
+    /// @dev This provides security regardless of commit-reveal mode used
+    /// @dev Block hash is unpredictable at commit time due to commit block usage
     /// @param player The player's address
     /// @param commitBlock The block number to use for entropy
     /// @return Entropy value
