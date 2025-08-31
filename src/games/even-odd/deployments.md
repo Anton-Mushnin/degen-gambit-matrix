@@ -7,13 +7,17 @@
 - **Explorer**: https://sepolia.xaiscan.io/
 - **Faucet**: https://faucet.quicknode.com/xai
 
-### ✅ Deployment Details - DEPLOYED (FIXED VERSION - LATEST)
-- **Contract Address**: `0x5C1B3d2d3c3861bBe0f6f482Ac6fF8AabF3A2168`
+### ✅ Deployment Details - LATEST VERSION (RECOMPILED)
+- **Contract Address**: `0x39488288a28886B6145bf0B736c5C8F9AB08cC47`
 - **Deployer**: `0x4eD919172bD08D74831f2914aAAe8edA690d08Ab`
-- **Status**: Successfully deployed (Fixed commit/reveal issue)
+- **Status**: Successfully deployed (Latest recompiled version)
 - **Deployment Date**: January 16, 2025
 - **Block Number**: Latest
 - **Funding**: 0.000001 ETH for payouts
+
+### Previous Deployments
+- **Contract Address**: `0x5C1B3d2d3c3861bBe0f6f482Ac6fF8AabF3A2168` (Previous version)
+- **Status**: Deprecated (replaced by latest version)
 
 ### Contract Constants
 - **Bet Amount**: 1000 WEI

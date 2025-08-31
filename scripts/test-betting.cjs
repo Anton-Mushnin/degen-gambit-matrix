@@ -5,7 +5,7 @@ async function main() {
   console.log("🎲 Testing EvenOdd Betting System...");
   
   // Contract address from deployment
-  const CONTRACT_ADDRESS = "0x5C1B3d2d3c3861bBe0f6f482Ac6fF8AabF3A2168";
+  const CONTRACT_ADDRESS = "0x39488288a28886B6145bf0B736c5C8F9AB08cC47";
   
   // Setup provider and wallet
   const provider = new ethers.providers.JsonRpcProvider("https://testnet-v2.xai-chain.net/rpc");
