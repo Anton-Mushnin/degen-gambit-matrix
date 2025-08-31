@@ -25,6 +25,7 @@ contract EvenOdd is CommitRevealRandomness {
     mapping(address => Bet) public playerBets;
     mapping(address => LastResult) public lastResults;
     mapping(address => bool) public hasFreeSpin;
+    mapping(address => uint256) public totalWinnings;
     
     event BetResult(address indexed player, uint256 number, bool won, uint256 payout, bool isFreeSpin);
     event FreeSpin(address indexed player, string choice);
@@ -94,6 +95,8 @@ contract EvenOdd is CommitRevealRandomness {
             payout = WIN_PAYOUT;
             // Send winnings to player
             payable(msg.sender).transfer(WIN_PAYOUT);
+            // Accumulate total winnings
+            totalWinnings[msg.sender] += payout;
             // Activate free spin
             hasFreeSpin[msg.sender] = true;
             emit FreeSpin(msg.sender, choice);
