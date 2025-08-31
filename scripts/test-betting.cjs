@@ -186,6 +186,7 @@ async function main() {
       } catch (error) {
         console.log("❌ Bet reveal failed:", error.message);
         // Wait 10 seconds before next attempt
+        console.log("⏳ Waiting 10 seconds before next attempt...");
         await new Promise(resolve => setTimeout(resolve, 10000));
         continue;
       }
