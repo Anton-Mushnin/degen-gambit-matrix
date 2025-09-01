@@ -106,7 +106,7 @@ export async function loadDeploymentAddresses(): Promise<void> {
 
 // Contract ABIs
 export { degenGambitABI } from '../ABIs/DegenGambit.abi';
-export { evenOddABI } from '../games/even-odd/contract/EvenOdd.abi';
+export { EvenOddABI } from '../games/even-odd/EvenOdd.abi';
 
 // Helper to check if a contract is deployed on the current network
 export function isContractDeployed(chainId: number, contract: keyof ContractConfig): boolean {

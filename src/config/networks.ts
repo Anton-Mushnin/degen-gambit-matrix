@@ -1,4 +1,4 @@
-import { defineChain, type Chain } from 'viem'
+import { type Chain } from 'viem'
 
 // Extended chain type to include faucets
 type ExtendedChain = Chain & {
