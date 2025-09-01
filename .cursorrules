@@ -84,6 +84,10 @@ Step 8. Info
 8.1 - In info.md consider ONLY lines that have 'contract data' inside. If something is missing in the contract, checkup with user and update the contract if needed. Recompile, deploy, update test scripts, run them. 
 8.2 - If something is missing in the info.md, (contract constants, contract address, contract version, contract public view methods), propose to add it to the info.md
 
+Step 9. Commands
+- Compare design/commands.md and the contract. Read ONLY these two files.
+- If something is missing in the contract, checkup with user and update the contract if needed. Recompile, deploy, update test scripts, run them.
+- If something is missing in the commands.md, propose to add it to the commands.md
 
 When prompted 'continue <game-name>':
 - AI should inspect progress file and continue from where it left off
