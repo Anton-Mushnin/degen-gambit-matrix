@@ -15,7 +15,7 @@ import { gameManagementCommands, GameManagementParams } from '../commands/comman
 import { useGameContext } from '../contexts/GameContext';
 
 // Custom hooks
-import { useAccountToUse } from '../games/degen-gambit/hooks/useAccountToUse';
+import { useAccountToUse } from './useAccountToUse';
 
 export const useTerminal = (gameParams: DegenGambitCommandParams) => {
     const activeAccount = useActiveAccount();

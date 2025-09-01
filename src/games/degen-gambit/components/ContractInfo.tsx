@@ -5,7 +5,7 @@ import { useActiveAccount } from 'thirdweb/react';
 import { privateKeyToAccount } from 'viem/accounts';
 
 import { contractAddress, wagmiConfig } from '../../../config';
-import { useAccountToUse } from '../hooks/useAccountToUse';
+import { useAccountToUse } from '../../../hooks';
 import useBlocksLeft from '../../../hooks/useBlocksLeft';
 import { useDegenGambitInfo } from '../hooks/useDegenGambitInfo';
 import { getCostToSpin, getCurrentBlock, getCurrentDailyStreakLength, getCurrentWeeklyStreakLength, getLastSpinBlock, getSupply } from '../../../utils/degenGambit';

@@ -11,7 +11,7 @@ import Stream from './components/Stream';
 // Import hooks
 import { useDegenGambitGame } from './hooks/useDegenGambitGame';
 import { useDegenGambitInfo } from './hooks/useDegenGambitInfo';
-import { useAccountToUse } from './hooks/useAccountToUse';
+import { useAccountToUse } from '../../hooks';
 
 // Create the DegenGambit game module
 export const degenGambitGame: Game = {
@@ -46,7 +46,7 @@ export { default as Stream } from './components/Stream';
 
 export { useDegenGambitGame } from './hooks/useDegenGambitGame';
 export { useDegenGambitInfo } from './hooks/useDegenGambitInfo';
-export { useAccountToUse } from './hooks/useAccountToUse';
+export { useAccountToUse } from '../../hooks';
 
 export { degenGambitCommands } from './commands/degenGambit';
 export * from './commands/degenGambit.handlers';
