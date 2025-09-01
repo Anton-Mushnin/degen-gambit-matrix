@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { numbers } from '../../../config/symbols';
 import { useQueryClient } from '@tanstack/react-query';
-import { useAccountToUse } from './useAccountToUse';
+import { useAccountToUse } from '../../../hooks';
 import { useTerminal } from '../../../hooks/useTerminal';
 import { DegenGambitCommandParams } from '../commands/degenGambit';
 
