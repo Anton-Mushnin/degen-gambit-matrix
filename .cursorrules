@@ -46,10 +46,13 @@ Step 3. Commands:
 - Keep it short as possible but human readable 
 
 Step 4. Info:
+- Examine only this: existing games' ContractInfo.tsx components, rules of the game. NOTHING ELSE.
+- Result is a short but human readable list of data to display. label; source of data - contract data, blockchain, logic, constant; interval of updates; does it need animation
 - Carefully examine existing games' ContractInfo.tsx components to understand the data structure pattern
-- Create a list of data items for left upper corner display
-- Follow the same DataItem[] structure (query/static types, labels, queryKeys, queryFns)
-- Include relevant contract data and player data for the specific game
+- Carefully examine rules of the game
+- Propose the list
+- Ask user what do they think
+- Discuss, save the list in 'design' subfolder
 
 Step 5. Stream:
 - Result is a list of contract events with displaying patterns and a list of queries that should be refetched
@@ -74,6 +77,12 @@ Step 7. Contract deployment
 - Contract address should be stored in game-specific deployments.md
 - Fund with 0.0000001
 - 3 scripts to test deployment: contract status, player status, play, ask to run
+
+
+Step 8. Info
+- Compare design/info.md and the contract. Read ONLY these two files.
+8.1 - In info.md consider ONLY lines that have 'contract data' inside. If something is missing in the contract, checkup with user and update the contract if needed. Recompile, deploy, update test scripts, run them. 
+8.2 - If something is missing in the info.md, (contract constants, contract address, contract version, contract public view methods), propose to add it to the info.md
 
 
 When prompted 'continue <game-name>':
