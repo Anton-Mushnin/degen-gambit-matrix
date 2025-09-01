@@ -72,3 +72,5 @@ export interface StaticDataItem {
     };
     animation?: boolean;
 }
+
+export type DataItem = QueryDataItem | StaticDataItem;

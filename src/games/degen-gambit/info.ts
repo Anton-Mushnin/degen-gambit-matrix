@@ -3,32 +3,10 @@ import { privateKeyToAccount } from 'viem/accounts';
 
 import { contractAddress, wagmiConfig } from '../../config';
 import { getCostToSpin, getCurrentBlock, getCurrentDailyStreakLength, getCurrentWeeklyStreakLength, getLastSpinBlock, getSupply } from '../../utils/degenGambit';
+import { DataItem } from '../types';
 
 export const privateKey = import.meta.env.VITE_PRIVATE_KEY;
 export const privateKeyAddress = privateKey ? privateKeyToAccount(privateKey).address : undefined;
-
-export interface QueryDataItem {
-    type: 'query';
-    label: string;
-    queryKey: string[];
-    queryFn: () => Promise<{ formatted: string; value: bigint; decimals: number; } | null>;
-    refetchInterval?: number;
-    animation?: boolean;
-    onDataUpdate?: (data: any) => void;
-}
-
-export interface StaticDataItem {
-    type: 'static';
-    label: string;
-    data: {
-        formatted: string;
-        value: bigint;
-        decimals: number;
-    };
-    animation?: boolean;
-}
-
-export type DataItem = QueryDataItem | StaticDataItem;
 
 export const createContractData = (
     onDataUpdate?: () => void,
