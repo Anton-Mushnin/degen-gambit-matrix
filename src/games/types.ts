@@ -50,3 +50,25 @@ export interface GameInitOptions {
     config?: Record<string, unknown>;
     autoLoad?: boolean;
 } 
+
+
+export interface QueryDataItem {
+    type: 'query';
+    label: string;
+    queryKey: string[];
+    queryFn: () => Promise<{ formatted: string; value: bigint; decimals: number; } | null>;
+    refetchInterval?: number;
+    animation?: boolean;
+    onDataUpdate?: (data: any) => void;
+}
+
+export interface StaticDataItem {
+    type: 'static';
+    label: string;
+    data: {
+        formatted: string;
+        value: bigint;
+        decimals: number;
+    };
+    animation?: boolean;
+}
