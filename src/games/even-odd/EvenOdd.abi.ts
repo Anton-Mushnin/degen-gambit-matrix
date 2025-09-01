@@ -81,25 +81,6 @@ export const EvenOddABI = [
         "type": "address"
       }
     ],
-    "name": "getGameStatus",
-    "outputs": [
-      {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "player",
-        "type": "address"
-      }
-    ],
     "name": "getLastResult",
     "outputs": [
       {
@@ -125,15 +106,65 @@ export const EvenOddABI = [
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "revealBet",
-    "outputs": [],
-    "stateMutability": "nonpayable",
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "player",
+        "type": "address"
+      }
+    ],
+    "name": "playerHasCommit",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "player",
+        "type": "address"
+      }
+    ],
+    "name": "hasCommit",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "player",
+        "type": "address"
+      }
+    ],
+    "name": "playerHasFreeSpin",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
-    "name": "revealFreeSpin",
+    "name": "revealBet",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -144,5 +175,9 @@ export const EvenOddABI = [
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
+  },
+  {
+    "stateMutability": "payable",
+    "type": "receive"
   }
 ] as const; 

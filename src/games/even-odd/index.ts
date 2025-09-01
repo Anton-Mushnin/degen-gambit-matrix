@@ -1,6 +1,6 @@
 import { Game } from '../types';
 import { CommandDefinition } from '../../commands/types';
-import { getEvenOddAddress, isEvenOddDeployed, evenOddABI } from '../../config/contracts';
+import { getEvenOddAddress, isEvenOddDeployed, EvenOddABI } from '../../config/contracts';
 
 // Placeholder components
 const PlaceholderComponent = () => null;
@@ -23,7 +23,7 @@ export const evenOddGame: Game = {
         // Contract address helper - call getEvenOddAddress(chainId) to get address for specific network
         getContractAddress: getEvenOddAddress,
         isDeployed: isEvenOddDeployed,
-        abi: evenOddABI,
+        abi: EvenOddABI,
         // Contract constants
         betAmount: 1000, // WEI
         winPayout: 1400, // WEI 
