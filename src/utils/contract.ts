@@ -224,4 +224,69 @@ export async function getLastResult(
     args: [playerAddress as `0x${string}`],
   });
   return result as string;
+}
+
+// Multicall function to get all contract data for a player in one call
+export async function getContractData(
+  publicClient: PublicClient,
+  contractAddress: string,
+  playerAddress: string
+): Promise<{
+  hasCommit: boolean;
+  freeSpinAvailable: boolean;
+  totalWinnings: bigint;
+  betAmount: bigint;
+  payoutAmount: bigint;
+  lastResult: string;
+}> {
+  const [hasCommit, freeSpinAvailable, totalWinnings, betAmount, payoutAmount, lastResult] = 
+    await publicClient.multicall({
+      contracts: [
+        {
+          address: contractAddress as `0x${string}`,
+          abi: EVEN_ODD_ABI,
+          functionName: 'playerHasCommit',
+          args: [playerAddress as `0x${string}`],
+        },
+        {
+          address: contractAddress as `0x${string}`,
+          abi: EVEN_ODD_ABI,
+          functionName: 'playerHasFreeSpin',
+          args: [playerAddress as `0x${string}`],
+        },
+        {
+          address: contractAddress as `0x${string}`,
+          abi: EVEN_ODD_ABI,
+          functionName: 'totalWinnings',
+          args: [playerAddress as `0x${string}`],
+        },
+        {
+          address: contractAddress as `0x${string}`,
+          abi: EVEN_ODD_ABI,
+          functionName: 'BET_AMOUNT',
+          args: [],
+        },
+        {
+          address: contractAddress as `0x${string}`,
+          abi: EVEN_ODD_ABI,
+          functionName: 'WIN_PAYOUT',
+          args: [],
+        },
+        {
+          address: contractAddress as `0x${string}`,
+          abi: EVEN_ODD_ABI,
+          functionName: 'getLastResult',
+          args: [playerAddress as `0x${string}`],
+        },
+      ],
+    });
+
+  return {
+    hasCommit: hasCommit.result as boolean,
+    freeSpinAvailable: freeSpinAvailable.result as boolean,
+    totalWinnings: totalWinnings.result as bigint,
+    betAmount: betAmount.result as bigint,
+    payoutAmount: payoutAmount.result as bigint,
+    lastResult: lastResult.result as string,
+  };
 } 
