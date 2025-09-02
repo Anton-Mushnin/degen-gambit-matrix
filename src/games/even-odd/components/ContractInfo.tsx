@@ -6,8 +6,7 @@ import { useAccountToUse } from '../../../hooks';
 import { createContractData, createPlayerData, privateKeyAddress } from '../info';
 import QueryValueRow from '../../../components/matrixUI/QueryValueRow';
 import ValueRow from '../../../components/matrixUI/ValueRow';
-
-import styles from '../components/ContractInfo.module.css';
+import styles from './ContractInfo.module.css';
 
 const ContractInfo = () => {
     const activeAccount = useActiveAccount();
@@ -33,14 +32,7 @@ const ContractInfo = () => {
 
     const playerData = createPlayerData(
         playerAddress,
-        () => {
-            // Invalidate player-related queries when player data updates
-            queryClient.invalidateQueries({queryKey: ['playerBalance']});
-            queryClient.invalidateQueries({queryKey: ['hasCommit']});
-            queryClient.invalidateQueries({queryKey: ['freeSpinAvailable']});
-            queryClient.invalidateQueries({queryKey: ['totalWinnings']});
-            queryClient.invalidateQueries({queryKey: ['lastResult']});
-        }
+        displayName,
     );
 
     return (

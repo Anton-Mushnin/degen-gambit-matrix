@@ -25,7 +25,6 @@ export const privateKey = import.meta.env.VITE_PRIVATE_KEY;
 export const privateKeyAddress = privateKey ? privateKeyToAccount(privateKey).address : undefined;
 
 export const createContractData = (
-    onDataUpdate?: () => void,
     onCurrentBlockUpdate?: (data: any) => void
 ): DataItem[] => [
     {
@@ -40,7 +39,6 @@ export const createContractData = (
                 decimals: 18
             };
         },
-        onDataUpdate
     },
     {
         type: 'query',
@@ -90,7 +88,7 @@ export const createContractData = (
 
 export const createPlayerData = (
     playerAddress: string | undefined,
-    onDataUpdate?: () => void
+    displayName: string | undefined,
 ): DataItem[] => {
     if (!playerAddress) return [];
 
@@ -99,7 +97,7 @@ export const createPlayerData = (
             type: 'static',
             label: 'Player: ',
             data: {
-                formatted: playerAddress.slice(0, 6) + '...' + playerAddress.slice(-4),
+                formatted: displayName ?? playerAddress.slice(0, 6) + '...' + playerAddress.slice(-4),
                 value: BigInt(0),
                 decimals: 0
             },
