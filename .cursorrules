@@ -89,6 +89,16 @@ Step 9. Commands
 - If something is missing in the contract, checkup with user and update the contract if needed. Recompile, deploy, update test scripts, run them.
 - If something is missing in the commands.md, propose to add it to the commands.md
 
+Step 10. Utility functions
+ - read info.md, the contract and it's parents. In the folder utils create module 'contract' with getters for items 'contract-data' and module 'blockchain' with getters for blockchain items. Use viem. Use on-place abi. Do not create class, just export functions. Rethrow errors
+ 
+Step 11. info.ts
+- read info.md, 'utils' folder anf info.ts of existing games. Create info.ts
+
+Step 12. ContractInfo.tsx
+- read info.md, info.ts adn ContractInfo.tsx of existing games. Create ContractInfo.tsx
+
+
 When prompted 'continue <game-name>':
 - AI should inspect progress file and continue from where it left off
 
