@@ -32,8 +32,6 @@ async function main() {
   console.log("\n📋 Contract verification:");
   console.log("- BET_AMOUNT:", (await evenOdd.BET_AMOUNT()).toString(), "WEI");
   console.log("- WIN_PAYOUT:", (await evenOdd.WIN_PAYOUT()).toString(), "WEI");
-  console.log("- REVEAL_DELAY:", (await evenOdd.REVEAL_DELAY()).toString(), "blocks");
-  console.log("- REVEAL_WINDOW:", (await evenOdd.REVEAL_WINDOW()).toString(), "blocks");
   console.log("- Owner:", await evenOdd.owner());
   
   // Save deployment info
@@ -56,12 +54,17 @@ async function main() {
   console.log("\n🧪 Testing basic functionality...");
   
   try {
-    // Test pause/unpause
-    await evenOdd.pause();
-    console.log("✅ Pause function works");
+    // Test playerHasFreeSpin for deployer
+    const hasFreeSpin = await evenOdd.playerHasFreeSpin(deployer.address);
+    console.log("✅ playerHasFreeSpin works:", hasFreeSpin);
     
-    await evenOdd.unpause();
-    console.log("✅ Unpause function works");
+    // Test playerHasCommit for deployer
+    const hasCommit = await evenOdd.playerHasCommit(deployer.address);
+    console.log("✅ playerHasCommit works:", hasCommit);
+    
+    // Test getLastResult for deployer
+    const result = await evenOdd.getLastResult(deployer.address);
+    console.log("✅ getLastResult works:", result);
     
     console.log("✅ Basic functionality test passed!");
   } catch (error) {

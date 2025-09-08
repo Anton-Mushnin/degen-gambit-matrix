@@ -5,7 +5,7 @@ async function main() {
   console.log("👤 Checking Player Status on EvenOdd Contract...");
   
   // Contract address from deployment
-  const CONTRACT_ADDRESS = "0xc5e303401C5bCDA5a75cFd74eC59f429C39B933c";
+  const CONTRACT_ADDRESS = "0xEf506F17e839fc646Ff61605E640e4C78D38ffCF";
   
   // Setup provider and wallet
   const provider = new ethers.providers.JsonRpcProvider("https://testnet-v2.xai-chain.net/rpc");
@@ -20,11 +20,9 @@ async function main() {
   
   // Contract ABI for player status checking
   const abi = [
-    "function BET_AMOUNT() view returns (uint256)",
-    "function REVEAL_DELAY() view returns (uint256)",
-    "function REVEAL_WINDOW() view returns (uint256)",
-    "function getPlayerBet(address) view returns (bool,uint256,uint256,bool,bool,bool,bool)",
-    "function getBalance() view returns (uint256)"
+    "function playerHasFreeSpin(address) view returns (bool)",
+    "function playerHasCommit(address) view returns (bool)",
+    "function getLastResult(address) view returns (string)"
   ];
   
   // Get contract instance
@@ -40,66 +38,29 @@ async function main() {
     const currentBlock = await provider.getBlockNumber();
     console.log("Current Block:", currentBlock);
     
-    // Get player's bet information
-    const playerBet = await evenOdd.getPlayerBet(wallet.address);
+    // Get player's game information
+    const hasFreeSpin = await evenOdd.playerHasFreeSpin(wallet.address);
+    const hasCommit = await evenOdd.playerHasCommit(wallet.address);
+    const lastResult = await evenOdd.getLastResult(wallet.address);
     
-    // Parse bet data
-    const isOdd = playerBet[0];
-    const betBlockNumber = playerBet[1];
-    const betAmount = playerBet[2];
-    const isFreeSpin = playerBet[3];
-    const isRevealed = playerBet[4];
-    const canReveal = playerBet[5];
-    const isExpired = playerBet[6];
+    console.log("\n🎯 Current Game Status:");
+    console.log("- Has Free Spin:", hasFreeSpin);
+    console.log("- Has Active Commit:", hasCommit);
+    console.log("- Last Result:", lastResult);
     
-    console.log("\n🎯 Current Bet Status:");
-    
-    if (betBlockNumber.eq(0)) {
+    if (!hasCommit) {
       console.log("❌ No active bet found");
       console.log("💡 You can place a new bet using:");
-      console.log("   - betOdd() for ODD");
-      console.log("   - betEven() for EVEN");
+      console.log("   - bet(\"odd\") for ODD");
+      console.log("   - bet(\"even\") for EVEN");
     } else {
       console.log("✅ Active bet found!");
-      console.log("- Choice:", isOdd ? "ODD" : "EVEN");
-      console.log("- Bet Amount:", ethers.utils.formatEther(betAmount), "ETH");
-      console.log("- Bet Block:", betBlockNumber.toString());
-      console.log("- Free Spin:", isFreeSpin ? "Yes" : "No");
-      console.log("- Revealed:", isRevealed ? "Yes" : "No");
-      console.log("- Can Reveal:", canReveal ? "Yes" : "No");
-      console.log("- Expired:", isExpired ? "Yes" : "No");
-      
-      // Calculate timing information
-      const blocksSinceBet = currentBlock.sub(betBlockNumber);
-      const revealDelay = await evenOdd.REVEAL_DELAY();
-      const revealWindow = await evenOdd.REVEAL_WINDOW();
-      
-      console.log("\n⏰ Timing Information:");
-      console.log("- Blocks since bet:", blocksSinceBet.toString());
-      console.log("- Blocks until reveal:", Math.max(0, revealDelay.sub(blocksSinceBet).toNumber()));
-      console.log("- Blocks until expiry:", Math.max(0, revealDelay.add(revealWindow).sub(blocksSinceBet).toNumber()));
-      
-      if (canReveal) {
-        console.log("🎉 Ready to reveal! Call revealBet() to get your result!");
-      } else if (blocksSinceBet.lt(revealDelay)) {
-        const blocksToWait = revealDelay.sub(blocksSinceBet);
-        console.log("⏳ Waiting for reveal delay...");
-        console.log(`   ${blocksToWait.toString()} more blocks needed`);
-      } else if (isExpired) {
-        console.log("⌛ Bet has expired! You can place a new bet.");
-      }
+      console.log("- Status: Ready to reveal");
       
       // Show potential outcomes
-      if (!isRevealed) {
-        const betAmountEth = ethers.utils.formatEther(betAmount);
-        const winPayout = await evenOdd.BET_AMOUNT().mul(14).div(10); // 1.4x payout
-        const winPayoutEth = ethers.utils.formatEther(winPayout);
-        
-        console.log("\n💰 Potential Outcomes:");
-        console.log("- If you win:", winPayoutEth, "ETH + FREE SPIN");
-        console.log("- If you lose:", "0 ETH");
-        console.log("- Current bet:", betAmountEth, "ETH");
-      }
+      console.log("\n💰 Potential Outcomes:");
+      console.log("- If you win: 1400 WEI + FREE SPIN");
+      console.log("- If you lose: 0 WEI");
     }
     
     // Get player's ETH balance
@@ -107,8 +68,8 @@ async function main() {
     console.log("\n💎 Player Balance:");
     console.log("- ETH Balance:", ethers.utils.formatEther(playerBalance), "ETH");
     
-    // Get contract balance
-    const contractBalance = await evenOdd.getBalance();
+    // Get contract balance from provider
+    const contractBalance = await provider.getBalance(CONTRACT_ADDRESS);
     console.log("- Contract Balance:", ethers.utils.formatEther(contractBalance), "ETH");
     
     console.log("\n✅ Player status check completed!");
