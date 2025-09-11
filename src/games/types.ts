@@ -1,5 +1,6 @@
 // Common game interfaces and types
 import { CommandDefinition } from '../commands/types';
+import { Chain } from 'viem';
 
 // Base game interface that all games must implement
 export interface Game {
@@ -20,6 +21,7 @@ export interface Game {
     config: {
         [key: string]: unknown;
     };
+    network: Chain;
 }
 
 // Game state interface

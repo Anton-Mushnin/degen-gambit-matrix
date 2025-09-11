@@ -6,7 +6,7 @@ import { Chain, createThirdwebClient } from "thirdweb";
 import { useActiveAccount, useActiveWallet, useConnectModal } from "thirdweb/react";
 
 // Local imports
-import { thirdwebClientId, thirdWebG7Testnet } from '../config';
+import { thirdwebClientId } from '../config';
 import { CommandDispatcher } from '../commands/dispatcher';
 import { CommandDefinition } from '../commands/types';
 import { DegenGambitCommandParams, TerminalCommandParams } from '../games/degen-gambit/commands/degenGambit';
@@ -65,13 +65,24 @@ export const useTerminal = (gameParams: DegenGambitCommandParams) => {
 
     // Handle wallet connection and chain switching
     useEffect(() => {
-        if (activeWallet) {
+        if (activeWallet && gameContext.activeGame) {
             const chain = activeWallet.getChain();
-            if (chain?.id !== thirdWebG7Testnet.id) {
-                activeWallet.switchChain(thirdWebG7Testnet as Chain);
+            console.log('chain', chain);
+            if (chain?.id !== gameContext.activeGame.network.id) {
+                // Convert viem Chain to thirdweb format
+                const thirdwebChain = {
+                    ...gameContext.activeGame.network,
+                    rpc: gameContext.activeGame.network.rpcUrls.default.http[0],
+                    blockExplorers: [{
+                        name: gameContext.activeGame.network.blockExplorers?.default?.name || 'Explorer',
+                        url: gameContext.activeGame.network.blockExplorers?.default?.url || ''
+                    }],
+                    testnet: true,
+                };
+                activeWallet.switchChain(thirdwebChain as Chain);
             }
         }
-    }, [activeWallet]);
+    }, [activeWallet, gameContext.activeGame]);
 
     // Handle initial connection and welcome message
     useEffect(() => {

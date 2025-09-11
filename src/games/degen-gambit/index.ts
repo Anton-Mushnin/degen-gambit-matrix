@@ -1,6 +1,7 @@
 import { Game } from '../types';
 import { CommandDefinition } from '../../commands/types';
 import { degenGambitCommands } from './commands/degenGambit';
+import { NETWORKS } from '../../config/networks';
 
 // Import components
 import DegenGambit from './components/DegenGambit';
@@ -36,6 +37,7 @@ export const degenGambitGame: Game = {
         privateKey: '',
         wagmiConfig: null, // Will be set dynamically
     },
+    network: NETWORKS.G7_TESTNET,
 };
 
 // Export individual components and hooks for backward compatibility
