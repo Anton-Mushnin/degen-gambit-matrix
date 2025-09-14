@@ -37,9 +37,57 @@ export const xaiTestnet = {
   },
   faucets: ['https://faucet.quicknode.com/xai'],
   testnet: true,
+  contracts: {
+    multicall3: {
+      address: '0xca11bde05977b3631167028862be2a173976ca11',
+      blockCreated: 222549,
+    },
+  },
+} as const satisfies ExtendedChain
+
+// Arbitrum Blueberry Testnet
+export const arbitrumBlueberry = {
+  id: 88153591557,
+  name: 'Arbitrum Blueberry',
+  nativeCurrency: { name: 'CGT', symbol: 'CGT', decimals: 18 },
+  rpcUrls: {
+    default: { http: ['https://rpc.arb-blueberry.gelato.digital'] },
+  },
+  blockExplorers: {
+    default: { name: 'Arbitrum Blueberry Explorer', url: 'https://arb-blueberry.gelatoscout.com' },
+  },
+  testnet: true,
+  contracts: {
+    multicall3: {
+      address: '0xEc10A32fF915D672a8A062eea9d48370232072Df',
+      blockCreated: 1,
+    },
+  },
+} as const satisfies ExtendedChain
+
+// xProtocol Network
+export const xProtocolTestnet = {
+  id: 83144,
+  name: 'XProtocol Testnet',
+  nativeCurrency: { name: 'KICK', symbol: 'KICK', decimals: 18 },
+  rpcUrls: {
+    default: { http: ['https://rpc.testnet.xprotocol.org'] },
+  },
+  blockExplorers: {
+    default: { name: 'xProtocol Explorer', url: 'https://explorer.testnet.xprotocol.org' },
+  },
+  faucets: ['https://xprotocol.org/faucets'],
+  contracts: {
+    multicall3: {
+      address: '0xca11bde05977b3631167028862be2a173976ca11',
+      blockCreated: 0,
+    },
+  },
 } as const satisfies ExtendedChain
 
 export const NETWORKS = {
   G7_TESTNET: g7Testnet,
   XAI_TESTNET: xaiTestnet,
+  ARBITRUM_BLUEBERRY: arbitrumBlueberry,
+  XPROTOCOL_TESTNET: xProtocolTestnet,
 } as const 
