@@ -5,8 +5,9 @@ import { createWalletClient, http, type WalletClient } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 
 // Local imports
-import { contractAddress, privateKey, wagmiConfig } from '../../../config';
+import { privateKey, wagmiConfig } from '../../../config';
 import { _accept, _acceptThirdWebClient, spin } from "../../../utils/degenGambit";
+import { degenGambitGame } from '../index';
 
 export type SpinResult = {
     description: string;
@@ -83,6 +84,7 @@ export async function handleSpin({ input, params }: { input: string; params: Ter
     }
 
     const isBoost = input === "spin boost";
+    const contractAddress = degenGambitGame.config.contractAddress as string;
     const spinResult = await spin(contractAddress, isBoost, account, _client);
 
     // Handle win state and auto-accept
@@ -162,6 +164,7 @@ export async function handleAccept({ params }: { params: TerminalCommandParams }
     }
 
     try {
+        const contractAddress = degenGambitGame.config.contractAddress as string;
         if (privateKey) {
             await _accept(contractAddress, _client as WalletClient);
         } else {

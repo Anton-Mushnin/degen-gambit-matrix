@@ -6,12 +6,13 @@ import { useAccountToUse } from '../../../hooks';
 import useBlocksLeft from '../../../hooks/useBlocksLeft';
 import { useDegenGambitInfo } from '../hooks/useDegenGambitInfo';
 import { createContractData, createDegenData, privateKeyAddress } from '../info';
-import { contractAddress } from '../../../config';
+import { degenGambitGame } from '../index';
 import QueryValueRow from '../../../components/matrixUI/QueryValueRow';
 import ValueRow from '../../../components/matrixUI/ValueRow';
 import styles from './ContractInfo.module.css';
 
 const ContractInfo = () => {
+    const contractAddress = degenGambitGame.config.contractAddress as string;
     const contractInfo = useDegenGambitInfo(contractAddress);
     const activeAccount = useActiveAccount();
     const { displayName } = useAccountToUse();

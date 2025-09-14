@@ -1,9 +1,10 @@
 import { useDegenGambitInfo } from '../hooks/useDegenGambitInfo';
-import { contractAddress } from '../../../config';
+import { degenGambitGame } from '../index';
 import styles from './Rules.module.css';
 import { numbers } from '../../../config/symbols';
 
 const Rules = () => {
+    const contractAddress = degenGambitGame.config.contractAddress as string;
     const contractInfo = useDegenGambitInfo(contractAddress);
 
     return ( 
