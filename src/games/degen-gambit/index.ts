@@ -33,11 +33,11 @@ export const degenGambitGame: Game = {
         useAccountToUse: useAccountToUse as (...args: unknown[]) => unknown,
     },
     config: {
-        contractAddress: '0xf3BE777A6096E0ff568296aD3BA76811b5b1Fc40',
+        contractAddress: '0xCE8874f0862C431CD151C8978EeA1b68FC88e5c0',
         privateKey: '',
         wagmiConfig: null, // Will be set dynamically
     },
-    network: NETWORKS.G7_TESTNET,
+    network: NETWORKS.XPROTOCOL_TESTNET,
 };
 
 // Export individual components and hooks for backward compatibility
