@@ -19,6 +19,12 @@ export const XAI_TESTNET = {
       name: 'sXAI',
       symbol: 'sXAI'
     },
+    contracts: {
+      multicall3: {
+        address: '0xca11bde05977b3631167028862be2a173976ca11',
+        blockCreated: 222549,
+      },
+    },
   }
 
 export const TESTNET = {
@@ -56,10 +62,9 @@ export const g7Testnet = {
 
 
 export const wagmiConfig = createConfig({
-  chains: [g7Testnet, NETWORKS.XAI_TESTNET],
+  chains: [NETWORKS.XPROTOCOL_TESTNET],
   transports: {
-    [g7Testnet.id]: http(),
-    [NETWORKS.XAI_TESTNET.id]: http(),
+    [NETWORKS.XPROTOCOL_TESTNET.id]: http(),
   },
 })
 
