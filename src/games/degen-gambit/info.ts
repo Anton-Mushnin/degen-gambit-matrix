@@ -1,5 +1,6 @@
 import { getBalance } from '@wagmi/core';
 import { privateKeyToAccount } from 'viem/accounts';
+import { PublicClient } from 'viem';
 
 import { wagmiConfig } from '../../config';
 import { getCostToSpin, getCurrentBlock, getCurrentDailyStreakLength, getCurrentWeeklyStreakLength, getLastSpinBlock, getSupply } from '../../utils/degenGambit';
@@ -10,6 +11,7 @@ export const privateKey = import.meta.env.VITE_PRIVATE_KEY;
 export const privateKeyAddress = privateKey ? privateKeyToAccount(privateKey).address : undefined;
 
 export const createContractData = (
+    publicClient: PublicClient,
     onDataUpdate?: () => void,
     onCurrentBlockUpdate?: (data: any) => void
 ): DataItem[] => [
@@ -34,13 +36,13 @@ export const createContractData = (
         type: 'query',
         label: 'Gambit Supply: ',
         queryKey: ['gambitSupply', degenGambitGame.config.contractAddress as string],
-        queryFn: () => getSupply(degenGambitGame.config.contractAddress as string)
+        queryFn: () => getSupply(degenGambitGame.config.contractAddress as string, publicClient)
     },
     {
         type: 'query',
         label: 'Current Block: ',
         queryKey: ['currentBlock'],
-        queryFn: () => getCurrentBlock(),
+        queryFn: () => getCurrentBlock(publicClient),
         refetchInterval: 5000,
         animation: false,
         onDataUpdate: onCurrentBlockUpdate
@@ -48,6 +50,7 @@ export const createContractData = (
 ];
 
 export const createDegenData = (
+    publicClient: PublicClient,
     degenAddress: string | undefined,
     displayName: string | undefined,
     getBlocksLeft: () => Promise<{ formatted: string; value: bigint; decimals: number; } | null>,
@@ -84,14 +87,14 @@ export const createDegenData = (
             type: 'query',
             label: 'Cost to Spin: ',
             queryKey: ['costToSpin', degenAddress],
-            queryFn: () => getCostToSpin(degenGambitGame.config.contractAddress as string, degenAddress),
+            queryFn: () => getCostToSpin(degenGambitGame.config.contractAddress as string, degenAddress, publicClient),
             animation: false
         },
         {
             type: 'query',
             label: 'Last Spin Block: ',
             queryKey: ['lastSpinBlock', degenAddress],
-            queryFn: () => getLastSpinBlock(degenGambitGame.config.contractAddress as string, degenAddress),
+            queryFn: () => getLastSpinBlock(degenGambitGame.config.contractAddress as string, degenAddress, publicClient),
             animation: false,
             onDataUpdate: onLastSpinBlockUpdate
         },
@@ -107,13 +110,13 @@ export const createDegenData = (
             type: 'query',
             label: 'Daily Streak: ',
             queryKey: ['dailyStreak', degenAddress],
-            queryFn: () => getCurrentDailyStreakLength(degenGambitGame.config.contractAddress as string, degenAddress)
+            queryFn: () => getCurrentDailyStreakLength(degenGambitGame.config.contractAddress as string, degenAddress, publicClient)
         },
         {
             type: 'query',
             label: 'Weekly Streak: ',
             queryKey: ['weeklyStreak', degenAddress],
-            queryFn: () => getCurrentWeeklyStreakLength(degenGambitGame.config.contractAddress as string, degenAddress)
+            queryFn: () => getCurrentWeeklyStreakLength(degenGambitGame.config.contractAddress as string, degenAddress, publicClient)
         }
     ];
 }; 

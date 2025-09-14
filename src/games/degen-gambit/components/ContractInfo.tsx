@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useActiveAccount } from 'thirdweb/react';
 
-import { useAccountToUse } from '../../../hooks';
+import { useAccountToUse, useBlockchain } from '../../../hooks';
 import useBlocksLeft from '../../../hooks/useBlocksLeft';
 import { useDegenGambitInfo } from '../hooks/useDegenGambitInfo';
 import { createContractData, createDegenData, privateKeyAddress } from '../info';
@@ -16,6 +16,7 @@ const ContractInfo = () => {
     const contractInfo = useDegenGambitInfo(contractAddress);
     const activeAccount = useActiveAccount();
     const { displayName } = useAccountToUse();
+    const { publicClient } = useBlockchain();
     const [degenAddress, setDegenAddress] = useState<string | undefined>(privateKeyAddress);
     const queryClient = useQueryClient();
     
@@ -52,21 +53,23 @@ const ContractInfo = () => {
         prevBlocksLeftRef.current = currentValue;
     }, [blocksLeft, queryClient]);
 
-    const contractData = createContractData(
+    const contractData = publicClient ? createContractData(
+        publicClient,
         () => {
             queryClient.invalidateQueries({queryKey: ['degenGambitInfo', contractAddress]});
         },
         handleCurrentBlockUpdate
-    );
+    ) : [];
 
-    const degenData = createDegenData(
+    const degenData = publicClient ? createDegenData(
+        publicClient,
         degenAddress,
         displayName,
         getBlocksLeft,
         blocksLeft,
         handleCurrentBlockUpdate,
         handleLastSpinBlockUpdate
-    );
+    ) : [];
 
     return (
         <div className={styles.container}>
