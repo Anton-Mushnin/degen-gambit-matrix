@@ -1,7 +1,82 @@
 const { ethers } = require("hardhat");
 
+// Network configuration mapping
+const networkConfig = {
+  "hardhat": {
+    name: "Hardhat Local",
+    chainId: 31337,
+    explorer: "N/A",
+    faucet: "N/A"
+  },
+  "localhost": {
+    name: "Localhost",
+    chainId: 31337,
+    explorer: "N/A",
+    faucet: "N/A"
+  },
+  "sepolia": {
+    name: "Sepolia Testnet",
+    chainId: 11155111,
+    explorer: "https://sepolia.etherscan.io",
+    faucet: "https://sepoliafaucet.com"
+  },
+  "mumbai": {
+    name: "Mumbai Testnet",
+    chainId: 80001,
+    explorer: "https://mumbai.polygonscan.com",
+    faucet: "https://faucet.polygon.technology"
+  },
+  "polygon": {
+    name: "Polygon Mainnet",
+    chainId: 137,
+    explorer: "https://polygonscan.com",
+    faucet: "N/A"
+  },
+  "mainnet": {
+    name: "Ethereum Mainnet",
+    chainId: 1,
+    explorer: "https://etherscan.io",
+    faucet: "N/A"
+  },
+  "g7-testnet": {
+    name: "G7 Sepolia Testnet",
+    chainId: 13746,
+    explorer: "https://testnet.game7.io",
+    faucet: "N/A"
+  },
+  "xai-testnet": {
+    name: "Xai Testnet v2",
+    chainId: 37714555429,
+    explorer: "https://sepolia.xaiscan.io",
+    faucet: "https://faucet.quicknode.com/xai"
+  },
+  "arbitrum-blueberry": {
+    name: "Arbitrum Blueberry",
+    chainId: 88153591557,
+    explorer: "https://arb-blueberry.gelatoscout.com",
+    faucet: "N/A"
+  },
+  "xprotocol-testnet": {
+    name: "XProtocol Testnet",
+    chainId: 83144,
+    explorer: "https://explorer.testnet.xprotocol.org",
+    faucet: "https://xprotocol.org/faucets"
+  }
+};
+
 async function main() {
-  console.log("🚀 Deploying DegenGambit contract to XAI Testnet...");
+  // Get network information
+  const network = await ethers.provider.getNetwork();
+  const networkName = process.env.HARDHAT_NETWORK || "hardhat";
+  const config = networkConfig[networkName] || {
+    name: `Unknown Network (${networkName})`,
+    chainId: network.chainId,
+    explorer: "N/A",
+    faucet: "N/A"
+  };
+  
+  console.log(`🚀 Deploying DegenGambit contract to ${config.name}...`);
+  console.log(`🔗 Chain ID: ${config.chainId}`);
   
   // Get the deployer account
   const [deployer] = await ethers.getSigners();
@@ -50,16 +125,16 @@ async function main() {
   
   // Save deployment info
   const deploymentInfo = {
-    network: "XAI Testnet",
-    chainId: 37714555429,
+    network: config.name,
+    networkKey: networkName,
+    chainId: config.chainId,
     contract: "DegenGambit",
     address: degenGambit.address,
     deployer: deployer.address,
     timestamp: new Date().toISOString(),
     blockNumber: await degenGambit.provider.getBlockNumber(),
-    rpc: "https://testnet-v2.xai-chain.net/rpc",
-    explorer: "https://sepolia.xaiscan.io",
-    faucet: "https://faucet.quicknode.com/xai",
+    explorer: config.explorer,
+    faucet: config.faucet,
     constructorParams: {
       blocksToAct: blocksToAct,
       costToSpin: costToSpin.toString(),
@@ -99,7 +174,11 @@ async function main() {
   }
   
   console.log("\n🎉 Deployment completed successfully!");
-  console.log("📱 Contract ready for use on XAI Testnet");
+  console.log(`📱 Contract ready for use on ${config.name}`);
+  console.log(`🔗 Explorer: ${config.explorer}`);
+  if (config.faucet !== "N/A") {
+    console.log(`🚰 Faucet: ${config.faucet}`);
+  }
   console.log("\n📋 Next steps:");
   console.log("1. Update contract address in frontend config");
   console.log("2. Test spin functionality");
