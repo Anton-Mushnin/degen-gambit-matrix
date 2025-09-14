@@ -2,13 +2,15 @@ const { ethers } = require('ethers');
 require('dotenv').config();
 
 async function main() {
-  console.log("🔍 Checking DegenGambit Contract Status on XAI Testnet...");
+  console.log("🔍 Checking DegenGambit Contract Status on Jasmy Chain Testnet...");
   
-  // Contract address from deployment
-  const CONTRACT_ADDRESS = "0xCE8874f0862C431CD151C8978EeA1b68FC88e5c0";
+  // Contract address from Jasmy deployment
+  const CONTRACT_ADDRESS = "0x6aEEccD5eB7f9bABA25F052d0608CC4E162786B8";
   
-  // Setup provider
-  const provider = new ethers.providers.JsonRpcProvider("https://testnet-v2.xai-chain.net/rpc");
+  // Setup provider for Jasmy Chain Testnet
+  const provider = new ethers.providers.JsonRpcProvider("https://jasmy-chain-testnet.alt.technology");
+
+  const THIRDWEB_ACCOUNT_ADDRESS = "0xc1779c548C15CA7706e3a04D3573d491DD8900f9";
   
   // Contract ABI for status checking
   const abi = [
@@ -37,9 +39,9 @@ async function main() {
   
   try {
     console.log("\n📋 Contract Information:");
-    console.log("Network: XAI Testnet v2");
+    console.log("Network: Jasmy Chain Testnet");
     console.log("Contract Address:", CONTRACT_ADDRESS);
-    console.log("Block Explorer: https://sepolia.xaiscan.io/address/" + CONTRACT_ADDRESS);
+    console.log("Block Explorer: jasmy-chain-testnet-explorer.alt.technology/address/" + CONTRACT_ADDRESS);
     
     // Get current block
     const currentBlock = await provider.getBlockNumber();
@@ -93,9 +95,16 @@ async function main() {
     
     // Test basic functionality with a sample address
     console.log("\n🧪 Testing Basic Functionality:");
-    const testAddress = "0x0000000000000000000000000000000000000001";
+
     
+    // const testAddress = process.env.TEST_ADDRESS;
+    const testAddress = THIRDWEB_ACCOUNT_ADDRESS;
+
+    if (!testAddress) {
+      throw new Error("TEST_ADDRESS not found in environment variables");
+    }
     try {
+      console.log("🎯 Testing with address:", testAddress);
       const hasPrize = await degenGambit.hasPrize(testAddress);
       const spinCost = await degenGambit.spinCost(testAddress);
       const dailyStreak = await degenGambit.CurrentDailyStreakLength(testAddress);
