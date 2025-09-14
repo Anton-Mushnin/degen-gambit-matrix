@@ -1,4 +1,4 @@
-import { type Chain } from 'viem'
+import { type Chain, defineChain } from 'viem'
 
 // Extended chain type to include faucets
 type ExtendedChain = Chain & {
@@ -91,3 +91,30 @@ export const NETWORKS = {
   ARBITRUM_BLUEBERRY: arbitrumBlueberry,
   XPROTOCOL_TESTNET: xProtocolTestnet,
 } as const 
+
+// Network utility functions
+export function getViemNetwork(networkKey: keyof typeof NETWORKS): Chain {
+  const network = NETWORKS[networkKey];
+  return defineChain({
+    id: network.id,
+    name: network.name,
+    nativeCurrency: network.nativeCurrency,
+    blockExplorers: network.blockExplorers,
+    rpcUrls: network.rpcUrls,
+  });
+}
+
+export function getThirdWebNetwork(networkKey: keyof typeof NETWORKS) {
+  const viemNetwork = getViemNetwork(networkKey);
+  return {
+    ...viemNetwork,
+    rpc: viemNetwork.rpcUrls["default"].http[0],
+    blockExplorers: viemNetwork.blockExplorers ? [{
+      name: viemNetwork.blockExplorers.default.name,
+      url: viemNetwork.blockExplorers.default.url
+    }] : [],
+    testnet: true,
+  };
+}
+
+
