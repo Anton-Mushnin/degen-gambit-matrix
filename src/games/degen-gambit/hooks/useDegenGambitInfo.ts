@@ -1,21 +1,25 @@
 import { useQuery } from '@tanstack/react-query';
 import { useCallback, useMemo } from "react";
-import { getPublicClient } from '@wagmi/core';
+import { createPublicClient, http } from 'viem';
 
 // You'll need to import your contract ABI
 
-import { g7Testnet, wagmiConfig } from '../../../config/index.ts';
 import { formatEther } from 'viem';
 import { getDegenGambitInfo } from '../../../utils/degenGambit.ts';
+import { degenGambitGame } from '../index';
+
+const degenGambitClient = createPublicClient({
+  chain: degenGambitGame.network,
+  transport: http(),
+});
 
 const calculateAverageBlockTime = async () => {
-  const publicClient = getPublicClient(wagmiConfig);
-  const currentBlock = await publicClient.getBlockNumber();
+  const currentBlock = await degenGambitClient.getBlockNumber();
   const blocksToCheck = 10; // Get average from last 10 blocks
   
   const [oldBlock, newBlock] = await Promise.all([
-    publicClient.getBlock({ blockNumber: currentBlock - BigInt(blocksToCheck) }),
-    publicClient.getBlock({ blockNumber: currentBlock })
+    degenGambitClient.getBlock({ blockNumber: currentBlock - BigInt(blocksToCheck) }),
+    degenGambitClient.getBlock({ blockNumber: currentBlock })
   ]);
 
   const timeDifference = Number(newBlock.timestamp - oldBlock.timestamp);
@@ -64,7 +68,7 @@ export function useDegenGambitInfo(contractAddress: string) {
     // Type assertion for prizes which is a tuple of two arrays
     const prizesArray = prizes as readonly [readonly bigint[], readonly bigint[]];
     const prizesFormatted = prizesArray[0].map((prize: bigint, index: number) => 
-      `${prizeDescriptions[index]}: ${formatEther(prize)} ${prizesArray[1][index] === 1n ? g7Testnet.nativeCurrency.symbol : 'GAMBIT'}`
+      `${prizeDescriptions[index]}: ${formatEther(prize)} ${prizesArray[1][index] === 1n ? degenGambitGame.network.nativeCurrency.symbol : 'GAMBIT'}`
     );
 
     const secondsToAct = Number(blocksToAct) * blockTime;

@@ -1,8 +1,7 @@
-import { contractAddress, viemG7Testnet, wagmiConfig } from '../config'
-import { getPublicClient } from '@wagmi/core'
+import { viemG7Testnet, wagmiConfig } from '../config'
 import { degenGambitABI } from '../ABIs/DegenGambit.abi.ts';
 import { multicall } from '@wagmi/core';
-import { createPublicClient, formatUnits, http, WalletClient } from 'viem';
+import { formatUnits, WalletClient, PublicClient } from 'viem';
 import { checkAndCreateBlockIfNeeded } from './blockProducer';
 import { waitForReceipt } from 'thirdweb/transaction';
 import { sendTransaction, prepareContractCall } from 'thirdweb/transaction';
@@ -10,6 +9,7 @@ import { Account } from 'thirdweb/wallets';
 
 import { ThirdwebClient } from 'thirdweb';
 import { viemAdapter } from 'thirdweb/adapters/viem';
+import { degenGambitGame } from '../games/degen-gambit';
 
 // Define a more specific type for multicall results that matches the actual return type
 type WagmiMulticallSuccessResult<T> = {
@@ -17,8 +17,13 @@ type WagmiMulticallSuccessResult<T> = {
   result: T;
 };
 
-export const getBalances = async (contractAddress: string, degenAddress: string) => {
-    const nativeBalance = await getPublicClient(wagmiConfig).getBalance({
+
+const degenGambitWagmiConfig = {
+  ...wagmiConfig,
+  chain: degenGambitGame.network,
+};
+export const getBalances = async (contractAddress: string, degenAddress: string, publicClient: PublicClient) => {
+    const nativeBalance = await publicClient.getBalance({
         address: degenAddress,
     })
     const contract = {
@@ -42,7 +47,7 @@ export const getBalances = async (contractAddress: string, degenAddress: string)
             },
         ],
       })
-      
+      console.log('balanceInfo', balanceInfo);
       // Filter for successful results only using a type guard that matches the actual return type
       const successResults = balanceInfo.filter(
         (item): item is WagmiMulticallSuccessResult<bigint | string | number> => 
@@ -85,7 +90,7 @@ export const getStreaks = async (contractAddress: string, degenAddress: string) 
             },
         ],
       })
-      
+      console.log('streakInfo', streakInfo);
       // Filter for successful results only using a type guard that matches the actual return type
       const successResults = streakInfo.filter(
         (item): item is WagmiMulticallSuccessResult<bigint> => 
@@ -147,6 +152,7 @@ export const getDegenGambitInfo = async (contractAddress: string) => {
           },
         ],
       })
+      console.log('result', result);
       return result
     }
 
@@ -168,10 +174,8 @@ let CONTRACT_CONSTANTS: {
 // const cachedBlockNumber = BigInt(0);
 
 // Load contract constants once
-async function loadContractConstants(contractAddress: string): Promise<typeof CONTRACT_CONSTANTS> {
+async function loadContractConstants(contractAddress: string, publicClient: PublicClient): Promise<typeof CONTRACT_CONSTANTS> {
   if (CONTRACT_CONSTANTS.loaded) return CONTRACT_CONSTANTS;
-  
-  const publicClient = getPublicClient(wagmiConfig);
   const viemContract = {
     address: contractAddress,
     abi: degenGambitABI,
@@ -209,13 +213,11 @@ async function loadContractConstants(contractAddress: string): Promise<typeof CO
 const LAST_SPIN_BLOCKS: Record<string, number> = {};
 
 // Get LastSpinBlock for a specific account - only needed after spin/respin
-async function _getLastSpinBlock(contractAddress: string, account: string, forceRefresh = false): Promise<number | null> {
+async function _getLastSpinBlock(contractAddress: string, account: string, publicClient: PublicClient, forceRefresh = false): Promise<number | null> {
   // Use cached value if available and not forcing refresh
   if (!forceRefresh && LAST_SPIN_BLOCKS[account] !== undefined) {
     return LAST_SPIN_BLOCKS[account];
   }
-  
-  const publicClient = getPublicClient(wagmiConfig);
   const viemContract = {
     address: contractAddress,
     abi: degenGambitABI,
@@ -239,15 +241,15 @@ async function _getLastSpinBlock(contractAddress: string, account: string, force
 
 // Main function - now optimized to minimize chain calls
 // After a spin/respin, we need to update the last spin block
-export const updateLastSpinBlock = async (contractAddress: string, account: string) => {
+export const updateLastSpinBlock = async (contractAddress: string, account: string, publicClient: PublicClient) => {
   if (!account) return;
   
   // Force refresh the LastSpinBlock from the chain
-  await _getLastSpinBlock(contractAddress, account, true);
+  await _getLastSpinBlock(contractAddress, account, publicClient, true);
   console.log(`Updated LastSpinBlock for ${account}`);
 };
 
-export const getBlockInfo = async (contractAddress: string, account: string, forceRefresh = false) => {
+export const getBlockInfo = async (contractAddress: string, account: string, publicClient: PublicClient, forceRefresh = false) => {
   if (!account) {
     console.error("No account provided to getBlockInfo");
     return null;
@@ -255,14 +257,11 @@ export const getBlockInfo = async (contractAddress: string, account: string, for
   
   try {
     // Load constants if not already loaded
-    const constants = await loadContractConstants(contractAddress);
+    const constants = await loadContractConstants(contractAddress, publicClient);
     
     // Get last spin block (only value that changes per user)
-    const lastSpinBlock = await _getLastSpinBlock(contractAddress, account, forceRefresh);
+    const lastSpinBlock = await _getLastSpinBlock(contractAddress, account, publicClient, forceRefresh);
     if (lastSpinBlock === null) return null;
-    
-    // Get current block - the only value we need to check frequently
-    const publicClient = getPublicClient(wagmiConfig);
     const currentBlock = await publicClient.getBlockNumber();
     
     // Calculate time remaining
@@ -311,7 +310,7 @@ export const _accept = async (contractAddress: string, client: WalletClient) => 
 }
 
 
-export const _acceptThirdWebClient = async (contractAddress: string, account: Account | undefined, client: ThirdwebClient) => {
+export const _acceptThirdWebClient = async (contractAddress: string, account: Account | undefined, client: ThirdwebClient, publicClient: PublicClient) => {
   if (!account) {
     throw new Error("No account provided");
   }
@@ -322,10 +321,6 @@ export const _acceptThirdWebClient = async (contractAddress: string, account: Ac
   } as const;
 
   const degenAddress = account.address ?? "";
-  const publicClient = createPublicClient({
-    chain: wagmiConfig.chains[0],
-    transport: http()
-  });
 
   try {
     // First check if we can get the outcome to see if there's something to accept
@@ -403,7 +398,21 @@ export const _acceptThirdWebClient = async (contractAddress: string, account: Ac
   }
 };
 
-export const spin = async (contractAddress: string, boost: boolean, account: Account | undefined, client: WalletClient | ThirdwebClient) => {
+export const accept = async (contractAddress: string, account: Account | undefined, client: WalletClient | ThirdwebClient, publicClient: PublicClient) => {
+  if ('writeContract' in client) {
+    const _account = client.account;
+    if (!_account) {
+      throw new Error("No account provided");
+    }
+    return _accept(contractAddress, client);
+  } else if (account) {
+    return _acceptThirdWebClient(contractAddress, account, client, publicClient);
+  } else {
+    throw new Error("No account provided");
+  }
+};
+
+export const spin = async (contractAddress: string, boost: boolean, account: Account | undefined, client: WalletClient | ThirdwebClient, publicClient: PublicClient) => {
 
   // if (client instanceof WalletClient) {
   // const account = client.account;
@@ -429,13 +438,7 @@ export const spin = async (contractAddress: string, boost: boolean, account: Acc
   
   // const degenAddress = account.address ?? "";
 
-  
-  const publicClient = createPublicClient({
-    chain: wagmiConfig.chains[0],
-    transport: http()
-  });
-
-  const result = await multicall(wagmiConfig, {
+  const result = await multicall(degenGambitWagmiConfig, {
     contracts: [
       {
         ...viemContract,
@@ -448,6 +451,8 @@ export const spin = async (contractAddress: string, boost: boolean, account: Acc
       },
     ],
   });
+
+  console.log('spin', {result, wagmiConfig});
 
 
 
@@ -563,17 +568,12 @@ export const spin = async (contractAddress: string, boost: boolean, account: Acc
 };
 
 
-export const getSupply = async (contractAddress: string) => {
+export const getSupply = async (contractAddress: string, publicClient: PublicClient) => {
 
   const contract = {
       address: contractAddress,
       abi: degenGambitABI,
     } as const
-
-    const publicClient = createPublicClient({
-      chain: wagmiConfig.chains[0],
-      transport: http()
-    });
     
     const totalSupply = await publicClient.readContract({
       ...contract,
@@ -590,8 +590,7 @@ export const getSupply = async (contractAddress: string) => {
     }
 }
 
-export const getCurrentBlock = async () => {
-  const publicClient = getPublicClient(wagmiConfig);
+export const getCurrentBlock = async (publicClient: PublicClient) => {
   const currentBlock = await publicClient.getBlockNumber();
   return {
     value: currentBlock,
@@ -600,21 +599,92 @@ export const getCurrentBlock = async () => {
   };
 };
 
-export const getCostToSpin = async (degenAddress: string) => {
+export const getCostToSpin = async (contractAddress: string, degenAddress: string, publicClient: PublicClient) => {
   if (!degenAddress) return null;
+  
+  // Inline ABI for testing
+  const inlineABI = [
+    {
+      "type": "function",
+      "name": "symbol",
+      "inputs": [],
+      "outputs": [{"name": "", "type": "string"}],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function", 
+      "name": "spinCost",
+      "inputs": [{"name": "degenerate", "type": "address"}],
+      "outputs": [{"name": "", "type": "uint256"}],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "CostToSpin", 
+      "inputs": [],
+      "outputs": [{"name": "", "type": "uint256"}],
+      "stateMutability": "view"
+    }
+  ] as const;
   
   const contract = {
     address: contractAddress,
-    abi: degenGambitABI,
+    abi: inlineABI,
   } as const;
-
-  const publicClient = getPublicClient(wagmiConfig);
-  const spinCost = await publicClient.readContract({
-    ...contract,
-    functionName: 'spinCost',
-    args: [degenAddress],
-  });
-
+  
+  console.log('getCostToSpin', {degenAddress, contractAddress, publicClient, contract});
+  
+  // First, test if the contract is responsive by calling a simple function
+  try {
+    const symbol = await publicClient.readContract({
+      ...contract,
+      functionName: 'symbol',
+      args: [],
+    });
+    console.log('Contract is responsive, symbol:', symbol);
+  } catch (contractError) {
+    console.error('Contract is not responsive:', contractError);
+    // Return a default cost if contract is not responsive
+    return {
+      value: BigInt(1000000000000000000), // 1 token default
+      formatted: '1.0',
+      decimals: 18,
+    };
+  }
+  
+  let spinCost: bigint;
+  
+  try {
+    // Try the dynamic spinCost function first
+    spinCost = await publicClient.readContract({
+      ...contract,
+      functionName: 'spinCost',
+      args: [degenAddress],
+    });
+    console.log('getCostToSpin - dynamic cost:', {spinCost});
+  } catch (error) {
+    console.error('Error getting dynamic spinCost, trying fallback:', error);
+    
+    try {
+      // Fallback to the constant CostToSpin function
+      spinCost = await publicClient.readContract({
+        ...contract,
+        functionName: 'CostToSpin',
+        args: [],
+      });
+      console.log('getCostToSpin - constant cost:', {spinCost});
+    } catch (fallbackError) {
+      console.error('Error getting constant CostToSpin:', fallbackError);
+      // Return a default cost instead of throwing
+      console.log('Using default cost due to contract function errors');
+      return {
+        value: BigInt(1000000000000000000), // 1 token default
+        formatted: '1.0',
+        decimals: 18,
+      };
+    }
+  }
+  
   return {
     value: spinCost,
     formatted: formatUnits(spinCost, 18),
@@ -622,15 +692,13 @@ export const getCostToSpin = async (degenAddress: string) => {
   };
 };
 
-export const getHasPrize = async (degenAddress: string) => {
+export const getHasPrize = async (contractAddress: string, degenAddress: string, publicClient: PublicClient) => {
   if (!degenAddress) return null;
 
   const contract = {
     address: contractAddress,
     abi: degenGambitABI,
   } as const;
-
-  const publicClient = getPublicClient(wagmiConfig);
   const hasPrize = await publicClient.readContract({
     ...contract,
     functionName: 'hasPrize',
@@ -640,15 +708,13 @@ export const getHasPrize = async (degenAddress: string) => {
   return hasPrize;
 };
 
-export const getCurrentDailyStreakLength = async (degenAddress: string) => {
+export const getCurrentDailyStreakLength = async (contractAddress: string, degenAddress: string, publicClient: PublicClient) => {
   if (!degenAddress) return null;
 
   const contract = {
     address: contractAddress,
     abi: degenGambitABI,
   } as const;
-
-  const publicClient = getPublicClient(wagmiConfig);
   const streak = await publicClient.readContract({
     ...contract,
     functionName: 'CurrentDailyStreakLength',
@@ -662,15 +728,13 @@ export const getCurrentDailyStreakLength = async (degenAddress: string) => {
   };
 };
 
-export const getCurrentWeeklyStreakLength = async (degenAddress: string) => {
+export const getCurrentWeeklyStreakLength = async (contractAddress: string, degenAddress: string, publicClient: PublicClient) => {
   if (!degenAddress) return null;
 
   const contract = {
     address: contractAddress,
     abi: degenGambitABI,
   } as const;
-
-  const publicClient = getPublicClient(wagmiConfig);
   const streak = await publicClient.readContract({
     ...contract,
     functionName: 'CurrentWeeklyStreakLength',
@@ -684,15 +748,13 @@ export const getCurrentWeeklyStreakLength = async (degenAddress: string) => {
   };
 };
 
-export const getLastSpinBlock = async (contractAddress: string, degenAddress: string) => {
+export const getLastSpinBlock = async (contractAddress: string, degenAddress: string, publicClient: PublicClient) => {
   if (!degenAddress) return null;
 
   const contract = {
     address: contractAddress,
     abi: degenGambitABI,
   } as const;
-
-  const publicClient = getPublicClient(wagmiConfig);
   const lastSpinBlock = await publicClient.readContract({
     ...contract,
     functionName: 'LastSpinBlock',

@@ -1,33 +1,20 @@
 // React and core imports
 import { useEffect, useMemo, useState } from "react";
 
-// Thirdweb imports
-import { Chain, createThirdwebClient } from "thirdweb";
-import { useActiveAccount, useActiveWallet, useConnectModal } from "thirdweb/react";
-
 // Local imports
-import { thirdwebClientId } from '../config';
 import { CommandDispatcher } from '../commands/dispatcher';
 import { CommandDefinition } from '../commands/types';
 import { DegenGambitCommandParams, TerminalCommandParams } from '../games/degen-gambit/commands/degenGambit';
 import { loggingMiddleware, errorHandlingMiddleware } from '../commands/middleware';
 import { gameManagementCommands, GameManagementParams } from '../commands/commands/gameManagement';
-import { useGameContext } from '../contexts/GameContext';
 
 // Custom hooks
-import { useAccountToUse } from './useAccountToUse';
+import { useBlockchain } from './useBlockchain';
 
 export const useTerminal = (gameParams: DegenGambitCommandParams) => {
-    const activeAccount = useActiveAccount();
-    const activeWallet = useActiveWallet();
-    const { connect } = useConnectModal();
-    const { displayName } = useAccountToUse();
-    const client = createThirdwebClient({ clientId: thirdwebClientId });
+    const { activeAccount, client, publicClient, displayName, gameContext } = useBlockchain();
     const [outputQueue, setOutputQueue] = useState<{text: string, toType: boolean}[]>([]);
     const [welcomeShown, setWelcomeShown] = useState(false);
-
-    // Get game context for command routing
-    const gameContext = useGameContext();
 
     // Create and configure command dispatcher
     const dispatcher = useMemo(() => {
@@ -63,32 +50,8 @@ export const useTerminal = (gameParams: DegenGambitCommandParams) => {
         });
     }, [dispatcher, gameContext.activeGame?.id, gameContext.switchGameByName, gameContext.getGameNames, gameContext.getGameCommands]);
 
-    // Handle wallet connection and chain switching
+    // Handle initial welcome message
     useEffect(() => {
-        if (activeWallet && gameContext.activeGame) {
-            const chain = activeWallet.getChain();
-            console.log('chain', chain);
-            if (chain?.id !== gameContext.activeGame.network.id) {
-                // Convert viem Chain to thirdweb format
-                const thirdwebChain = {
-                    ...gameContext.activeGame.network,
-                    rpc: gameContext.activeGame.network.rpcUrls.default.http[0],
-                    blockExplorers: [{
-                        name: gameContext.activeGame.network.blockExplorers?.default?.name || 'Explorer',
-                        url: gameContext.activeGame.network.blockExplorers?.default?.url || ''
-                    }],
-                    testnet: true,
-                };
-                activeWallet.switchChain(thirdwebChain as Chain);
-            }
-        }
-    }, [activeWallet, gameContext.activeGame]);
-
-    // Handle initial connection and welcome message
-    useEffect(() => {
-        if (!activeWallet) {
-            connect({client});
-        }
         if (displayName && !welcomeShown) {
             const currentGame = gameContext.activeGame;
             const gameInfo = currentGame ? ` - ${currentGame.name}` : '';
@@ -98,7 +61,7 @@ export const useTerminal = (gameParams: DegenGambitCommandParams) => {
             ]);
             setWelcomeShown(true);
         }
-    }, [activeWallet, connect, client, welcomeShown, displayName, gameContext.activeGame]);
+    }, [welcomeShown, displayName, gameContext.activeGame]);
 
     // Show game switch notification
     useEffect(() => {
@@ -117,6 +80,7 @@ export const useTerminal = (gameParams: DegenGambitCommandParams) => {
             // Terminal command params
             activeAccount,
             client,
+            publicClient,
             gameParams,
             // Game management params
             gameContext: {

@@ -1,12 +1,12 @@
 // External library imports
 import { Account } from "thirdweb/wallets";
 import { ThirdwebClient } from "thirdweb";
-import { createWalletClient, http, type WalletClient } from "viem";
+import { createWalletClient, http, type WalletClient, type PublicClient } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 
 // Local imports
 import { privateKey, wagmiConfig } from '../../../config';
-import { _accept, _acceptThirdWebClient, spin } from "../../../utils/degenGambit";
+import { _accept, _acceptThirdWebClient, accept, spin } from "../../../utils/degenGambit";
 import { degenGambitGame } from '../index';
 
 export type SpinResult = {
@@ -28,6 +28,7 @@ export type DegenGambitCommandParams = {
 export type TerminalCommandParams = {
     activeAccount: Account | undefined;
     client: ThirdwebClient;
+    publicClient: PublicClient | null;
     gameParams: DegenGambitCommandParams;
 };
 
@@ -41,30 +42,6 @@ declare global {
     }
 }
 
-// Helper function for client setup (used by spin and accept commands)
-function setupClient(activeAccount: Account | undefined, client: ThirdwebClient): {
-    _client: WalletClient | ThirdwebClient | undefined;
-    account: Account | undefined;
-} {
-    let _client: WalletClient | ThirdwebClient | undefined;
-    let account: Account | undefined;
-    
-    if (privateKey) {
-        _client = createWalletClient({
-            account: privateKeyToAccount(privateKey),
-            chain: wagmiConfig.chains[0],
-            transport: http()
-        });
-    } else {
-        if (window.ethereum && activeAccount?.address) {
-            _client = client;
-        }
-        account = activeAccount;
-    }
-    
-    return { _client, account };
-}
-
 export async function handleGetSome({ params }: { params: TerminalCommandParams }) {
     window.open(
         `https://getsome.game7.io?network=testnet&address=${params.activeAccount?.address}`,
@@ -74,18 +51,17 @@ export async function handleGetSome({ params }: { params: TerminalCommandParams 
 }
 
 export async function handleSpin({ input, params }: { input: string; params: TerminalCommandParams }) {
-    const { activeAccount, client, gameParams } = params;
+    const { activeAccount, client, publicClient, gameParams } = params;
     const { setIsWin } = gameParams;
     
-    const { _client, account } = setupClient(activeAccount, client);
 
-    if (!_client) {
-        return { output: ["No account selected"] };
+    if (!client || !publicClient) {
+        return { output: ["No account selected or public client not available"] };
     }
 
     const isBoost = input === "spin boost";
     const contractAddress = degenGambitGame.config.contractAddress as string;
-    const spinResult = await spin(contractAddress, isBoost, account, _client);
+    const spinResult = await spin(contractAddress, isBoost, activeAccount, client, publicClient);
 
     // Handle win state and auto-accept
     if (spinResult.prize && Number(spinResult.prize) > 0) {
@@ -95,18 +71,7 @@ export async function handleSpin({ input, params }: { input: string; params: Ter
         // Auto-accept after 20 seconds
         setTimeout(async () => {
             setIsWin(false);
-            
-            // Auto-accept logic
-            if (privateKey) {
-                const acceptClient = createWalletClient({
-                    account: privateKeyToAccount(privateKey),
-                    chain: wagmiConfig.chains[0],
-                    transport: http()
-                });
-                await _accept(contractAddress, acceptClient);
-            } else if (activeAccount) {
-                await _acceptThirdWebClient(contractAddress, activeAccount, client);
-            }
+            await accept(contractAddress, activeAccount, client, publicClient);
         }, 18000);
     }
 
@@ -155,21 +120,15 @@ export async function handleSet({ input, params }: { input: string; params: Term
 }
 
 export async function handleAccept({ params }: { params: TerminalCommandParams }) {
-    const { activeAccount, client } = params;
+    const { activeAccount, client, publicClient } = params;
     
-    const { _client } = setupClient(activeAccount, client);
-
-    if (!_client) {
-        return { output: ["No account selected"] };
+    if (!client || !publicClient) {
+        return { output: ["No account selected or public client not available"] };
     }
 
     try {
         const contractAddress = degenGambitGame.config.contractAddress as string;
-        if (privateKey) {
-            await _accept(contractAddress, _client as WalletClient);
-        } else {
-            await _acceptThirdWebClient(contractAddress, activeAccount, _client as ThirdwebClient);
-        }
+        await accept(contractAddress, activeAccount, client, publicClient);
         return { output: ["Prize accepted successfully"] };
     } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
