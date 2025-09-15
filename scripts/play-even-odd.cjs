@@ -2,13 +2,13 @@ const { ethers } = require('ethers');
 require('dotenv').config();
 
 async function main() {
-  console.log("🎲 Quick EvenOdd Game Play...");
+  console.log("🎲 Quick EvenOdd Game Play on XProtocol Testnet...");
   
-  // Contract address from deployment
-  const CONTRACT_ADDRESS = "0x39488288a28886B6145bf0B736c5C8F9AB08cC47";
+  // Contract address from XProtocol deployment
+  const CONTRACT_ADDRESS = "0x2180FD757Cb7855153De4d7288E4Df2c31D38753";
   
-  // Setup provider and wallet
-  const provider = new ethers.providers.JsonRpcProvider("https://testnet-v2.xai-chain.net/rpc");
+  // Setup provider and wallet for XProtocol Testnet
+  const provider = new ethers.providers.JsonRpcProvider("https://rpc.testnet.xprotocol.org");
   const privateKey = process.env.DEPLOYMENT_KEY;
   
   if (!privateKey) {
@@ -34,8 +34,9 @@ async function main() {
   
   try {
     console.log("\n📋 Game Information:");
-    console.log("Network: XAI Testnet v2");
+    console.log("Network: XProtocol Testnet");
     console.log("Contract Address:", CONTRACT_ADDRESS);
+    console.log("Explorer: https://explorer.testnet.xprotocol.org/address/" + CONTRACT_ADDRESS);
     
     // Get contract constants
     const betAmount = await evenOdd.BET_AMOUNT();
