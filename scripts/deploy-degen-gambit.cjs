@@ -61,6 +61,12 @@ const networkConfig = {
     chainId: 83144,
     explorer: "https://explorer.testnet.xprotocol.org",
     faucet: "https://xprotocol.org/faucets"
+  },
+  "jasmy-testnet": {
+    name: "Jasmy Chain Testnet",
+    chainId: 681,
+    explorer: "https://jasmy-chain-testnet-explorer.alt.technology",
+    faucet: "http://13.49.243.124/"
   }
 };
 
