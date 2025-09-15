@@ -1,4 +1,5 @@
 require("@nomiclabs/hardhat-ethers");
+require("@nomicfoundation/hardhat-verify");
 require("dotenv").config();
 
 const PRIVATE_KEY = process.env.DEPLOYMENT_KEY || process.env.PRIVATE_KEY || "0x1111111111111111111111111111111111111111111111111111111111111111";
@@ -71,6 +72,33 @@ module.exports = {
       blockConfirmations: 1,
       timeout: 60000,
     },
+    "arbitrum-blueberry": {
+      url: "https://rpc.arb-blueberry.gelato.digital",
+      accounts: [PRIVATE_KEY],
+      chainId: 88153591557,
+      gas: 12000000,
+      gasPrice: 1000000000, // 1 gwei
+      blockConfirmations: 1,
+      timeout: 60000,
+    },
+    "xprotocol-testnet": {
+      url: "https://rpc.testnet.xprotocol.org",
+      accounts: [PRIVATE_KEY],
+      chainId: 83144,
+      gas: 12000000,
+      gasPrice: 1000000000, // 1 gwei
+      blockConfirmations: 1,
+      timeout: 60000,
+    },
+    "jasmy-testnet": {
+      url: "https://jasmy-chain-testnet.alt.technology",
+      accounts: [PRIVATE_KEY],
+      chainId: 681,
+      gas: 12000000,
+      gasPrice: 1000000000, // 1 gwei
+      blockConfirmations: 1,
+      timeout: 60000,
+    },
   },
   solidity: {
     compilers: [
@@ -110,4 +138,20 @@ module.exports = {
     cache: "./cache",
     artifacts: "./artifacts",
   },
+  
+  etherscan: {
+    apiKey: {
+      'jasmy-testnet': 'empty'
+    },
+    customChains: [
+      {
+        network: "jasmy-testnet",
+        chainId: 681,
+        urls: {
+          apiURL: "https://jasmy-chain-testnet-explorer.alt.technology:443/api",
+          browserURL: "https://jasmy-chain-testnet-explorer.alt.technology:443"
+        }
+      }
+    ]
+  }
 }; 
