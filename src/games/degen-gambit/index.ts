@@ -5,7 +5,6 @@ import { NETWORKS } from '../../config/networks';
 
 // Import components
 import DegenGambit from './components/DegenGambit';
-import Rules from './components/Rules';
 import ContractInfo from './components/ContractInfo';
 import Stream from './components/Stream';
 
@@ -23,7 +22,6 @@ export const degenGambitGame: Game = {
     commands: degenGambitCommands as CommandDefinition<unknown>[],
     components: {
         main: DegenGambit as React.ComponentType<unknown>,
-        rules: Rules as React.ComponentType<unknown>,
         contractInfo: ContractInfo as React.ComponentType<unknown>,
         stream: Stream as React.ComponentType<unknown>,
     },
