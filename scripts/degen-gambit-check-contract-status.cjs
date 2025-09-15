@@ -2,13 +2,13 @@ const { ethers } = require('ethers');
 require('dotenv').config();
 
 async function main() {
-  console.log("🔍 Checking DegenGambit Contract Status on Jasmy Chain Testnet...");
+  console.log("🔍 Checking DegenGambit Contract Status on Xai Testnet v2...");
   
-  // Contract address from Jasmy deployment
-  const CONTRACT_ADDRESS = "0x6aEEccD5eB7f9bABA25F052d0608CC4E162786B8";
+  // Contract address from XAI deployment
+  const CONTRACT_ADDRESS = "0xD0303b8b13E2b0e98BFBc211F0DDE254c18E35f4";
   
-  // Setup provider for Jasmy Chain Testnet
-  const provider = new ethers.providers.JsonRpcProvider("https://jasmy-chain-testnet.alt.technology");
+  // Setup provider for Xai Testnet v2
+  const provider = new ethers.providers.JsonRpcProvider("https://testnet-v2.xai-chain.net/rpc");
 
   const THIRDWEB_ACCOUNT_ADDRESS = "0xc1779c548C15CA7706e3a04D3573d491DD8900f9";
   
@@ -39,9 +39,9 @@ async function main() {
   
   try {
     console.log("\n📋 Contract Information:");
-    console.log("Network: Jasmy Chain Testnet");
+    console.log("Network: Xai Testnet v2");
     console.log("Contract Address:", CONTRACT_ADDRESS);
-    console.log("Block Explorer: jasmy-chain-testnet-explorer.alt.technology/address/" + CONTRACT_ADDRESS);
+    console.log("Block Explorer: https://testnet-explorer-v2.xai-chain.net/address/" + CONTRACT_ADDRESS);
     
     // Get current block
     const currentBlock = await provider.getBlockNumber();

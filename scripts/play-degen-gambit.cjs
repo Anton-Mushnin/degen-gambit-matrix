@@ -2,13 +2,13 @@ const { ethers } = require('ethers');
 require('dotenv').config();
 
 async function main() {
-  console.log("🎰 Testing DegenGambit Game Play on Jasmy Chain Testnet...");
+  console.log("🎰 Testing DegenGambit Game Play on Xai Testnet v2...");
   
-  // Contract address from Jasmy deployment
-  const CONTRACT_ADDRESS = "0x6aEEccD5eB7f9bABA25F052d0608CC4E162786B8";
+  // Contract address from XAI deployment
+  const CONTRACT_ADDRESS = "0xD0303b8b13E2b0e98BFBc211F0DDE254c18E35f4";
   
-  // Setup provider and wallet for Jasmy Chain Testnet
-  const provider = new ethers.providers.JsonRpcProvider("https://jasmy-chain-testnet.alt.technology");
+  // Setup provider and wallet for Xai Testnet v2
+  const provider = new ethers.providers.JsonRpcProvider("https://testnet-v2.xai-chain.net/rpc");
   const privateKey = process.env.DEPLOYMENT_KEY;
   
   if (!privateKey) {
