@@ -62,9 +62,10 @@ export const g7Testnet = {
 
 
 export const wagmiConfig = createConfig({
-  chains: [NETWORKS.XPROTOCOL_TESTNET],
+  chains: [NETWORKS.XPROTOCOL_TESTNET, NETWORKS.XAI_TESTNET],
   transports: {
     [NETWORKS.XPROTOCOL_TESTNET.id]: http(),
+    [NETWORKS.XAI_TESTNET.id]: http(),
   },
 })
 
