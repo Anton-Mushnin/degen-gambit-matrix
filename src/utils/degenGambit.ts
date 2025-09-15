@@ -9,7 +9,7 @@ import { Account } from 'thirdweb/wallets';
 
 import { ThirdwebClient } from 'thirdweb';
 import { viemAdapter } from 'thirdweb/adapters/viem';
-import { degenGambitGame } from '../games/degen-gambit';
+import { getViemChainById } from '../config/networks.ts';
 
 // Define a more specific type for multicall results that matches the actual return type
 type WagmiMulticallSuccessResult<T> = {
@@ -18,10 +18,6 @@ type WagmiMulticallSuccessResult<T> = {
 };
 
 
-const degenGambitWagmiConfig = {
-  ...wagmiConfig,
-  chain: degenGambitGame.network,
-};
 export const getBalances = async (contractAddress: string, degenAddress: string, publicClient: PublicClient) => {
     const nativeBalance = await publicClient.getBalance({
         address: degenAddress,
@@ -436,32 +432,51 @@ export const spin = async (contractAddress: string, boost: boolean, account: Acc
     degenAddress = account?.address ?? "";
   }
   
+  console.log('spin', {degenAddress, account, client});
   // const degenAddress = account.address ?? "";
 
-  const result = await multicall(degenGambitWagmiConfig, {
-    contracts: [
-      {
-        ...viemContract,
-        functionName: 'decimals',
-      },
-      {
-        ...viemContract,
-        functionName: 'spinCost',
-        args: [degenAddress],
-      },
-    ],
+  // const result = await multicall(getDegenGambitWagmiConfig(), {
+  //   contracts: [
+  //     {
+  //       ...viemContract,
+  //       functionName: 'decimals',
+  //     },
+  //     {
+  //       ...viemContract,
+  //       functionName: 'spinCost',
+  //       args: [degenAddress],
+  //     },
+  //   ],
+  // });
+
+  // console.log('spin', {result, wagmiConfig});
+
+
+  const contract = {
+    address: contractAddress,
+    abi: degenGambitABI,
+  } as const;
+
+  const spinCost = await publicClient.readContract({
+    ...contract,
+    functionName: 'spinCost',
+    args: [degenAddress],
   });
 
-  console.log('spin', {result, wagmiConfig});
-
-
+  const decimals = await publicClient.readContract({
+    ...contract,
+    functionName: 'decimals',
+  });
 
   
+  console.log('spinCost', spinCost);
+  // const [
+  //   decimals,
+  //   // spinCost,
+  // ] = result.filter(item => item.status === "success").map(item => item.result);
 
-  const [
-    decimals,
-    spinCost,
-  ] = result.filter(item => item.status === "success").map(item => item.result);
+  const chainId = await publicClient.getChainId();
+  const chain = getViemChainById(chainId);
 
   let hash: string | null = null;
   if ('writeContract' in client) {
@@ -470,6 +485,8 @@ export const spin = async (contractAddress: string, boost: boolean, account: Acc
         throw new Error("No account provided");
     }
 
+
+
     hash = await client.writeContract({
       account,
       address: contractAddress,
@@ -477,17 +494,17 @@ export const spin = async (contractAddress: string, boost: boolean, account: Acc
       abi: degenGambitABI,
       functionName: 'spin',
       args: [boost],
-      chain: viemG7Testnet,
+      chain,
     })
   } else if (account) {
     const contract = viemAdapter.contract.fromViem({
       viemContract: viemContract,
       chain: {
-        ...viemG7Testnet,
-        rpc: viemG7Testnet.rpcUrls["default"].http[0],
+        ...chain,
+        rpc: chain.rpcUrls["default"].http[0],
         blockExplorers: [{
-          name: "Game7",
-          url: viemG7Testnet.blockExplorers.default.url
+          name: chain.blockExplorers?.default.name ?? "",
+          url: chain.blockExplorers?.default.url ?? ""
         }],
         testnet: true
       },
