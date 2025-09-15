@@ -598,8 +598,6 @@ export const getSupply = async (contractAddress: string, publicClient: PublicCli
       args: [],
     })
     
-
-
     return {
       value: totalSupply,
       formatted: formatUnits(totalSupply, 18),
@@ -622,23 +620,9 @@ export const getCostToSpin = async (contractAddress: string, degenAddress: strin
   // Inline ABI for testing
   const inlineABI = [
     {
-      "type": "function",
-      "name": "symbol",
-      "inputs": [],
-      "outputs": [{"name": "", "type": "string"}],
-      "stateMutability": "view"
-    },
-    {
       "type": "function", 
       "name": "spinCost",
       "inputs": [{"name": "degenerate", "type": "address"}],
-      "outputs": [{"name": "", "type": "uint256"}],
-      "stateMutability": "view"
-    },
-    {
-      "type": "function",
-      "name": "CostToSpin", 
-      "inputs": [],
       "outputs": [{"name": "", "type": "uint256"}],
       "stateMutability": "view"
     }
@@ -649,58 +633,11 @@ export const getCostToSpin = async (contractAddress: string, degenAddress: strin
     abi: inlineABI,
   } as const;
   
-  console.log('getCostToSpin', {degenAddress, contractAddress, publicClient, contract});
-  
-  // First, test if the contract is responsive by calling a simple function
-  try {
-    const symbol = await publicClient.readContract({
-      ...contract,
-      functionName: 'symbol',
-      args: [],
-    });
-    console.log('Contract is responsive, symbol:', symbol);
-  } catch (contractError) {
-    console.error('Contract is not responsive:', contractError);
-    // Return a default cost if contract is not responsive
-    return {
-      value: BigInt(1000000000000000000), // 1 token default
-      formatted: '1.0',
-      decimals: 18,
-    };
-  }
-  
-  let spinCost: bigint;
-  
-  try {
-    // Try the dynamic spinCost function first
-    spinCost = await publicClient.readContract({
+  const  spinCost = await publicClient.readContract({
       ...contract,
       functionName: 'spinCost',
       args: [degenAddress],
     });
-    console.log('getCostToSpin - dynamic cost:', {spinCost});
-  } catch (error) {
-    console.error('Error getting dynamic spinCost, trying fallback:', error);
-    
-    try {
-      // Fallback to the constant CostToSpin function
-      spinCost = await publicClient.readContract({
-        ...contract,
-        functionName: 'CostToSpin',
-        args: [],
-      });
-      console.log('getCostToSpin - constant cost:', {spinCost});
-    } catch (fallbackError) {
-      console.error('Error getting constant CostToSpin:', fallbackError);
-      // Return a default cost instead of throwing
-      console.log('Using default cost due to contract function errors');
-      return {
-        value: BigInt(1000000000000000000), // 1 token default
-        formatted: '1.0',
-        decimals: 18,
-      };
-    }
-  }
   
   return {
     value: spinCost,
@@ -764,6 +701,25 @@ export const getCurrentWeeklyStreakLength = async (contractAddress: string, dege
     decimals: 0,
   };
 };
+
+export const getBalanceOf = async (contractAddress: string, degenAddress: string, publicClient: PublicClient) => {
+  if (!degenAddress) return null;
+  const contract = {
+    address: contractAddress,
+    abi: degenGambitABI,
+  } as const;
+
+  const balance = await publicClient.readContract({
+    ...contract,
+    functionName: 'balanceOf',
+    args: [degenAddress],
+  });
+  return {
+    value: balance,
+    formatted: formatUnits(balance, 18),
+    decimals: 18,
+  };
+}
 
 export const getLastSpinBlock = async (contractAddress: string, degenAddress: string, publicClient: PublicClient) => {
   if (!degenAddress) return null;
