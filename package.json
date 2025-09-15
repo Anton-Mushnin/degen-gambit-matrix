@@ -25,7 +25,9 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
+    "@nomicfoundation/hardhat-verify": "^2.1.1",
     "@nomiclabs/hardhat-ethers": "^2.2.3",
+    "@nomiclabs/hardhat-etherscan": "^3.1.8",
     "@openzeppelin/contracts": "^5.4.0",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
