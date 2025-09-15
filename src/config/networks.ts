@@ -33,7 +33,7 @@ export const xaiTestnet = {
     default: { http: ['https://testnet-v2.xai-chain.net/rpc'] },
   },
   blockExplorers: {
-    default: { name: 'Xai Sepolia Explorer', url: 'https://sepolia.xaiscan.io' },
+    default: { name: 'Xai Testnet v2', url: 'https://testnet-explorer-v2.xai-chain.net/' },
   },
   faucets: ['https://faucet.quicknode.com/xai'],
   testnet: true,
@@ -85,11 +85,33 @@ export const xProtocolTestnet = {
   },
 } as const satisfies ExtendedChain
 
+// Jasmy Chain Testnet
+export const jasmyTestnet = {
+  id: 681, 
+  name: 'Jasmy Chain Testnet',
+  nativeCurrency: { name: 'JASMY', symbol: 'JASMY', decimals: 18 },
+  rpcUrls: {
+    default: { http: ['https://jasmy-chain-testnet.alt.technology'] }, 
+  },
+  blockExplorers: {
+    default: { name: 'Jasmy Explorer', url: 'jasmy-chain-testnet-explorer.alt.technology' }, // Placeholder
+  },
+  faucets: ['http://13.49.243.124/'],
+  testnet: true,
+  contracts: {
+    multicall3: {
+      address: '0xca11bde05977b3631167028862be2a173976ca11',
+      blockCreated: 0,
+    },
+  },
+} as const satisfies ExtendedChain
+
 export const NETWORKS = {
   G7_TESTNET: g7Testnet,
   XAI_TESTNET: xaiTestnet,
   ARBITRUM_BLUEBERRY: arbitrumBlueberry,
   XPROTOCOL_TESTNET: xProtocolTestnet,
+  JASMY_TESTNET: jasmyTestnet,
 } as const 
 
 // Network utility functions
@@ -116,5 +138,29 @@ export function getThirdWebNetwork(networkKey: keyof typeof NETWORKS) {
     testnet: true,
   };
 }
+
+// Fine, Neo... I'll try to
+
+export function getViemChainById(chainId: number): Chain {
+  for (const key of Object.keys(NETWORKS) as Array<keyof typeof NETWORKS>) {
+    const network = NETWORKS[key];
+    if (network.id === chainId) {
+      return getViemNetwork(key);
+    }
+  }
+  throw new Error(`No network found for chainId: ${chainId}`);
+}
+
+export function getThirdWebChainById(chainId: number) {
+  for (const key of Object.keys(NETWORKS) as Array<keyof typeof NETWORKS>) {
+    const network = NETWORKS[key];
+    if (network.id === chainId) {
+      return getThirdWebNetwork(key);
+    }
+  }
+  throw new Error(`No network found for chainId: ${chainId}`);
+}
+
+
 
 
