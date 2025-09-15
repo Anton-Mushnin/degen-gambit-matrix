@@ -446,3 +446,9 @@ Temporary Items
 .secrets/
 .todo
 .vscode
+
+# Hardhat
+cache/
+artifacts/
+typechain/
+typechain-types/
