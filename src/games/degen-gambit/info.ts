@@ -3,7 +3,7 @@ import { privateKeyToAccount } from 'viem/accounts';
 import { PublicClient } from 'viem';
 
 import { wagmiConfig } from '../../config';
-import { getCostToSpin, getCurrentBlock, getCurrentDailyStreakLength, getCurrentWeeklyStreakLength, getLastSpinBlock, getSupply } from '../../utils/degenGambit';
+import { getBalanceOf, getCostToSpin, getCurrentBlock, getCurrentDailyStreakLength, getCurrentWeeklyStreakLength, getLastSpinBlock, getSupply } from '../../utils/degenGambit';
 import { DataItem } from '../types';
 import { degenGambitGame } from './index';
 
@@ -19,14 +19,14 @@ export const createContractData = (
         type: 'query',
         label: 'Pot: ',
         queryKey: ['contractBalance', degenGambitGame.config.contractAddress as string],
-        queryFn: () => getBalance(wagmiConfig, {address: degenGambitGame.config.contractAddress as string}),
+        queryFn: () => getBalance(wagmiConfig, {address: degenGambitGame.config.contractAddress as string, chainId: degenGambitGame.network.id as any}),
         onDataUpdate
     },
     {
         type: 'static',
         label: 'Contract Address: ',
         data: {
-            formatted: degenGambitGame.config.contractAddress as string,
+            formatted: (degenGambitGame.config.contractAddress as string).slice(0, 6) + '...' + (degenGambitGame.config.contractAddress as string).slice(-4),
             value: BigInt(0),
             decimals: 0
         },
@@ -75,13 +75,13 @@ export const createDegenData = (
             type: 'query',
             label: 'TG7T: ',
             queryKey: ['accountBalance', degenAddress],
-            queryFn: () => getBalance(wagmiConfig, {address: degenAddress})
+            queryFn: () => getBalance(wagmiConfig, {address: degenAddress, chainId: degenGambitGame.network.id as any})
         },
         {
             type: 'query',
             label: 'GAMBIT: ',
             queryKey: ['accountGambitBalance', degenAddress],
-            queryFn: () => getBalance(wagmiConfig, {address: degenAddress, token: degenGambitGame.config.contractAddress as string})
+            queryFn: () => getBalanceOf(degenGambitGame.config.contractAddress as string, degenAddress, publicClient)
         },
         {
             type: 'query',
