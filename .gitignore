@@ -445,3 +445,4 @@ Temporary Items
 # custom
 .secrets/
 .todo
+.vscode
