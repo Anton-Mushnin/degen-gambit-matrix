@@ -82,6 +82,7 @@ export const useTerminal = (gameParams: DegenGambitCommandParams) => {
             client,
             publicClient,
             gameParams,
+            contractAddress: (gameContext.activeGame?.config?.contractAddress as string) || '',
             // Game management params
             gameContext: {
                 activeGameId: gameContext.activeGame?.id || null,
