@@ -31,7 +31,7 @@ export const degenGambitGame: Game = {
         useAccountToUse: useAccountToUse as (...args: unknown[]) => unknown,
     },
     config: {
-        contractAddress: '0xD0303b8b13E2b0e98BFBc211F0DDE254c18E35f4',
+        contractAddress: '0xE01c848c4b5e4Ac90746cd7bef27aEF23c9fcEa6',
         privateKey: '',
         wagmiConfig: null, // Will be set dynamically
     },
