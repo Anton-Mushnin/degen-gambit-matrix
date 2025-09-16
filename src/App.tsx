@@ -3,6 +3,8 @@ import './styles/fonts.css';
 import { TerminalOutput } from './components/matrixUI/TerminalOutput';
 import Home from './components/Home';
 import { GameProvider } from './contexts/GameContext';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+
 
 function App() {
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
@@ -19,6 +21,8 @@ function App() {
           <GameProvider>
             <Home />
           </GameProvider>
+          <ReactQueryDevtools initialIsOpen={false} />
+
         </ThirdwebProvider>
       )}
     </div>
