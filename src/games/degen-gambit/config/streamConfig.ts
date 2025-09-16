@@ -56,7 +56,7 @@ export const degenGambitStreamConfig: EventConfig[] = [
         queries.push(['contractBalance']);
       }
       if (logs.some((log: any) => log.args.player === activeAccount)) {
-        queries.push(['accountGambitBalance'], ['accountBalance']);
+        queries.push(['accountGambitBalance'], ['accountBalance'], ['costToSpin']);
       }
       
       return queries;
