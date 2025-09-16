@@ -66,12 +66,14 @@ export const createDegenData = ({
     publicClient,
     degenAddress,
     displayName,
-    queryClient
+    queryClient,
+    onLastSpinBlockUpdate,
 }: {
     publicClient: PublicClient;
     degenAddress: string | undefined;
     displayName: string | undefined;
     queryClient: any;
+    onLastSpinBlockUpdate?: () => void;
 }): DataItem[] => {
     if (!degenAddress) return [];
 
@@ -111,6 +113,9 @@ export const createDegenData = ({
             queryKey: ['lastSpinBlock', degenAddress],
             queryFn: () => getLastSpinBlock(degenGambitGame.config.contractAddress as string, degenAddress, publicClient),
             animation: false,
+            onDataUpdate: () => {
+                onLastSpinBlockUpdate?.();
+            }
         },
         {
             type: 'query',

@@ -35,7 +35,10 @@ const ContractInfo = () => {
         publicClient,
         degenAddress,
         displayName,
-        queryClient
+        queryClient,
+        onLastSpinBlockUpdate: () => {
+            queryClient.invalidateQueries({queryKey: ['blocksLeft', degenAddress]});
+        }
     }) : [];
 
     return (
