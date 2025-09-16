@@ -538,7 +538,7 @@ export const spin = async (contractAddress: string, boost: boolean, account: Acc
   while (!outcome) {
     try {
       // Check if we need to create a new block before checking outcome
-      const blockCheck = await checkAndCreateBlockIfNeeded(1, publicClient);
+      const blockCheck = await checkAndCreateBlockIfNeeded(1, chainId, publicClient);
       if (blockCheck.created) {
         console.log("Created a new block to help with outcome processing:", blockCheck.message);
       } else if (blockCheck.timeDiff !== undefined && blockCheck.timeDiff > 3) {
@@ -739,6 +739,24 @@ export const getLastSpinBlock = async (contractAddress: string, degenAddress: st
   return {
     value: lastSpinBlock,
     formatted: lastSpinBlock.toString(),
+    decimals: 0,
+  };
+};
+
+export const getBlocksToAct = async (contractAddress: string, publicClient: PublicClient) => {
+  const viemContract = {
+    address: contractAddress,
+    abi: degenGambitABI,
+  } as const;
+
+  const blocksToAct = await publicClient.readContract({
+    ...viemContract,
+    functionName: 'BlocksToAct',
+  });
+
+  return {
+    value: blocksToAct,
+    formatted: blocksToAct.toString(),
     decimals: 0,
   };
 };
