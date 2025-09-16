@@ -90,9 +90,9 @@ async function main() {
   console.log("💰 Account balance:", (await deployer.getBalance()).toString());
 
   // Constructor parameters for DegenGambit
-  const blocksToAct = 50; // 10 blocks to act
-  const costToSpin = ethers.utils.parseEther("0.00000001"); // 0.0001 ETH to spin
-  const costToRespin = ethers.utils.parseEther("0.000000007"); // 0.00005 ETH to respin
+  const blocksToAct = 50; // 50 blocks to act
+  const costToSpin = ethers.BigNumber.from("10"); // 10 wei to spin
+  const costToRespin = ethers.BigNumber.from("7"); // 7 wei to respin
 
   // Deploy the DegenGambit contract
   const DegenGambit = await ethers.getContractFactory("DegenGambit");

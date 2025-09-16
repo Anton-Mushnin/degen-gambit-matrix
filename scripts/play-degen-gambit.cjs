@@ -5,7 +5,7 @@ async function main() {
   console.log("🎰 Testing DegenGambit Game Play on Xai Testnet v2...");
   
   // Contract address from XAI deployment
-  const CONTRACT_ADDRESS = "0xD0303b8b13E2b0e98BFBc211F0DDE254c18E35f4";
+  const CONTRACT_ADDRESS = "0xE01c848c4b5e4Ac90746cd7bef27aEF23c9fcEa6";
   
   // Setup provider and wallet for Xai Testnet v2
   const provider = new ethers.providers.JsonRpcProvider("https://testnet-v2.xai-chain.net/rpc");
