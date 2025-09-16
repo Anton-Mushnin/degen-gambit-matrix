@@ -3,9 +3,11 @@ import { PublicClient } from 'viem';
 /**
  * Checks if the chain needs a new block and creates one if needed
  * @param maxAgeSeconds Maximum age of the latest block in seconds
+ * @param networkId Network ID to use for block production
+ * @param publicClient Public client for the blockchain
  * @returns Object with status and message
  */
-export async function checkAndCreateBlockIfNeeded(maxAgeSeconds = 5, publicClient: PublicClient): Promise<{ 
+export async function checkAndCreateBlockIfNeeded(maxAgeSeconds = 5, networkId: number, publicClient: PublicClient): Promise<{ 
   created: boolean; 
   message: string;
   latestBlockTimestamp?: number;
@@ -41,7 +43,8 @@ export async function checkAndCreateBlockIfNeeded(maxAgeSeconds = 5, publicClien
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          maxAgeSeconds
+          maxAgeSeconds,
+          networkId
         })
       });
 

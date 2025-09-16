@@ -161,6 +161,16 @@ export function getThirdWebChainById(chainId: number) {
   throw new Error(`No network found for chainId: ${chainId}`);
 }
 
+export function getNetworkKeyById(chainId: number): keyof typeof NETWORKS {
+  for (const key of Object.keys(NETWORKS) as Array<keyof typeof NETWORKS>) {
+    const network = NETWORKS[key];
+    if (network.id === chainId) {
+      return key;
+    }
+  }
+  throw new Error(`No network found for chainId: ${chainId}`);
+}
+
 
 
 
