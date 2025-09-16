@@ -10,6 +10,7 @@ import { Account } from 'thirdweb/wallets';
 import { ThirdwebClient } from 'thirdweb';
 import { viemAdapter } from 'thirdweb/adapters/viem';
 import { getViemChainById } from '../config/networks.ts';
+import { degenGambitGame } from '../games/degen-gambit/index.ts';
 
 // Define a more specific type for multicall results that matches the actual return type
 type WagmiMulticallSuccessResult<T> = {
@@ -340,15 +341,16 @@ export const _acceptThirdWebClient = async (contractAddress: string, account: Ac
         success: false,
       };
     }
+    const chain = getViemChainById(degenGambitGame.network.id as any);
 
     const contract = viemAdapter.contract.fromViem({
       viemContract: viemContract,
       chain: {
-        ...viemG7Testnet,
-        rpc: viemG7Testnet.rpcUrls["default"].http[0],
+        ...chain,
+        rpc: chain.rpcUrls["default"].http[0],
         blockExplorers: [{
-          name: "Game7",
-          url: viemG7Testnet.blockExplorers.default.url
+          name: chain.blockExplorers?.default.name ?? "",
+          url: chain.blockExplorers?.default.url ?? ""
         }],
         testnet: true
       },
@@ -536,7 +538,7 @@ export const spin = async (contractAddress: string, boost: boolean, account: Acc
   while (!outcome) {
     try {
       // Check if we need to create a new block before checking outcome
-      const blockCheck = await checkAndCreateBlockIfNeeded(1);
+      const blockCheck = await checkAndCreateBlockIfNeeded(1, publicClient);
       if (blockCheck.created) {
         console.log("Created a new block to help with outcome processing:", blockCheck.message);
       } else if (blockCheck.timeDiff !== undefined && blockCheck.timeDiff > 3) {

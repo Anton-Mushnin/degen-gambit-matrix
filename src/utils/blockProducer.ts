@@ -1,23 +1,19 @@
-import { createPublicClient, http } from 'viem';
-import { wagmiConfig } from '../config';
+import { PublicClient } from 'viem';
 
 /**
  * Checks if the chain needs a new block and creates one if needed
  * @param maxAgeSeconds Maximum age of the latest block in seconds
  * @returns Object with status and message
  */
-export async function checkAndCreateBlockIfNeeded(maxAgeSeconds = 5): Promise<{ 
+export async function checkAndCreateBlockIfNeeded(maxAgeSeconds = 5, publicClient: PublicClient): Promise<{ 
   created: boolean; 
   message: string;
   latestBlockTimestamp?: number;
   currentTime?: number;
   timeDiff?: number;
 }> {
-  // Create a public client to read blockchain data
-  const publicClient = createPublicClient({
-    chain: wagmiConfig.chains[0],
-    transport: http()
-  });
+
+  console.log("Checking and creating block if needed");
 
   try {
     // Get the latest block
