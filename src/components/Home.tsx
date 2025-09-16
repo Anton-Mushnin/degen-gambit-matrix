@@ -38,8 +38,9 @@ const Home = () => {
     const RulesComponent = components.rules;
     const ContractInfoComponent = components.contractInfo;
     const StreamComponent = components.stream;
+    const GameContextProvider = activeGame.context;
 
-    return (
+    const gameContent = (
         <div className={styles.container}>
             <div className={styles.stack} style={{borderRight: '1px solid #636363'}}>
                 {ContractInfoComponent && <ContractInfoComponent />}
@@ -51,6 +52,13 @@ const Home = () => {
             </div>
         </div>
     );
+
+    // Wrap with game context provider if it exists
+    if (GameContextProvider) {
+        return <GameContextProvider>{gameContent}</GameContextProvider>;
+    }
+
+    return gameContent;
 };
 
 export default Home;

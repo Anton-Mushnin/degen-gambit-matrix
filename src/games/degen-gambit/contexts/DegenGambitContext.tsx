@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import React, { createContext, useContext, ReactNode, useState, useCallback } from 'react';
 import { numbers } from '../../../config/symbols';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAccountToUse } from '../../../hooks';
@@ -28,7 +28,15 @@ interface GameActions {
     handleInput: (input: string) => Promise<void>;
 }
 
-export const useDegenGambitGame = (): [GameState, GameActions] => {
+type DegenGambitContextType = [GameState, GameActions];
+
+const DegenGambitContext = createContext<DegenGambitContextType | undefined>(undefined);
+
+interface DegenGambitProviderProps {
+    children: ReactNode;
+}
+
+export const DegenGambitProvider: React.FC<DegenGambitProviderProps> = ({ children }) => {
     const queryClient = useQueryClient();
     const { address: playerAddress } = useAccountToUse();
     
@@ -135,5 +143,23 @@ export const useDegenGambitGame = (): [GameState, GameActions] => {
         handleInput,
     };
 
-    return [gameState, gameActions];
-}; 
+    const contextValue: DegenGambitContextType = [gameState, gameActions];
+
+    return (
+        <DegenGambitContext.Provider value={contextValue}>
+            {children}
+        </DegenGambitContext.Provider>
+    );
+};
+
+// Custom hook to use the degen gambit context
+export const useDegenGambitContext = (): DegenGambitContextType => {
+    const context = useContext(DegenGambitContext);
+    if (context === undefined) {
+        throw new Error('useDegenGambitContext must be used within a DegenGambitProvider');
+    }
+    return context;
+};
+
+// Export the context for direct usage if needed
+export { DegenGambitContext };

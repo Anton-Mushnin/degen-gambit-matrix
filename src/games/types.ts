@@ -1,4 +1,5 @@
 // Common game interfaces and types
+import React from 'react';
 import { CommandDefinition } from '../commands/types';
 import { Chain } from 'viem';
 
@@ -18,6 +19,7 @@ export interface Game {
     hooks: {
         [key: string]: (...args: unknown[]) => unknown;
     };
+    context?: React.ComponentType<{ children: React.ReactNode }>;
     config: {
         [key: string]: unknown;
     };

@@ -8,8 +8,8 @@ import DegenGambit from './components/DegenGambit';
 import ContractInfo from './components/ContractInfo';
 import Stream from './components/Stream';
 
-// Import hooks
-import { useDegenGambitGame } from './hooks/useDegenGambitGame';
+// Import hooks and context
+import { useDegenGambitContext, DegenGambitProvider } from './contexts/DegenGambitContext';
 import { useDegenGambitInfo } from './hooks/useDegenGambitInfo';
 import { useAccountToUse } from '../../hooks';
 
@@ -26,10 +26,11 @@ export const degenGambitGame: Game = {
         stream: Stream as React.ComponentType<unknown>,
     },
     hooks: {
-        useDegenGambitGame: useDegenGambitGame as (...args: unknown[]) => unknown,
+        useDegenGambitContext: useDegenGambitContext as (...args: unknown[]) => unknown,
         useDegenGambitInfo: useDegenGambitInfo as (...args: unknown[]) => unknown,
         useAccountToUse: useAccountToUse as (...args: unknown[]) => unknown,
     },
+    context: DegenGambitProvider,
     config: {
         contractAddress: '0xE01c848c4b5e4Ac90746cd7bef27aEF23c9fcEa6',
         privateKey: '',
@@ -44,7 +45,7 @@ export { default as Rules } from './components/Rules';
 export { default as ContractInfo } from './components/ContractInfo';
 export { default as Stream } from './components/Stream';
 
-export { useDegenGambitGame } from './hooks/useDegenGambitGame';
+export { useDegenGambitContext, DegenGambitProvider } from './contexts/DegenGambitContext';
 export { useDegenGambitInfo } from './hooks/useDegenGambitInfo';
 export { useAccountToUse } from '../../hooks';
 

@@ -1,11 +1,11 @@
-import { useDegenGambitGame } from '../hooks/useDegenGambitGame';
+import { useDegenGambitContext } from '../contexts/DegenGambitContext';
 import Matrix from "../../../components/matrixUI/Matrix";          
 import { Terminal } from "../../../components/matrixUI/Terminal";
 import RandomNumbers from "./RandomNumbers";
 import styles from './MatrixTerminal.module.css';
 
 const DegenGambit = () => {
-    const [gameState, gameActions] = useDegenGambitGame();
+    const [gameState, gameActions] = useDegenGambitContext();
     const { isWin, isSpinning, isProcessing, outcome, terminalQueue } = gameState;
     
     return (
