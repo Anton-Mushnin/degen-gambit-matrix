@@ -1039,6 +1039,12 @@ export const degenGambitABI = [
           "type": "bool",
           "indexed": true,
           "internalType": "bool"
+        },
+        {
+          "name": "value",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
         }
       ],
       "anonymous": false

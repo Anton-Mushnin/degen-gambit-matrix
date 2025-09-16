@@ -221,7 +221,7 @@ contract DegenGambit is ERC20, ReentrancyGuard {
     uint256 public Prize6LastWonTimestamp;
 
     /// Fired when a player spins (and respins).
-    event Spin(address indexed player, bool indexed bonus);
+    event Spin(address indexed player, bool indexed bonus, uint256 value);
     /// Fired when a player accepts the outcome of a roll.
     event Award(address indexed player, uint256 value);
     /// Fired when a player continues a daily streak.
@@ -909,7 +909,7 @@ contract DegenGambit is ERC20, ReentrancyGuard {
         LastSpinBlock[spinPlayer] = _blockNumber();
         LastSpinBoosted[spinPlayer] = boost;
 
-        emit Spin(spinPlayer, boost);
+        emit Spin(spinPlayer, boost, value);
     }
 
     /// Spin the slot machine.
