@@ -3,6 +3,7 @@ import { watchContractEvent } from '@wagmi/core';
 import { wagmiConfig } from '../config/index.ts';
 import { useQueryClient } from '@tanstack/react-query';
 import { useActiveAccount } from 'thirdweb/react';
+import { degenGambitGame } from '../games/degen-gambit/index.ts';
 
 export interface StreamEvent {
   player: string;
@@ -16,7 +17,7 @@ export interface StreamEvent {
 
 export interface EventConfig {
   eventName: string;
-  processLogs: (logs: any[], contractInfo: any, activeAccount: string | undefined) => StreamEvent[];
+  processLogs: (logs: any[], activeAccount: string | undefined) => StreamEvent[];
   invalidateQueries: (logs: any[], activeAccount: string | undefined) => string[][];
 }
 
@@ -24,7 +25,6 @@ export interface GameStreamProps {
   contractAddress: string;
   abi: any;
   eventConfigs: EventConfig[];
-  contractInfo: any;
   className?: string;
 }
 
@@ -32,7 +32,6 @@ const GameStream: React.FC<GameStreamProps> = ({
   contractAddress,
   abi,
   eventConfigs,
-  contractInfo,
   className = ''
 }) => {
   const [events, setEvents] = useState<StreamEvent[]>([]);
@@ -72,6 +71,7 @@ const GameStream: React.FC<GameStreamProps> = ({
     eventConfigs.forEach(config => {
       const unwatch = watchContractEvent(wagmiConfig, {
         address: contractAddress,
+        chainId: degenGambitGame.network.id as any,
         abi,
         eventName: config.eventName,
         onLogs: (logs) => {
@@ -82,7 +82,7 @@ const GameStream: React.FC<GameStreamProps> = ({
           });
 
           // Process events
-          const newEvents = config.processLogs(logs, contractInfo, activeAccount?.address);
+          const newEvents = config.processLogs(logs, activeAccount?.address);
           newEvents.forEach(event => addEventIfUnique(event));
         },
       });
@@ -92,7 +92,7 @@ const GameStream: React.FC<GameStreamProps> = ({
     return () => {
       unwatchers.forEach(unwatch => unwatch());
     };
-  }, [contractAddress, abi, eventConfigs, contractInfo, activeAccount?.address]);
+  }, [contractAddress, abi, eventConfigs, activeAccount?.address, degenGambitGame.network.id]);
 
   return (
     <div className={className} ref={containerRef}>

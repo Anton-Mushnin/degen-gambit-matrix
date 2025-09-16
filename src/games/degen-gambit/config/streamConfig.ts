@@ -20,16 +20,13 @@ export const degenGambitStreamConfig: EventConfig[] = [
       
       return queries;
     },
-    processLogs: (logs: any[], contractInfo: any) => {
+    processLogs: (logs: any[]) => {
       const events: StreamEvent[] = [];
       
       logs.forEach((log: any) => {
         if (log.args.player) {
           const { player, bonus } = log.args;
-          if (!contractInfo?.costToSpin || !contractInfo?.costToRespin) return;
-          
-          const costToSpinFormatted = `${Math.random() < 0.2 ? contractInfo.costToSpin : contractInfo.costToRespin}`;
-          const description = `${player.slice(0, 6)}...${player?.slice(-4)} uploads ${costToSpinFormatted}${bonus ? ' and burns 1 GAMBIT' : ''}`;
+          const description = `${player.slice(0, 6)}...${player?.slice(-4)} spins${bonus ? ' and burns 1 GAMBIT' : ''}`;
           
           events.push({
             player,
