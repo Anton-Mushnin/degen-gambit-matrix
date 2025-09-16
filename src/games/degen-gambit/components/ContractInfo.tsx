@@ -4,7 +4,6 @@ import { useActiveAccount } from 'thirdweb/react';
 
 import { useAccountToUse, useBlockchain } from '../../../hooks';
 import { createContractData, createDegenData, privateKeyAddress } from '../info';
-import { degenGambitGame } from '../index';
 import QueryValueRow from '../../../components/matrixUI/QueryValueRow';
 import ValueRow from '../../../components/matrixUI/ValueRow';
 import styles from './ContractInfo.module.css';
