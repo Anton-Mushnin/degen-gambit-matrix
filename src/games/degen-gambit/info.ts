@@ -3,18 +3,22 @@ import { privateKeyToAccount } from 'viem/accounts';
 import { PublicClient } from 'viem';
 
 import { wagmiConfig } from '../../config';
-import { getBalanceOf, getCostToSpin, getCurrentBlock, getCurrentDailyStreakLength, getCurrentWeeklyStreakLength, getLastSpinBlock, getSupply } from '../../utils/degenGambit';
+import { getBalanceOf, getBlocksToAct, getCostToSpin, getCurrentBlock, getCurrentDailyStreakLength, getCurrentWeeklyStreakLength, getLastSpinBlock, getSupply } from '../../utils/degenGambit';
 import { DataItem } from '../types';
 import { degenGambitGame } from './index';
 
 export const privateKey = import.meta.env.VITE_PRIVATE_KEY;
 export const privateKeyAddress = privateKey ? privateKeyToAccount(privateKey).address : undefined;
 
-export const createContractData = (
-    publicClient: PublicClient,
-    onDataUpdate?: () => void,
-    onCurrentBlockUpdate?: (data: any) => void
-): DataItem[] => [
+export const createContractData = ({
+    publicClient,
+    onDataUpdate,
+    onCurrentBlockUpdate
+}: {
+    publicClient: PublicClient;
+    onDataUpdate?: () => void;
+    onCurrentBlockUpdate?: (data: any) => void;
+}): DataItem[] => [
     {
         type: 'query',
         label: 'Pot: ',
@@ -45,19 +49,30 @@ export const createContractData = (
         queryFn: () => getCurrentBlock(publicClient),
         refetchInterval: 5000,
         animation: false,
-        onDataUpdate: onCurrentBlockUpdate
+        onDataUpdate: (data) => {
+            onCurrentBlockUpdate?.(data);
+        }
+    },
+    {
+        type: 'query',
+        label: 'Blocks To Act: ',
+        queryKey: ['blocksToAct'],
+        queryFn: () => getBlocksToAct(degenGambitGame.config.contractAddress as string, publicClient),
+        animation: false
     }
 ];
 
-export const createDegenData = (
-    publicClient: PublicClient,
-    degenAddress: string | undefined,
-    displayName: string | undefined,
-    getBlocksLeft: () => Promise<{ formatted: string; value: bigint; decimals: number; } | null>,
-    blocksLeft: { formatted: string; value: bigint; decimals: number; } | null,
-    onCurrentBlockUpdate?: (data: any) => void,
-    onLastSpinBlockUpdate?: (data: any) => void
-): DataItem[] => {
+export const createDegenData = ({
+    publicClient,
+    degenAddress,
+    displayName,
+    queryClient
+}: {
+    publicClient: PublicClient;
+    degenAddress: string | undefined;
+    displayName: string | undefined;
+    queryClient: any;
+}): DataItem[] => {
     if (!degenAddress) return [];
 
     return [
@@ -96,15 +111,34 @@ export const createDegenData = (
             queryKey: ['lastSpinBlock', degenAddress],
             queryFn: () => getLastSpinBlock(degenGambitGame.config.contractAddress as string, degenAddress, publicClient),
             animation: false,
-            onDataUpdate: onLastSpinBlockUpdate
         },
         {
             type: 'query',
             label: 'Blocks Left: ',
-            queryKey: ['blocksLeft', degenAddress, blocksLeft?.value?.toString() ?? ''],
-            queryFn: getBlocksLeft,
+            queryKey: ['blocksLeft', degenAddress],
+            queryFn: async () => {
+                const currentBlock = queryClient.getQueryData(['currentBlock']) as {value: bigint} | undefined;
+                const lastSpinBlock = queryClient.getQueryData(['lastSpinBlock', degenAddress]) as {value: bigint} | undefined;
+                const blocksToAct = queryClient.getQueryData(['blocksToAct']) as {value: bigint} | undefined;
+                
+                if (!currentBlock || !lastSpinBlock || !blocksToAct) {
+                    return {
+                        formatted: 'N/A',
+                        value: BigInt(0),
+                        decimals: 0
+                    };
+                }
+                
+                const deadline = lastSpinBlock.value + blocksToAct.value;
+                const blocksLeftValue = Math.max(0, Number(deadline - currentBlock.value));
+                
+                return {
+                    formatted: blocksLeftValue.toString(),
+                    value: BigInt(blocksLeftValue),
+                    decimals: 0
+                };
+            },
             animation: false,
-            onDataUpdate: onCurrentBlockUpdate
         },
         {
             type: 'query',
