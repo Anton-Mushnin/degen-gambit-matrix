@@ -4,6 +4,7 @@ import { wagmiConfig } from '../config/index.ts';
 import { useQueryClient } from '@tanstack/react-query';
 import { useActiveAccount } from 'thirdweb/react';
 import { degenGambitGame } from '../games/degen-gambit/index.ts';
+import styles from './GameStream.module.css';
 
 export interface StreamEvent {
   player: string;
@@ -95,9 +96,9 @@ const GameStream: React.FC<GameStreamProps> = ({
   }, [contractAddress, abi, eventConfigs, activeAccount?.address, degenGambitGame.network.id]);
 
   return (
-    <div className={className} ref={containerRef}>
+    <div className={styles.container} ref={containerRef}>
       {events.map((event, index) => (
-        <div key={index} className="event">
+        <div key={index} className={styles.event}>
           {event.description}
         </div>
       ))}
