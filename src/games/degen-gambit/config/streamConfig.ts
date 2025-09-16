@@ -8,7 +8,7 @@ export const degenGambitStreamConfig: EventConfig[] = [
       const queries: string[][] = [['contractBalance']];
       
       if (logs.some((log: any) => log.args.player === activeAccount)) {
-        queries.push(['accountBalance'], ['costToSpin'], ['lastSpinBlock'], ['currentBlock']);
+        queries.push(['accountBalance'], ['costToSpin'], ['lastSpinBlock'], ['currentBlock'], ['blocksLeft']);
       }
       
       if (logs.some((log: any) => log.args.bonus)) {
@@ -25,8 +25,8 @@ export const degenGambitStreamConfig: EventConfig[] = [
       
       logs.forEach((log: any) => {
         if (log.args.player) {
-          const { player, bonus } = log.args;
-          const description = `${player.slice(0, 6)}...${player?.slice(-4)} spins${bonus ? ' and burns 1 GAMBIT' : ''}`;
+          const { player, bonus, value } = log.args;
+          const description = `${player.slice(0, 6)}...${player?.slice(-4)} uploads ${value} WEI${bonus ? ' and burns 1 GAMBIT' : ''}`;
           
           events.push({
             player,
