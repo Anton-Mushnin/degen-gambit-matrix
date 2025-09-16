@@ -32,8 +32,7 @@ export interface GameStreamProps {
 const GameStream: React.FC<GameStreamProps> = ({
   contractAddress,
   abi,
-  eventConfigs,
-  className = ''
+  eventConfigs
 }) => {
   const [events, setEvents] = useState<StreamEvent[]>([]);
   const activeAccount = useActiveAccount();
