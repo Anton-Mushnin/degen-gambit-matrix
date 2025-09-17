@@ -14,3 +14,8 @@
 ## Step 2.1: Randomness ✅
 - Chosen CommitRevealRandomness for secure randomness
 
+## Step 3: Commands ✅
+- Created commands.md with play(uint8 guess) command
+- Player pays 1 WEI to guess number 1-6
+- All statuses displayed automatically without commands
+

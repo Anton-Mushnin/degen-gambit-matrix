@@ -9,6 +9,8 @@ NEVER write code when user asks a question - only provide answers. This rule is 
 Track progress in progress.md in game's folder. Put there only completed steps
 Do steps one by one, check with user, propose to commit. STOP after each step and wait for explicit permission to continue.
 - Ask one question at a time
+- ALWAYS propose to commit changes after completing each step before proceeding to the next step
+- Use phrases like "Should I commit these changes before proceeding to Step X?"
 
 
 When prompted 'Add <game-name>':
@@ -46,11 +48,9 @@ Step 2.1 (optional) Randomness:
 - Ask user to confirm randomness approach before proceeding
 
 
-Step 3. Commands:
-- Create a commands file listing all game commands and actions
-- For every command include: input pattern, waiting pattern (optionally), output pattern
-- Actions are commands triggered programmatically (such as reveal, claim, free spin), can have delays, and output patterns can call them. 
-- Keep it short as possible but human readable 
+Step 3. List of commands.
+  Read only rules.md. and progress.md for current game. Propose a list of commands to run by player and client.  These will be actions - payable and non-payable smartcontract funtions. All functions to read from the contract will be discussed later.
+  Save it after discussion
 
 Step 4. Info:
 - Examine only this: existing games' ContractInfo.tsx components, rules of the game. NOTHING ELSE.
