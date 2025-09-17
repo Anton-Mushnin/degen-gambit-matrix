@@ -26,3 +26,8 @@
 - Player status: address/ENS, balance, current streak, combo possibility, total winnings
 - Current game status: rolling/waiting/claiming, last bet win/loss
 
+## Step 5: Stream ✅
+- Created design/stream.md with win events
+- Player wins with base payout (shows guess, result, payout amount)
+- Player wins with streak combo bonus (shows guess, result, base payout + bonus amount, combo type)
+
