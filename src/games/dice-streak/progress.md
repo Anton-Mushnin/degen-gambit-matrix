@@ -19,3 +19,10 @@
 - Player pays 1 WEI to guess number 1-6
 - All statuses displayed automatically without commands
 
+## Step 4: Info ✅
+- Created design/info.md with data display list
+- Contract constants: address, fixed bet amount (n WEI), payout (m WEI)
+- Contract status: bank balance, best combo player, statistics table
+- Player status: address/ENS, balance, current streak, combo possibility, total winnings
+- Current game status: rolling/waiting/claiming, last bet win/loss
+
