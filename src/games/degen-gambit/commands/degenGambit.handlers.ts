@@ -4,7 +4,7 @@ import { ThirdwebClient } from "thirdweb";
 import { type PublicClient } from "viem";
 
 // Local imports
-import { accept, spin } from "../../../utils/degenGambit";
+import { accept, spin } from "../degenGambit";
 
 export type SpinResult = {
     description: string;

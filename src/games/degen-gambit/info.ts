@@ -3,7 +3,7 @@ import { privateKeyToAccount } from 'viem/accounts';
 import { PublicClient } from 'viem';
 
 import { wagmiConfig } from '../../config';
-import { getBalanceOf, getBlocksToAct, getCostToSpin, getCurrentBlock, getCurrentDailyStreakLength, getCurrentWeeklyStreakLength, getLastSpinBlock, getSupply } from '../../utils/degenGambit';
+import { getBalanceOf, getBlocksToAct, getCostToSpin, getCurrentBlock, getCurrentDailyStreakLength, getCurrentWeeklyStreakLength, getLastSpinBlock, getSupply } from './degenGambit';
 import { DataItem } from '../types';
 import { degenGambitGame } from './index';
 

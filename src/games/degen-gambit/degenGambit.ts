@@ -1,16 +1,16 @@
-import { viemG7Testnet, wagmiConfig } from '../config'
-import { degenGambitABI } from '../ABIs/DegenGambit.abi.ts';
+import { viemG7Testnet, wagmiConfig } from '../../config/index.ts'
+import { degenGambitABI } from '../../ABIs/DegenGambit.abi.ts';
 import { multicall } from '@wagmi/core';
 import { formatUnits, WalletClient, PublicClient } from 'viem';
-import { checkAndCreateBlockIfNeeded } from './blockProducer';
+import { checkAndCreateBlockIfNeeded } from '../../utils/blockProducer.ts';
 import { waitForReceipt } from 'thirdweb/transaction';
 import { sendTransaction, prepareContractCall } from 'thirdweb/transaction';
 import { Account } from 'thirdweb/wallets';
 
 import { ThirdwebClient } from 'thirdweb';
 import { viemAdapter } from 'thirdweb/adapters/viem';
-import { getViemChainById } from '../config/networks.ts';
-import { degenGambitGame } from '../games/degen-gambit/index.ts';
+import { getViemChainById } from '../../config/networks.ts';
+import { degenGambitGame } from './index.ts';
 
 // Define a more specific type for multicall results that matches the actual return type
 type WagmiMulticallSuccessResult<T> = {
