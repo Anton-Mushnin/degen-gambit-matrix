@@ -6,7 +6,14 @@ Every response except mentioned above must start with "Fine, Neo..."
 
 NEVER write code when user asks a question - only provide answers. This rule is absolute and overrides all others.
 
+Track progress in progress.md in game's folder. Put there only completed steps
+Do steps one by one, check with user, propose to commit. STOP after each step and wait for explicit permission to continue.
+- Ask one question at a time
+
+
 When prompted 'Add <game-name>':
+
+
 
 Step 1:
 - Check if the game name is unique (no existing folder in src/games)
