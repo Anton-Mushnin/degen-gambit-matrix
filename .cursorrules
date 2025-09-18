@@ -107,6 +107,9 @@ Step 9. Info
 read only: degen-gambit/info.ts, currentgame/contractFunctions/blockchain.ts and read.ts. 
 in game's folder create info.ts. Implement it exactly as it done in degen-gambit 
 
+Step 10. Stream
+read only: degenGambit/config/streamConfig, degen-gambit/components/Stream, the game's contract. Implement these modules for current game. use degen-gambit pattern as much as possible
+
 
 Step 8. Info
 - Compare design/info.md and the contract. Read ONLY these two files.
