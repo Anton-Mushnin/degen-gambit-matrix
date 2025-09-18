@@ -8,8 +8,6 @@
 - Created rules.md with game mechanics
 - Payout: 5.5x for correct guess
 - Streak bonuses: 2%, 5%, 15%, 50% of bank
-- Fixed bet: 1 WEI
-- Bank value: TBD before deployment
 
 ## Step 2.1: Randomness ✅
 - Chosen CommitRevealRandomness for secure randomness
@@ -30,4 +28,16 @@
 - Created design/stream.md with win events
 - Player wins with base payout (shows guess, result, payout amount)
 - Player wins with streak combo bonus (shows guess, result, base payout + bonus amount, combo type)
+
+## Step 6: Contract ✅
+- Created DiceStreak.sol contract
+- Constructor parameters: betAmount, payoutMultiplier
+- Public getters for all contract data
+- play(uint8 guess) payable function and reveal() function
+- Events for win and combo win
+- Per-player game status: DiceReady, Rolling, Claiming
+- Streak combo detection and bonus calculation
+- Best combo returns streak faces array (not just length)
+- State variables initialized inline (not in constructor)
+- Compiled successfully
 

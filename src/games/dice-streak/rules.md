@@ -25,7 +25,5 @@
 - Streak resets to empty array on wrong guess
 
 ## Betting
-- Fixed bet amount: 1 WEI
+- Fixed bet amount: amount will be passed in the contract constructor
 
-## Missing Details
-- Bank value
