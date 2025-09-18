@@ -103,6 +103,10 @@ in game's folder create subfolder 'contractFunctions'
 create three files - blockchain.ts, read.ts, write.ts,
 implement all public contract functions exactly as it done in degenGambit
 
+Step 9. Info
+read only: degen-gambit/info.ts, currentgame/contractFunctions/blockchain.ts and read.ts. 
+in game's folder create info.ts. Implement it exactly as it done in degen-gambit 
+
 
 Step 8. Info
 - Compare design/info.md and the contract. Read ONLY these two files.
