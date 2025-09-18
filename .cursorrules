@@ -6,6 +6,8 @@ Every response except mentioned above must start with "Fine, Neo..."
 
 NEVER write edit files when user asks a question - only provide answers. This rule is absolute and overrides all others.
 
+NEVER execute commands when user asks "how would you do it" or "what would you do" - only explain the method without executing. When user asks for clarification about a process, provide explanation only, not execution.
+
 Track progress in progress.md in game's folder. Put there only completed steps
 Do steps one by one, check with user, propose to commit. STOP after each step and wait for explicit permission to continue.
 - Ask one question at a time
@@ -93,6 +95,13 @@ Step 7. Contract deployment
 - Contract address should be stored in game-specific deployments.md
 - Fund with 0.0000001
 - 3 scripts to test deployment: contract status, player status, play, ask to run
+
+
+Step 8. Contract functions
+read only: degen-gambit/degenGambit.ts and the contract of current game
+in game's folder create subfolder 'contractFunctions'
+create three files - blockchain.ts, read.ts, write.ts,
+implement all public contract functions exactly as it done in degenGambit
 
 
 Step 8. Info

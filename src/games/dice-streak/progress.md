@@ -59,3 +59,17 @@
 - Game mechanics working: win/loss detection, streak management
 - Contract fully functional on XAI testnet
 
+## Step 8: Contract Functions ✅
+- Created contractFunctions subfolder in dice-streak folder
+- Created blockchain.ts with getContractBalance function
+- Created read.ts with all public view functions:
+  - getBetAmount, getPayoutMultiplier, getBankBalance
+  - getBestCombo, getPlayerStreak, getPlayerTotalWinnings
+  - getGameStatus, getLastBetResult, getStatistics, getAllStatistics
+- Created write.ts with payable and non-payable functions:
+  - play(uint8 guess) payable function
+  - reveal() non-payable function
+- All functions support both WalletClient and ThirdwebClient
+- Functions follow degenGambit pattern exactly
+- TypeScript compilation successful
+

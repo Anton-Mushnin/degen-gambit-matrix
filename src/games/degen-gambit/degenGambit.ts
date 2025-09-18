@@ -12,147 +12,6 @@ import { viemAdapter } from 'thirdweb/adapters/viem';
 import { getViemChainById } from '../../config/networks.ts';
 import { degenGambitGame } from './index.ts';
 
-// Define a more specific type for multicall results that matches the actual return type
-type WagmiMulticallSuccessResult<T> = {
-  status: "success";
-  result: T;
-};
-
-
-export const getBalances = async (contractAddress: string, degenAddress: string, publicClient: PublicClient) => {
-    const nativeBalance = await publicClient.getBalance({
-        address: degenAddress,
-    })
-    const contract = {
-        address: contractAddress,
-        abi: degenGambitABI,
-      } as const
-      const balanceInfo = await multicall(wagmiConfig, {
-        contracts: [
-            {
-                ...contract,
-                functionName: 'balanceOf',
-                args: [degenAddress],
-            },
-            {
-                ...contract,
-                functionName: 'symbol',
-            },
-            {
-                ...contract,
-                functionName: 'decimals',
-            },
-        ],
-      })
-      console.log('balanceInfo', balanceInfo);
-      // Filter for successful results only using a type guard that matches the actual return type
-      const successResults = balanceInfo.filter(
-        (item): item is WagmiMulticallSuccessResult<bigint | string | number> => 
-          item.status === "success" && item.result !== undefined
-      );
-      
-      if (successResults.length < 3) {
-        throw new Error("Failed to get balance information");
-      }
-      
-      const [
-        balance,
-        symbol,
-        decimals,
-      ] = successResults.map(item => item.result);
-
-      return {
-        balance: formatUnits(balance as bigint, decimals as number),
-        nativeBalance: formatUnits(nativeBalance, wagmiConfig.chains[0].nativeCurrency.decimals),
-        symbol,
-      }
-}
-
-export const getStreaks = async (contractAddress: string, degenAddress: string) => {
-    const contract = {
-        address: contractAddress,
-        abi: degenGambitABI,
-      } as const
-      const streakInfo = await multicall(wagmiConfig, {
-        contracts: [
-            {
-                ...contract,
-                functionName: 'CurrentDailyStreakLength',
-                args: [degenAddress],
-            },
-            {
-                ...contract,
-                functionName: 'CurrentWeeklyStreakLength',
-                args: [degenAddress],
-            },
-        ],
-      })
-      console.log('streakInfo', streakInfo);
-      // Filter for successful results only using a type guard that matches the actual return type
-      const successResults = streakInfo.filter(
-        (item): item is WagmiMulticallSuccessResult<bigint> => 
-          item.status === "success" && item.result !== undefined
-      );
-      
-      if (successResults.length < 2) {
-        throw new Error("Failed to get streak information");
-      }
-      
-      const [
-        dailyStreak,
-        weeklyStreak,
-      ] = successResults.map(item => item.result);
-
-      return {
-        dailyStreak: Number(dailyStreak),
-        weeklyStreak: Number(weeklyStreak),
-      }
-}
-
-export const getDegenGambitInfo = async (contractAddress: string) => {
-    const contract = {
-        address: contractAddress,
-        abi: degenGambitABI,
-      } as const
-
-
-      
-      const result = await multicall(wagmiConfig, {
-        contracts: [
-          {
-            ...contract,
-            functionName: 'BlocksToAct',
-          },
-          {
-            ...contract,
-            functionName: 'CostToRespin',
-          },
-          {
-            ...contract,
-            functionName: 'CostToSpin',
-          },
-          {
-            ...contract,
-            functionName: 'MajorGambitPrize',
-          },
-          {
-            ...contract,
-            functionName: 'MinorGambitPrize',
-          },
-          {
-            ...contract,
-            functionName: 'prizes',
-          },
-          {
-            ...contract,
-            functionName: 'symbol',
-          },
-        ],
-      })
-      console.log('result', result);
-      return result
-    }
-
 
     // Helper function to get the current block number and calculate blocks remaining
 // Contract constants - loaded once and cached
@@ -165,10 +24,6 @@ let CONTRACT_CONSTANTS: {
   costToRespin: null,
   loaded: false
 };
-
-// Remove unused variables
-// const lastCheckedTimestamp = 0;
-// const cachedBlockNumber = BigInt(0);
 
 // Load contract constants once
 async function loadContractConstants(contractAddress: string, publicClient: PublicClient): Promise<typeof CONTRACT_CONSTANTS> {
@@ -412,12 +267,6 @@ export const accept = async (contractAddress: string, account: Account | undefin
 
 export const spin = async (contractAddress: string, boost: boolean, account: Account | undefined, client: WalletClient | ThirdwebClient, publicClient: PublicClient) => {
 
-  // if (client instanceof WalletClient) {
-  // const account = client.account;
-  // if (!account) {
-  //   throw new Error("No account provided");
-  // }
-
   const viemContract = {
     address: contractAddress,
     abi: degenGambitABI,
@@ -433,26 +282,7 @@ export const spin = async (contractAddress: string, boost: boolean, account: Acc
   } else {
     degenAddress = account?.address ?? "";
   }
-  
-  console.log('spin', {degenAddress, account, client});
-  // const degenAddress = account.address ?? "";
-
-  // const result = await multicall(getDegenGambitWagmiConfig(), {
-  //   contracts: [
-  //     {
-  //       ...viemContract,
-  //       functionName: 'decimals',
-  //     },
-  //     {
-  //       ...viemContract,
-  //       functionName: 'spinCost',
-  //       args: [degenAddress],
-  //     },
-  //   ],
-  // });
-
-  // console.log('spin', {result, wagmiConfig});
-
+ 
 
   const contract = {
     address: contractAddress,
@@ -470,12 +300,6 @@ export const spin = async (contractAddress: string, boost: boolean, account: Acc
     functionName: 'decimals',
   });
 
-  
-  console.log('spinCost', spinCost);
-  // const [
-  //   decimals,
-  //   // spinCost,
-  // ] = result.filter(item => item.status === "success").map(item => item.result);
 
   const chainId = await publicClient.getChainId();
   const chain = getViemChainById(chainId);
