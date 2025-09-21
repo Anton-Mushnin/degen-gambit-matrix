@@ -1,11 +1,10 @@
-import { viemG7Testnet, wagmiConfig } from '../../config/index.ts'
+import { wagmiConfig } from '../../config/index.ts'
 import { degenGambitABI } from '../../ABIs/DegenGambit.abi.ts';
-import { multicall } from '@wagmi/core';
-import { formatUnits, WalletClient, PublicClient } from 'viem';
-import { checkAndCreateBlockIfNeeded } from '../../utils/blockProducer.ts';
+import { formatUnits, PublicClient } from 'viem';
 import { waitForReceipt } from 'thirdweb/transaction';
 import { sendTransaction, prepareContractCall } from 'thirdweb/transaction';
 import { Account } from 'thirdweb/wallets';
+import { commitRevealSpin } from '../../utils/commitRevealSpin.ts';
 
 import { ThirdwebClient } from 'thirdweb';
 import { viemAdapter } from 'thirdweb/adapters/viem';
@@ -144,24 +143,6 @@ export const getBlockInfo = async (contractAddress: string, account: string, pub
   }
 };
 
-export const _accept = async (contractAddress: string, client: WalletClient) => {
-  const account = client.account;
-  if (!account) {
-    throw new Error("No account provided");
-  }
-
-
-  return client.writeContract({
-    account,
-    address: contractAddress,
-    abi: degenGambitABI,
-    functionName: 'accept',
-    args: [],
-    chain: viemG7Testnet,
-  })
-}
-
-
 export const _acceptThirdWebClient = async (contractAddress: string, account: Account | undefined, client: ThirdwebClient, publicClient: PublicClient) => {
   if (!account) {
     throw new Error("No account provided");
@@ -251,39 +232,14 @@ export const _acceptThirdWebClient = async (contractAddress: string, account: Ac
   }
 };
 
-export const accept = async (contractAddress: string, account: Account | undefined, client: WalletClient | ThirdwebClient, publicClient: PublicClient) => {
-  if ('writeContract' in client) {
-    const _account = client.account;
-    if (!_account) {
-      throw new Error("No account provided");
-    }
-    return _accept(contractAddress, client);
-  } else if (account) {
-    return _acceptThirdWebClient(contractAddress, account, client, publicClient);
-  } else {
-    throw new Error("No account provided");
-  }
+export const accept = async (contractAddress: string, account: Account | undefined, client: ThirdwebClient, publicClient: PublicClient) => {
+  return _acceptThirdWebClient(contractAddress, account, client, publicClient);
 };
 
-export const spin = async (contractAddress: string, boost: boolean, account: Account | undefined, client: WalletClient | ThirdwebClient, publicClient: PublicClient) => {
+export const spin = async (contractAddress: string, boost: boolean, account: Account | undefined, client: ThirdwebClient, publicClient: PublicClient) => {
+  const degenAddress = account?.address ?? "";
 
-  const viemContract = {
-    address: contractAddress,
-    abi: degenGambitABI,
-  } as const;
-
-
-  let degenAddress;
-
-
-  if ('writeContract' in client) {
-    const _account = client.account;
-    degenAddress = _account?.address ?? "";
-  } else {
-    degenAddress = account?.address ?? "";
-  }
- 
-
+  // Get spin cost and decimals for result processing
   const contract = {
     address: contractAddress,
     abi: degenGambitABI,
@@ -300,100 +256,23 @@ export const spin = async (contractAddress: string, boost: boolean, account: Acc
     functionName: 'decimals',
   });
 
-
   const chainId = await publicClient.getChainId();
-  const chain = getViemChainById(chainId);
 
-  let hash: string | null = null;
-  if ('writeContract' in client) {
-    const account = client.account;
-    if (!account) {
-        throw new Error("No account provided");
-    }
+  // Use the extracted commit-reveal utility
+  const result = await commitRevealSpin({
+    contractAddress,
+    contractABI: degenGambitABI,
+    spinFunctionName: 'spin',
+    spinArgs: [boost],
+    value: typeof spinCost === 'bigint' ? spinCost : BigInt(0),
+    account,
+    client,
+    publicClient,
+    chainId,
+  });
 
-
-
-    hash = await client.writeContract({
-      account,
-      address: contractAddress,
-      value: typeof spinCost === 'bigint' ? spinCost : BigInt(0),
-      abi: degenGambitABI,
-      functionName: 'spin',
-      args: [boost],
-      chain,
-    })
-  } else if (account) {
-    const contract = viemAdapter.contract.fromViem({
-      viemContract: viemContract,
-      chain: {
-        ...chain,
-        rpc: chain.rpcUrls["default"].http[0],
-        blockExplorers: [{
-          name: chain.blockExplorers?.default.name ?? "",
-          url: chain.blockExplorers?.default.url ?? ""
-        }],
-        testnet: true
-      },
-      client,
-    });
-  
-    // Execute the spin
-    const tx = prepareContractCall({
-      contract,
-      method: "spin",
-      params: [boost],
-      value: typeof spinCost === 'bigint' ? spinCost : BigInt(0),
-    });
-  
-    const transactionResult = await sendTransaction({
-      transaction: tx,
-      account,
-    });
-  
-    const receipt = await waitForReceipt(transactionResult);
-    hash = receipt.transactionHash;
-  }
-
-
-
-  // After spin is confirmed, check the outcome
-  let outcome: readonly bigint[] | null = null;
-  let retries = 0;
-  while (!outcome) {
-    try {
-      // Check if we need to create a new block before checking outcome
-      const blockCheck = await checkAndCreateBlockIfNeeded(1, chainId, publicClient);
-      if (blockCheck.created) {
-        console.log("Created a new block to help with outcome processing:", blockCheck.message);
-      } else if (blockCheck.timeDiff !== undefined && blockCheck.timeDiff > 3) {
-        console.log(`Latest block is ${blockCheck.timeDiff}s old, but no new block was created: ${blockCheck.message}`);
-      }
-      
-      outcome = await publicClient.readContract({
-        ...viemContract,
-        functionName: 'inspectOutcome',
-        args: [degenAddress],
-      });
-    } catch (error: unknown) {
-      const errorMsg = error instanceof Error ? error.message : String(error);
-      // Known errors that can occur while waiting for the outcome to be available
-      const knownErrors = ['WaitForTick()', 'InvalidBlockNumber', '0xd5dc642d'];
-
-      if (!knownErrors.some(err => errorMsg.includes(err))) {
-        console.error("Unknown error while checking outcome:", errorMsg);
-        return { description: errorMsg };
-      }
-      
-      console.log(`Waiting for outcome, retry ${retries + 1}/30...`);
-      retries += 1;
-      if (retries > 30) {
-        return { description: "Something went wrong. Please try again." };
-      }
-      await new Promise(resolve => setTimeout(resolve, 1000));
-    }
-  }
-
-
+  // Process the outcome (game-specific logic)
+  const outcome = result.outcome as readonly bigint[];
   let actionText = '';
   if (Number(outcome[4]) > 0) {
     actionText = `You won ${formatUnits(outcome[4], Number(decimals))} ${Number(outcome[5]) === 1 ? wagmiConfig.chains[0].nativeCurrency.symbol : 'GAMBIT'}`;
@@ -406,7 +285,7 @@ export const spin = async (contractAddress: string, boost: boolean, account: Acc
     outcome,
     prize: Number(outcome[4]) > 0 ? formatUnits(outcome[4], Number(decimals)) : '0',
     prizeType: Number(outcome[5]),
-    receipt: hash,
+    receipt: result.receipt,
   };
 };
 
