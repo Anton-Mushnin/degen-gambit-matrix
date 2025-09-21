@@ -6,11 +6,10 @@ import {
     handleAuto,
     handleSet,
     handleAccept,
-    type TerminalCommandParams,
     type DegenGambitCommandParams,
-    type SpinResult,
-    type CommitRevealAcceptParams
 } from './degenGambit.handlers';
+import { TerminalCommandParams, SpinResult, CommitRevealAcceptParams } from '../../../utils/gameHandlers';
+
 
 export type { SpinResult, DegenGambitCommandParams, TerminalCommandParams, CommitRevealAcceptParams };
 
