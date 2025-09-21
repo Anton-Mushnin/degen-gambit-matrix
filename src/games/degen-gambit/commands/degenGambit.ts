@@ -1,17 +1,19 @@
 // Local imports
 import { CommandDefinition, CommandPattern } from '../../../commands/types';
-import { 
-    handleGetSome, 
-    handleSpin, 
-    handleAuto, 
-    handleSet, 
+import {
+    handleGetSome,
+    handleSpin,
+    handleAuto,
+    handleSet,
     handleAccept,
     type TerminalCommandParams,
     type DegenGambitCommandParams,
-    type SpinResult
+    type SpinResult,
+    type CommitRevealAcceptParams
 } from './degenGambit.handlers';
 
-export type { SpinResult, DegenGambitCommandParams, TerminalCommandParams };
+export type { SpinResult, DegenGambitCommandParams, TerminalCommandParams, CommitRevealAcceptParams };
+
 
 declare global {
     interface Window {

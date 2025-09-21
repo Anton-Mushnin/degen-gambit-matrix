@@ -2,6 +2,7 @@
 import { Account } from "thirdweb/wallets";
 import { ThirdwebClient } from "thirdweb";
 import { type PublicClient } from "viem";
+import { handleCommitRevealAccept } from "../../../utils/gameHandlers";
 
 // Local imports
 import { accept, spin } from "../degenGambit";
@@ -14,6 +15,30 @@ export type SpinResult = {
     receipt?: string | null;
 };
 
+export type AcceptResult = {
+    description: string;
+    success: boolean;
+    receipt?: any; // TransactionReceipt or string
+    error?: string;
+};
+
+export type CommitRevealAcceptParams = {
+    spinFunction: (contractAddress: string, isBoost: boolean, activeAccount: Account | undefined, client: ThirdwebClient, publicClient: PublicClient) => Promise<SpinResult>;
+    onWinState?: (isWin: boolean) => void;
+    onAccept?: (contractAddress: string, activeAccount: Account | undefined, client: ThirdwebClient, publicClient: PublicClient) => Promise<AcceptResult>;
+    winDelay?: number; // milliseconds to wait before setting win state
+    acceptDelay?: number; // milliseconds to wait before auto-accepting
+    winDetection?: (spinResult: SpinResult) => boolean;
+};
+
+export type TerminalCommandParams = {
+    activeAccount: Account | undefined;
+    client: ThirdwebClient;
+    publicClient: PublicClient | null;
+    gameParams: any; // Game-specific parameters
+    contractAddress: string;
+};
+
 export type DegenGambitCommandParams = {
     onSetNumbers?: (numbers: number[]) => void;
     getCurrentNumbers: () => number[];
@@ -22,13 +47,6 @@ export type DegenGambitCommandParams = {
     autoSpin: boolean;
 };
 
-export type TerminalCommandParams = {
-    activeAccount: Account | undefined;
-    client: ThirdwebClient;
-    publicClient: PublicClient | null;
-    gameParams: DegenGambitCommandParams;
-    contractAddress: string;
-};
 
 declare global {
     interface Window {
@@ -48,35 +66,23 @@ export async function handleGetSome({ params }: { params: TerminalCommandParams 
     return { output: [] };
 }
 
+
+// Primary spin handler for DegenGambit - uses the generalized commit-reveal-accept logic
 export async function handleSpin({ input, params }: { input: string; params: TerminalCommandParams }) {
-    const { activeAccount, client, publicClient, gameParams, contractAddress } = params;
+    const { gameParams } = params;
     const { setIsWin } = gameParams;
-    
 
-    if (!client || !publicClient) {
-        return { output: ["No account selected or public client not available"] };
-    }
-
-    const isBoost = input === "spin boost";
-    const spinResult = await spin(contractAddress, isBoost, activeAccount, client, publicClient);
-
-    // Handle win state and auto-accept
-    if (spinResult.prize && Number(spinResult.prize) > 0) {
-        // Set win state after 8 seconds
-        setTimeout(() => setIsWin(true), 8000);
-        
-        // Auto-accept after 20 seconds
-        setTimeout(async () => {
-            setIsWin(false);
-            await accept(contractAddress, activeAccount, client, publicClient);
-        }, 18000);
-    }
-
-    return {
-        output: [spinResult.description],
-        outcome: spinResult.outcome ? [...spinResult.outcome.slice(0, 3)] : undefined,
-        isPrize: spinResult.prize ? Number(spinResult.prize) > 0 : undefined
-    };
+    return handleCommitRevealAccept({
+        input,
+        params,
+        config: {
+            spinFunction: spin,
+            onWinState: setIsWin,
+            onAccept: accept,
+            winDelay: 8000,
+            acceptDelay: 18000
+        }
+    });
 }
 
 export async function handleAuto({ params }: { params: TerminalCommandParams }) {
