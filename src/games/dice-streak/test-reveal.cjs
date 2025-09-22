@@ -1,11 +1,11 @@
 const { ethers } = require("hardhat");
 
 async function main() {
-  console.log("🎯 Testing DiceStreak reveal functionality...");
-  
+  console.log("✅ Testing DiceStreak accept functionality...");
+
   // Contract address
-  const contractAddress = "0x73380E6f3C2f9d3811f6Ab13A6623906ecFCa9AD";
-  
+  const contractAddress = "0xCfD6407737Ee7569a9c96fc6803f2b99b8B5E69d";
+
   try {
     // Get player account
     const [player] = await ethers.getSigners();
@@ -34,31 +34,38 @@ async function main() {
       return;
     }
     
-    console.log("\n🎯 Revealing commit...");
-    
-    // Check available functions
-    console.log("Available functions:", Object.keys(diceStreak.functions));
-    
-    // Try to call reveal with different approaches
-    let revealTx;
+    console.log("\n🔍 Inspecting outcome before accepting...");
+
+    // First inspect the outcome to see what we're accepting
     try {
-      revealTx = await diceStreak["reveal()"]();
-      console.log("📝 Reveal transaction sent:", revealTx.hash);
+      const outcome = await diceStreak.inspectOutcome(player.address);
+      const diceResult = (outcome % 6) + 1; // Convert to 1-6 range
+      console.log("🎲 Inspected Outcome: dice rolled", diceResult);
+
+      // Get the player's guess from contract state
+      const playerData = await diceStreak.players(player.address);
+      console.log("🎯 Your guess was:", playerData.pendingGuess);
+      console.log("🏆 Result:", diceResult == playerData.pendingGuess ? "WIN!" : "LOSS");
+
     } catch (error) {
-      console.log("❌ Direct reveal failed:", error.message);
-      
-      // Try calling the parent contract's reveal function
-      try {
-        revealTx = await diceStreak["reveal(bytes)"]("0x");
-        console.log("📝 Parent reveal transaction sent:", revealTx.hash);
-      } catch (error2) {
-        console.log("❌ Parent reveal also failed:", error2.message);
-        return;
-      }
+      console.log("⚠️  Could not inspect outcome:", error.message);
+      console.log("   Proceeding with accept anyway...");
     }
-    
-    await revealTx.wait();
-    console.log("✅ Reveal transaction confirmed");
+
+    console.log("\n✅ Accepting result by calling accept()...");
+
+    // Call the clear accept() function
+    let acceptTx;
+    try {
+      acceptTx = await diceStreak.accept();
+      console.log("📝 Accept transaction sent:", acceptTx.hash);
+    } catch (error) {
+      console.log("❌ Accept failed:", error.message);
+      return;
+    }
+
+    await acceptTx.wait();
+    console.log("✅ Accept transaction confirmed");
     
     // Check new game status
     const newGameStatus = await diceStreak.getGameStatus(player.address);
@@ -82,10 +89,10 @@ async function main() {
     const hasCommitAfter = await diceStreak.hasCommit(player.address);
     console.log("🔒 Has Commit After:", hasCommitAfter);
     
-    console.log("\n✅ Reveal test completed");
+    console.log("\n✅ Accept test completed");
     
   } catch (error) {
-    console.log("❌ Error during reveal test:", error.message);
+    console.log("❌ Error during accept test:", error.message);
   }
 }
 
