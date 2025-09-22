@@ -30,10 +30,14 @@
 - Player wins with streak combo bonus (shows guess, result, base payout + bonus amount, combo type)
 
 ## Step 6: Contract ✅
-- Created DiceStreak.sol contract
+- Created DiceStreak.sol contract with clean commit-inspectOutcome-accept pattern
+- Removed confusing parent-child reveal() override
+- Added clear accept() function that calls parent's reveal(bytes) internally
 - Constructor parameters: betAmount, payoutMultiplier
 - Public getters for all contract data
-- play(uint8 guess) payable function and reveal() function
+- play(uint8 guess) payable function (commit phase)
+- inspectOutcome(address) for previewing results
+- accept() function for accepting results (reveal + process)
 - Events for win and combo win
 - Per-player game status: DiceReady, Rolling, Claiming
 - Streak combo detection and bonus calculation
@@ -48,19 +52,19 @@
 - Created test scripts: test-contract-status.cjs, test-player-status.cjs, test-play.cjs
 - Contract parameters: 0.000001 ETH bet amount, 5.5x payout multiplier
 - Ready for deployment
-- Contract deployed successfully to XAI testnet
-- Contract address: 0x73380E6f3C2f9d3811f6Ab13A6623906ecFCa9AD
+- Contract deployed successfully to XAI testnet with clean accept() interface
+- Contract address: 0xCfD6407737Ee7569a9c96fc6803f2b99b8B5E69d
 - Contract status test passed
 - Player status test passed
 - Ready for play testing
-- Play test passed: player can place bets
-- Reveal test passed: player can reveal commits
+- Play test passed: player can place bets (commit phase)
+- Accept test passed: player can accept results with clear accept() function
 - Complete game flow tested: play → reveal → result processing
 - Game mechanics working: win/loss detection, streak management
 - Contract fully functional on XAI testnet
 
 ## Step 8: Contract Functions ✅
-- Created contractFunctions subfolder in dice-streak folder
+- Recreated contractFunctions subfolder in dice-streak folder
 - Created blockchain.ts with getContractBalance function
 - Created read.ts with all public view functions:
   - getBetAmount, getPayoutMultiplier, getBankBalance
