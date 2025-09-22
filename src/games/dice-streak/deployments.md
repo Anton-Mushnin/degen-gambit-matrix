@@ -10,7 +10,7 @@
 
 ### Contract Details
 - **Contract Name:** DiceStreak
-- **Contract Address:** 0x73380E6f3C2f9d3811f6Ab13A6623906ecFCa9AD
+- **Contract Address:** 0xCfD6407737Ee7569a9c96fc6803f2b99b8B5E69d
 - **Deployer:** 0x4eD919172bD08D74831f2914aAAe8edA690d08Ab
 - **Deployment Block:** [To be filled after deployment]
 - **Deployment Time:** [To be filled after deployment]
@@ -20,8 +20,9 @@
 - **Payout Multiplier:** 5500 (5.5x)
 
 ### Contract Functions
-- `play(uint8 guess)` - Player guesses 1-6, pays bet amount
-- `reveal()` - Player reveals commit and processes result
+- `play(uint8 guess)` - Player guesses 1-6, pays bet amount (commit phase)
+- `inspectOutcome(address)` - Player can preview the dice result before accepting
+- `accept()` - Player accepts the result and processes the game (reveal + process)
 - `getBetAmount()` - Returns fixed bet amount
 - `getPayoutMultiplier()` - Returns payout multiplier
 - `getBankBalance()` - Returns contract balance
