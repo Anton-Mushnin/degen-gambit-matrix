@@ -182,18 +182,18 @@ contract DiceStreak is CommitRevealRandomness {
                 lastNumbers[j] = streak[length - i + j];
             }
             
-            (bool isCombo, string memory type) = _detectCombo(lastNumbers);
+            (bool isCombo, string memory comboType) = _detectCombo(lastNumbers);
             if (isCombo) {
                 uint256 bankShare = _getBankShare(i);
                 uint256 bonus = (address(this).balance * bankShare) / 10000; // Basis points
-                
+
                 // Update best combo if this is better
                 if (i > bestCombo.streakFaces.length) {
                     bestCombo.streakFaces = lastNumbers;
                     bestCombo.player = player;
                 }
-                
-                return (true, bonus, type);
+
+                return (true, bonus, comboType);
             }
         }
         
