@@ -170,9 +170,59 @@ contract EvenOdd is CommitRevealRandomness {
         return string(bstr);
     }
     
+    /// @notice Inspect the outcome of an even/odd bet without executing the reveal
+    /// @param player The player's address to inspect outcome for
+    /// @return prizeValue The prize amount that would be won (0 for loss)
+    /// @return description Description of the outcome
+    function inspectOutcome(address player) external view override returns (uint256 prizeValue, string memory description) {
+        // Check if player has a bet
+        Bet memory bet = playerBets[player];
+        require(bytes(bet.choice).length > 0, "No active bet");
+
+        uint256 currentBlock = _blockNumber();
+        CommitData storage commit = playerCommits[player];
+
+        // Check if player has committed data
+        require(commit.commitBlock != 0, "No commit to reveal");
+
+        // Check if reveal block has been mined
+        require(currentBlock > commit.commitBlock, "Reveal block not yet mined");
+
+        // Check if reveal is within the allowed window
+        require(currentBlock <= commit.commitBlock + commit.revealWindow, "Reveal window expired");
+
+        // Generate the random number
+        uint256 randomNumber = _entropy(player, commit.commitBlock) % 100;
+        bool isOdd = randomNumber % 2 == 1;
+
+        // Determine if player would win
+        bool choiceIsOdd = keccak256(abi.encodePacked(bet.choice)) == keccak256(abi.encodePacked("odd"));
+        bool won = (choiceIsOdd && isOdd) || (!choiceIsOdd && !isOdd);
+
+        if (won) {
+            prizeValue = WIN_PAYOUT;
+            description = string(abi.encodePacked(
+                "Win - Number: ",
+                _uint2str(randomNumber),
+                " (",
+                isOdd ? "odd" : "even",
+                ")"
+            ));
+        } else {
+            prizeValue = 0;
+            description = string(abi.encodePacked(
+                "Loss - Number: ",
+                _uint2str(randomNumber),
+                " (",
+                isOdd ? "odd" : "even",
+                ")"
+            ));
+        }
+    }
+
     function withdraw() external onlyOwner {
         payable(owner).transfer(address(this).balance);
     }
-    
+
     receive() external payable {}
 } 
