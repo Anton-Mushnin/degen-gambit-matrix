@@ -29,14 +29,14 @@ const diceStreakABI = [
 
 export const play = async (contractAddress: string, guess: number, client: WalletClient | ThirdwebClient, publicClient: PublicClient, account?: Account) => {
   const betAmount = await getBetAmount(contractAddress, publicClient);
-  
+
   if ('writeContract' in client) {
     // WalletClient
     const walletAccount = client.account;
     if (!walletAccount) {
       throw new Error("No account provided");
     }
-    
+
     return client.writeContract({
       account: walletAccount,
       address: contractAddress,

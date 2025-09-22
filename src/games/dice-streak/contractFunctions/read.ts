@@ -84,7 +84,7 @@ export const getBetAmount = async (contractAddress: string, publicClient: Public
       abi: diceStreakABI,
       functionName: 'getBetAmount',
     });
-    
+
     return {
       value: betAmount,
       formatted: `${formatUnits(betAmount, 18)} ETH`,
@@ -102,7 +102,7 @@ export const getPayoutMultiplier = async (contractAddress: string, publicClient:
       abi: diceStreakABI,
       functionName: 'getPayoutMultiplier',
     });
-    
+
     return {
       value: multiplier,
       formatted: `${Number(multiplier) / 1000}x`,
@@ -120,7 +120,7 @@ export const getBankBalance = async (contractAddress: string, publicClient: Publ
       abi: diceStreakABI,
       functionName: 'getBankBalance',
     });
-    
+
     return {
       value: balance,
       formatted: `${formatUnits(balance, 18)} ETH`,
@@ -138,7 +138,7 @@ export const getBestCombo = async (contractAddress: string, publicClient: Public
       abi: diceStreakABI,
       functionName: 'getBestCombo',
     });
-    
+
     return {
       streakFaces: streakFaces as number[],
       player: player as string,
@@ -157,7 +157,7 @@ export const getPlayerStreak = async (contractAddress: string, playerAddress: st
       functionName: 'getPlayerStreak',
       args: [playerAddress],
     });
-    
+
     return {
       value: streak as number[],
       formatted: streak.length > 0 ? streak.join(', ') : 'No streak',
@@ -176,7 +176,7 @@ export const getPlayerTotalWinnings = async (contractAddress: string, playerAddr
       functionName: 'getPlayerTotalWinnings',
       args: [playerAddress],
     });
-    
+
     return {
       value: winnings,
       formatted: `${formatUnits(winnings, 18)} ETH`,
@@ -195,10 +195,10 @@ export const getGameStatus = async (contractAddress: string, playerAddress: stri
       functionName: 'getGameStatus',
       args: [playerAddress],
     });
-    
+
     const statusMap = ['Dice Ready', 'Rolling', 'Claiming'];
     const statusText = statusMap[Number(status)] || 'Unknown';
-    
+
     return {
       value: Number(status),
       formatted: statusText,
@@ -217,10 +217,10 @@ export const getLastBetResult = async (contractAddress: string, playerAddress: s
       functionName: 'getLastBetResult',
       args: [playerAddress],
     });
-    
+
     const resultMap = ['None', 'Win', 'Loss'];
     const resultText = resultMap[Number(result)] || 'Unknown';
-    
+
     return {
       value: Number(result),
       formatted: resultText,
@@ -239,7 +239,7 @@ export const getStatistics = async (contractAddress: string, number: number, pub
       functionName: 'getStatistics',
       args: [number],
     });
-    
+
     return {
       occurrences: occurrences as bigint,
       bets: bets as bigint,
@@ -261,7 +261,7 @@ export const getAllStatistics = async (contractAddress: string, publicClient: Pu
       getStatistics(contractAddress, 5, publicClient),
       getStatistics(contractAddress, 6, publicClient),
     ]);
-    
+
     return stats.map((stat, index) => ({
       number: index + 1,
       ...stat
