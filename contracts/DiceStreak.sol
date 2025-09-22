@@ -9,7 +9,7 @@ contract DiceStreak is CommitRevealRandomness {
     uint256 public immutable payoutMultiplier; // Basis points (5500 = 5.5x)
     
     // Game state - initialized inline with default values
-    enum GameStatus { DiceReady, Rolling, Claiming }
+    enum GameStatus { DiceReady, Rolling }
     enum BetResult { None, Win, Loss }
 
     address public owner;
@@ -22,23 +22,23 @@ contract DiceStreak is CommitRevealRandomness {
         BetResult lastBetResult;
         uint8 pendingGuess;
     }
-    
+
     struct ComboInfo {
         uint8[] streakFaces;
         address player;
     }
-    
+
     struct Statistics {
         uint256 occurrences;
         uint256 bets;
         uint256 wins;
     }
-    
+
     // Storage
     mapping(address => PlayerData) public players;
     ComboInfo public bestCombo;
     mapping(uint8 => Statistics) public statistics; // 1-6
-    
+
     // Events
     event PlayerWin(address indexed player, uint8 guess, uint8 result, uint256 payout);
     event PlayerWinWithCombo(address indexed player, uint8 guess, uint8 result, uint256 basePayout, uint256 bonusPayout, string comboType);
@@ -97,29 +97,115 @@ contract DiceStreak is CommitRevealRandomness {
     function play(uint8 guess) public payable {
         require(guess >= 1 && guess <= 6, "Guess must be 1-6");
         require(msg.value == betAmount, "Incorrect bet amount");
-        require(players[msg.sender].gameStatus == GameStatus.DiceReady, "Game not ready");
-        
-        // Update player state
+
+        // Request randomness first (this will auto-resolve any pending commits)
+        move(bytes32(0), 256);
+
+        // Now update player state for the new bet
         players[msg.sender].gameStatus = GameStatus.Rolling;
         players[msg.sender].pendingGuess = guess;
-        
+
         // Update statistics
         statistics[guess].bets++;
-        
-        // Request randomness (simple mode with no data validation)
-        move(bytes32(0), 256);
     }
     
-    // Override reveal function from CommitRevealRandomness
-    function reveal() public {
+    // Accept the game result after inspecting with inspectOutcome()
+    function accept() public {
         require(players[msg.sender].gameStatus == GameStatus.Rolling, "Not in rolling phase");
-        
+
+        // Get random number using parent's reveal function with empty data (simple mode)
         uint256 randomNumber = super.reveal("");
-        
-        players[msg.sender].gameStatus = GameStatus.Claiming;
-        
+
         // Process the game result
         _processGameResult(msg.sender, randomNumber);
+    }
+
+    /// @notice Check if player has a pending bet that can be auto-resolved
+    function _hasPendingResolvableBet() internal override view returns (bool) {
+        return players[msg.sender].gameStatus == GameStatus.Rolling;
+    }
+
+    /// @notice Process auto-resolved bet result
+    function _processAutoResolvedBet(uint256 randomNumber) internal override {
+        _processGameResult(msg.sender, randomNumber);
+    }
+
+    /// @notice Inspect the outcome of a dice roll without executing the reveal
+    /// @param player The player's address to inspect outcome for
+    /// @return prizeValue The prize amount that would be won (0 for loss)
+    /// @return description Description of the outcome (e.g., "Win 5.5x payout" or "Loss")
+    function inspectOutcome(address player) external view override returns (uint256 prizeValue, string memory description) {
+        uint256 currentBlock = _blockNumber();
+        CommitData storage commit = playerCommits[player];
+
+        // Check if player has committed data
+        if (commit.commitBlock == 0) {
+            revert("No commit to reveal");
+        }
+
+        // Check if reveal block has been mined
+        if (currentBlock <= commit.commitBlock) {
+            revert("Reveal block not yet mined");
+        }
+
+        // Check if reveal is within the allowed window
+        if (currentBlock > commit.commitBlock + commit.revealWindow) {
+            revert("Reveal window expired");
+        }
+
+        // Generate the dice result
+        uint256 randomNumber = _entropy(player, commit.commitBlock);
+        uint8 result = uint8((randomNumber % 6) + 1);
+        uint8 guess = players[player].pendingGuess;
+
+        if (result == guess) {
+            // Calculate win amount (would need to check streak combos too)
+            uint256 basePayout = (betAmount * payoutMultiplier) / 1000;
+
+            // Check for streak combo (simplified - would need full logic)
+            (bool hasCombo, uint256 bonusPayout, ) = _checkStreakComboPreview(player, result);
+
+            prizeValue = basePayout + bonusPayout;
+            if (hasCombo) {
+                description = "Win with combo bonus";
+            } else {
+                description = "Win";
+            }
+        } else {
+            prizeValue = 0;
+            description = "Loss";
+        }
+    }
+
+    /// @notice Preview streak combo check without modifying state
+    function _checkStreakComboPreview(address player, uint8 newResult) internal view returns (bool hasCombo, uint256 bonusPayout, string memory comboType) {
+        uint8[] memory currentStreak = players[player].streak;
+        uint8 newLength = uint8(currentStreak.length + 1);
+
+        // Create temporary streak with new result
+        uint8[] memory tempStreak = new uint8[](newLength);
+        for (uint8 i = 0; i < currentStreak.length; i++) {
+            tempStreak[i] = currentStreak[i];
+        }
+        tempStreak[newLength - 1] = newResult;
+
+        // Check combos in the temp streak
+        for (uint8 i = 3; i <= newLength; i++) {
+            uint8[] memory lastNumbers = new uint8[](i);
+            for (uint8 j = 0; j < i; j++) {
+                lastNumbers[j] = tempStreak[newLength - i + j];
+            }
+
+            (bool isCombo, string memory detectedType) = _detectCombo(lastNumbers);
+            if (isCombo) {
+                uint256 bankShare = _getBankShare(i);
+                uint256 bonus = (address(this).balance * bankShare) / 10000;
+
+                return (true, bonus, detectedType);
+            }
+        }
+
+        return (false, 0, "");
     }
     
     function _processGameResult(address player, uint256 randomNumber) internal {
@@ -133,7 +219,7 @@ contract DiceStreak is CommitRevealRandomness {
         if (result == guess) {
             _handleWin(player, guess, result);
         } else {
-            _handleLoss(player, guess, result);
+            _handleLoss(player);
         }
         
         // Reset player state
@@ -168,10 +254,10 @@ contract DiceStreak is CommitRevealRandomness {
         players[player].lastBetResult = BetResult.Win;
     }
     
-    function _handleLoss(address player, uint8 guess, uint8 result) internal {
+    function _handleLoss(address player) internal {
         // Reset player's streak
         delete players[player].streak;
-        
+
         players[player].lastBetResult = BetResult.Loss;
     }
     
