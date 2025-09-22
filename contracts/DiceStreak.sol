@@ -11,7 +11,9 @@ contract DiceStreak is CommitRevealRandomness {
     // Game state - initialized inline with default values
     enum GameStatus { DiceReady, Rolling, Claiming }
     enum BetResult { None, Win, Loss }
-    
+
+    address public owner;
+
     // Player data
     struct PlayerData {
         uint8[] streak;
@@ -40,10 +42,16 @@ contract DiceStreak is CommitRevealRandomness {
     // Events
     event PlayerWin(address indexed player, uint8 guess, uint8 result, uint256 payout);
     event PlayerWinWithCombo(address indexed player, uint8 guess, uint8 result, uint256 basePayout, uint256 bonusPayout, string comboType);
-    
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Only owner can call this function");
+        _;
+    }
+
     constructor(uint256 _betAmount, uint256 _payoutMultiplier) {
         betAmount = _betAmount;
         payoutMultiplier = _payoutMultiplier;
+        owner = msg.sender;
     }
     
     // Public getters
@@ -249,4 +257,11 @@ contract DiceStreak is CommitRevealRandomness {
         if (streakLength == 6) return 5000; // 50%
         return 0;
     }
+
+    function withdraw() external onlyOwner {
+        payable(owner).transfer(address(this).balance);
+    }
+
+    // Allow contract to receive ETH for payouts
+    receive() external payable {}
 }
