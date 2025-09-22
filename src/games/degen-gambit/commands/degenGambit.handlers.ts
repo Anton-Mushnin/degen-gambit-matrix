@@ -1,8 +1,7 @@
-// External library imports
-import { Account } from "thirdweb/wallets";
-import { ThirdwebClient } from "thirdweb";
-import { type PublicClient } from "viem";
 import { handleCommitRevealAccept } from "../../../utils/gameHandlers";
+import { TerminalCommandParams } from "../../../utils/gameHandlers";
+
+
 
 // Local imports
 import { accept, spin } from "../degenGambit";
@@ -20,31 +19,6 @@ export type AcceptResult = {
     success: boolean;
     receipt?: any; // TransactionReceipt or string
     error?: string;
-};
-
-export type CommitRevealAcceptParams = {
-    spinFunction: (contractAddress: string, isBoost: boolean, activeAccount: Account | undefined, client: ThirdwebClient, publicClient: PublicClient) => Promise<SpinResult>;
-    onWinState?: (isWin: boolean) => void;
-    onAccept?: (contractAddress: string, activeAccount: Account | undefined, client: ThirdwebClient, publicClient: PublicClient) => Promise<AcceptResult>;
-    winDelay?: number; // milliseconds to wait before setting win state
-    acceptDelay?: number; // milliseconds to wait before auto-accepting
-    winDetection?: (spinResult: SpinResult) => boolean;
-};
-
-export type TerminalCommandParams = {
-    activeAccount: Account | undefined;
-    client: ThirdwebClient;
-    publicClient: PublicClient | null;
-    gameParams: any; // Game-specific parameters
-    contractAddress: string;
-};
-
-export type DegenGambitCommandParams = {
-    onSetNumbers?: (numbers: number[]) => void;
-    getCurrentNumbers: () => number[];
-    onAutoSpinToggle: () => void;
-    setIsWin: (isWin: boolean) => void;
-    autoSpin: boolean;
 };
 
 
