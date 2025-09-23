@@ -1,4 +1,4 @@
-[
+export const diceStreakPlayABI = [
   {
     "inputs": [
       {
@@ -638,4 +638,4 @@
     "stateMutability": "view",
     "type": "function"
   }
-]
+] as const;

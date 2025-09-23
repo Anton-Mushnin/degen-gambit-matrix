@@ -117,7 +117,7 @@ export async function commitRevealSpin<T = readonly bigint[]>(
   // REVEAL PHASE: Wait for outcome to be available
   let outcome: T | null = null;
   let retries = 0;
-
+  console.log("Waiting for outcome...");
   while (!outcome) {
     try {
       // Check if we need to create a new block before checking outcome
@@ -127,7 +127,7 @@ export async function commitRevealSpin<T = readonly bigint[]>(
       } else if (blockCheck.timeDiff !== undefined && blockCheck.timeDiff > 3) {
         console.log(`Latest block is ${blockCheck.timeDiff}s old, but no new block was created: ${blockCheck.message}`);
       }
-
+      
       outcome = await publicClient.readContract({
         ...viemContract,
         functionName: "inspectOutcome",
@@ -135,25 +135,26 @@ export async function commitRevealSpin<T = readonly bigint[]>(
       }) as T;
     } catch (error: unknown) {
       const errorMsg = error instanceof Error ? error.message : String(error);
-
+      
       // Known errors that can occur while waiting for the outcome to be available
       const knownErrors = ['WaitForTick()', 'InvalidBlockNumber', '0xd5dc642d', "Reveal block not yet mined"];
-
+      
       if (!knownErrors.some(err => errorMsg.includes(err))) {
         console.error("Unknown error while checking outcome:", errorMsg);
         throw new Error(errorMsg);
       }
-
+      
       console.log(`Waiting for outcome, retry ${retries + 1}/${maxRetries}...`);
       retries += 1;
-
+      
       if (retries > maxRetries) {
         throw new Error("Timeout waiting for outcome. Please try again.");
       }
-
+      
       await new Promise(resolve => setTimeout(resolve, retryDelay));
     }
   }
+  console.log("outcome", outcome);
 
   return {
     description: "Spin completed successfully",

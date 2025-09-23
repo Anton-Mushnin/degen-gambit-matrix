@@ -72,10 +72,13 @@ export async function handleCommitRevealAccept({
 
     const isBoost = input === "spin boost";
     const spinResult = await config.spinFunction(contractAddress, isBoost, activeAccount, client, publicClient);
+    console.log("spinResult", spinResult);
 
     // Default win detection: check if prize exists and is greater than 0
     const isWin = config.winDetection ? config.winDetection(spinResult) :
                    (spinResult.prize && Number(spinResult.prize) > 0);
+
+    console.log(spinResult.prize, Number(spinResult.prize) > 0, isWin);
 
     // Handle win state and auto-accept
     if (isWin) {

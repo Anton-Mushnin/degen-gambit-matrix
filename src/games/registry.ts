@@ -28,6 +28,16 @@ class GameRegistry {
         return Array.from(this.games.values());
     }
 
+    // Set default game
+    setDefaultGame(gameId: string): void {
+        if (this.games.has(gameId)) {
+            this.defaultGameId = gameId;
+            console.log(`Default game set to: ${gameId}`);
+        } else {
+            console.warn(`Cannot set default game to '${gameId}': game not found`);
+        }
+    }
+
     // Get default game
     getDefaultGame(): Game | null {
         if (this.defaultGameId) {

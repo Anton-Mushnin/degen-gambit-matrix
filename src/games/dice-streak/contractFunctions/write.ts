@@ -18,7 +18,7 @@ const diceStreakABI = [
   },
   {
     "inputs": [],
-    "name": "reveal",
+    "name": "accept",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -90,7 +90,7 @@ export const play = async (contractAddress: string, guess: number, client: Walle
   }
 };
 
-export const reveal = async (contractAddress: string, client: WalletClient | ThirdwebClient, publicClient: PublicClient, account?: Account) => {
+export const accept = async (contractAddress: string, client: WalletClient | ThirdwebClient, publicClient: PublicClient, account?: Account) => {
   if ('writeContract' in client) {
     // WalletClient
     const walletAccount = client.account;
@@ -102,7 +102,7 @@ export const reveal = async (contractAddress: string, client: WalletClient | Thi
       account: walletAccount,
       address: contractAddress,
       abi: diceStreakABI,
-      functionName: 'reveal',
+      functionName: 'accept',
       args: [],
       chain: null,
     });
@@ -130,10 +130,9 @@ export const reveal = async (contractAddress: string, client: WalletClient | Thi
       client,
     });
 
-    // Execute the reveal transaction
     const tx = prepareContractCall({
       contract,
-      method: "reveal",
+      method: "accept",
       params: [],
     });
 
