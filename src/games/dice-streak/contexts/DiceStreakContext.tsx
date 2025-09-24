@@ -1,10 +1,9 @@
-import React, { createContext, useContext, ReactNode, useState, useCallback } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
-import { useAccountToUse } from '../../../hooks';
+import React, { createContext, useContext, ReactNode, useState, useCallback, useEffect } from 'react';
 import { useTerminal } from '../../../hooks/useTerminal';
 
 interface GameState {
     isWin: boolean;
+    autoSpin: boolean;
     isProcessing: boolean;
     terminalQueue: {
         length: number;
@@ -14,6 +13,7 @@ interface GameState {
 
 interface GameActions {
     setIsWin: (isWin: boolean) => void;
+    toggleAutoSpin: () => void;
     handleInput: (input: string) => Promise<void>;
 }
 
@@ -26,14 +26,22 @@ interface DiceStreakProviderProps {
 }
 
 export const DiceStreakProvider: React.FC<DiceStreakProviderProps> = ({ children }) => {
-    const queryClient = useQueryClient();
-    const { address: playerAddress } = useAccountToUse();
-
     const [isWin, setIsWin] = useState(false);
+    const [autoSpin, setAutoSpin] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
+
+    const toggleAutoSpin = useCallback(() => {
+        setAutoSpin(prev => !prev);
+    }, []);
+
+    useEffect(() => {
+        console.log(isWin);
+    }, [isWin]);
 
     const gameParams = {
         setIsWin,
+        onAutoSpinToggle: toggleAutoSpin,
+        autoSpin,
     };
 
     const { handleInput: terminalHandleInput, outputQueue, setOutputQueue } = useTerminal(gameParams);
@@ -48,13 +56,31 @@ export const DiceStreakProvider: React.FC<DiceStreakProviderProps> = ({ children
 
         try {
             const result = await terminalHandleInput(input);
-            if (result?.output) {
+            if (result?.output && !result.outcome) {
+                const outputText = result.output.join('\n');
+                if (outputText) {
+                    setOutputQueue(prev => [...prev, {text: outputText, toType: false}]);
+                }
+            } else if (result?.outcome) {
+                if (autoSpin && input.startsWith('play')) {
+                    setTimeout(() => {
+                        handleInput('play 1');
+                    }, result.isPrize ? 22000 : 13000);
+                }
+                if (result.outcome && Array.isArray(result.outcome) && result.outcome.length > 0) {
+                    setOutputQueue(prev => [...prev, {text: (result.outcome as bigint[]).map(o => o.toString()).join(' '), toType: false}]);
+                }
                 const outputText = result.output.join('\n');
                 if (outputText) {
                     setOutputQueue(prev => [...prev, {text: outputText, toType: false}]);
                 }
             }
         } catch (error) {
+            if (autoSpin && input.startsWith('play')) {
+                setTimeout(() => {
+                    handleInput('play 1');
+                }, 13000);
+            }
             console.error('DiceStreak input error:', error);
             setOutputQueue(prev => [...prev, {text: 'Error processing command', toType: false}]);
         } finally {
@@ -64,12 +90,14 @@ export const DiceStreakProvider: React.FC<DiceStreakProviderProps> = ({ children
 
     const gameState: GameState = {
         isWin,
+        autoSpin,
         isProcessing,
         terminalQueue: outputQueue,
     };
 
     const gameActions: GameActions = {
         setIsWin,
+        toggleAutoSpin,
         handleInput,
     };
 

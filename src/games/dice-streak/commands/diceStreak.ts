@@ -2,6 +2,7 @@
 import { CommandDefinition, CommandPattern } from '../../../commands/types';
 import {
     handlePlay,
+    handleAuto,
     handleAccept,
 } from './diceStreak.handlers';
 import { TerminalCommandParams } from '../../../utils/gameHandlers';
@@ -25,6 +26,15 @@ export const diceStreakCommands: CommandDefinition<TerminalCommandParams>[] = [
             usage: 'play <number> (1-6)'
         },
         handler: handlePlay
+    },
+    {
+        pattern: {
+            pattern: /^auto$/,
+            name: 'auto',
+            description: 'Toggle auto play',
+            usage: 'auto'
+        },
+        handler: handleAuto
     },
     {
         pattern: {
