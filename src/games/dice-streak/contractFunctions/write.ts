@@ -7,24 +7,7 @@ import { waitForReceipt } from 'thirdweb/transaction';
 import { getViemChainById } from '../../../config/networks';
 import { getBetAmount } from './read';
 import { commitRevealSpin } from '../../../utils/commitRevealSpin';
-
-// Define DiceStreak ABI for write functions
-const diceStreakABI = [
-  {
-    "inputs": [{"internalType": "uint8", "name": "guess", "type": "uint8"}],
-    "name": "play",
-    "outputs": [],
-    "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "accept",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  }
-] as const;
+import { diceStreakABI } from '../../../ABIs/DiceStreak.abi';
 
 export type DiceStreakPlayResult = {
   description: string;
