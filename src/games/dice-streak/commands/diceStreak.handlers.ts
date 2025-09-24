@@ -1,6 +1,6 @@
 import { handleCommitRevealAccept, TerminalCommandParams } from "../../../utils/gameHandlers";
 import { commitRevealSpin } from '../../../utils/commitRevealSpin';
-import { accept } from '../utils/commands';
+import { accept } from '../contractFunctions/write';
 import { diceStreakABI } from '../../../ABIs/DiceStreak.abi';
 
 declare global {
