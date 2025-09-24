@@ -1,3 +1,4 @@
+import { diceStreakGame } from '..';
 import GameStream from '../../../components/GameStream';
 import { diceStreakStreamConfig } from '../config/streamConfig';
 
@@ -29,13 +30,11 @@ const diceStreakABI = [
   }
 ] as const;
 
-// Contract address from deployment
-const CONTRACT_ADDRESS = '0x73380E6f3C2f9d3811f6Ab13A6623906ecFCa9AD';
 
 const Stream: React.FC = () => {
   return (
     <GameStream
-      contractAddress={CONTRACT_ADDRESS}
+      contractAddress={diceStreakGame.config.contractAddress as string}
       abi={diceStreakABI}
       eventConfigs={diceStreakStreamConfig}
     />

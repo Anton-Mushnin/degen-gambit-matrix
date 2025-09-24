@@ -15,13 +15,11 @@ import {
     getAllStatistics 
 } from './contractFunctions/read';
 import { DataItem } from '../types';
+import { diceStreakGame } from '.';
 
 export const privateKey = import.meta.env.VITE_PRIVATE_KEY;
 export const privateKeyAddress = privateKey ? privateKeyToAccount(privateKey).address : undefined;
 
-// Contract address from deployment
-const CONTRACT_ADDRESS = '0x73380E6f3C2f9d3811f6Ab13A6623906ecFCa9AD';
-const NETWORK_ID = 37714555429; // XAI Testnet
 
 export const createContractData = ({
     publicClient,
@@ -33,15 +31,15 @@ export const createContractData = ({
     {
         type: 'query',
         label: 'Bank Balance: ',
-        queryKey: ['bankBalance', CONTRACT_ADDRESS],
-        queryFn: () => getBankBalance(CONTRACT_ADDRESS, publicClient),
+        queryKey: ['bankBalance', diceStreakGame.config.contractAddress as string],
+        queryFn: () => getBankBalance(diceStreakGame.config.contractAddress as string, publicClient),
         onDataUpdate
     },
     {
         type: 'static',
         label: 'Contract Address: ',
         data: {
-            formatted: CONTRACT_ADDRESS.slice(0, 6) + '...' + CONTRACT_ADDRESS.slice(-4),
+            formatted: (diceStreakGame.config.contractAddress as string).slice(0, 6) + '...' + (diceStreakGame.config.contractAddress as string).slice(-4),
             value: BigInt(0),
             decimals: 0
         },
@@ -50,23 +48,23 @@ export const createContractData = ({
     {
         type: 'query',
         label: 'Bet Amount: ',
-        queryKey: ['betAmount', CONTRACT_ADDRESS],
-        queryFn: () => getBetAmount(CONTRACT_ADDRESS, publicClient),
+        queryKey: ['betAmount', diceStreakGame.config.contractAddress as string],
+        queryFn: () => getBetAmount(diceStreakGame.config.contractAddress as string, publicClient),
         onDataUpdate
     },
     {
         type: 'query',
         label: 'Payout Multiplier: ',
-        queryKey: ['payoutMultiplier', CONTRACT_ADDRESS],
-        queryFn: () => getPayoutMultiplier(CONTRACT_ADDRESS, publicClient),
+        queryKey: ['payoutMultiplier', diceStreakGame.config.contractAddress as string],
+        queryFn: () => getPayoutMultiplier(diceStreakGame.config.contractAddress as string, publicClient),
         onDataUpdate
     },
     {
         type: 'query',
         label: 'Best Combo: ',
-        queryKey: ['bestCombo', CONTRACT_ADDRESS],
+        queryKey: ['bestCombo', diceStreakGame.config.contractAddress as string],
         queryFn: async () => {
-            const combo = await getBestCombo(CONTRACT_ADDRESS, publicClient);
+            const combo = await getBestCombo(diceStreakGame.config.contractAddress as string, publicClient);
             return {
                 value: BigInt(combo.streakFaces.length),
                 formatted: combo.formatted,
@@ -78,9 +76,9 @@ export const createContractData = ({
     {
         type: 'query',
         label: 'Statistics: ',
-        queryKey: ['allStatistics', CONTRACT_ADDRESS],
+        queryKey: ['allStatistics', diceStreakGame.config.contractAddress as string],
         queryFn: async () => {
-            const stats = await getAllStatistics(CONTRACT_ADDRESS, publicClient);
+            const stats = await getAllStatistics(diceStreakGame.config.contractAddress as string, publicClient);
             const formatted = stats.map(stat => 
                 `${stat.number}: ${stat.formatted}`
             ).join(' | ');
@@ -117,15 +115,15 @@ export const createPlayerData = ({
         type: 'query',
         label: 'Player Balance: ',
         queryKey: ['playerBalance', playerAddress],
-        queryFn: () => getBalance(wagmiConfig, {address: playerAddress, chainId: NETWORK_ID as any}),
+        queryFn: () => getBalance(wagmiConfig, {address: playerAddress, chainId: diceStreakGame.network.id as any}),
         onDataUpdate
     },
     {
         type: 'query',
         label: 'Current Streak: ',
-        queryKey: ['playerStreak', CONTRACT_ADDRESS, playerAddress],
+        queryKey: ['playerStreak', diceStreakGame.config.contractAddress as string, playerAddress],
         queryFn: async () => {
-            const streak = await getPlayerStreak(CONTRACT_ADDRESS, playerAddress, publicClient);
+            const streak = await getPlayerStreak(diceStreakGame.config.contractAddress as string, playerAddress, publicClient);
             return {
                 value: BigInt(streak.value.length),
                 formatted: streak.formatted,
@@ -137,16 +135,16 @@ export const createPlayerData = ({
     {
         type: 'query',
         label: 'Total Winnings: ',
-        queryKey: ['playerTotalWinnings', CONTRACT_ADDRESS, playerAddress],
-        queryFn: () => getPlayerTotalWinnings(CONTRACT_ADDRESS, playerAddress, publicClient),
+        queryKey: ['playerTotalWinnings', diceStreakGame.config.contractAddress as string, playerAddress],
+        queryFn: () => getPlayerTotalWinnings(diceStreakGame.config.contractAddress as string, playerAddress, publicClient),
         onDataUpdate
     },
     {
         type: 'query',
         label: 'Game Status: ',
-        queryKey: ['gameStatus', CONTRACT_ADDRESS, playerAddress],
+        queryKey: ['gameStatus', diceStreakGame.config.contractAddress as string, playerAddress],
         queryFn: async () => {
-            const status = await getGameStatus(CONTRACT_ADDRESS, playerAddress, publicClient);
+            const status = await getGameStatus(diceStreakGame.config.contractAddress as string, playerAddress, publicClient);
             return {
                 value: BigInt(Number(status.value)),
                 formatted: status.formatted,
@@ -158,9 +156,9 @@ export const createPlayerData = ({
     {
         type: 'query',
         label: 'Last Bet Result: ',
-        queryKey: ['lastBetResult', CONTRACT_ADDRESS, playerAddress],
+        queryKey: ['lastBetResult', diceStreakGame.config.contractAddress as string, playerAddress],
         queryFn: async () => {
-            const result = await getLastBetResult(CONTRACT_ADDRESS, playerAddress, publicClient);
+            const result = await getLastBetResult(diceStreakGame.config.contractAddress as string, playerAddress, publicClient);
             return {
                 value: BigInt(Number(result.value)),
                 formatted: result.formatted,
