@@ -1,7 +1,7 @@
 import { handleCommitRevealAccept, TerminalCommandParams } from "../../../utils/gameHandlers";
 import { commitRevealSpin } from '../../../utils/commitRevealSpin';
 import { accept } from '../utils/commands';
-import { diceStreakPlayABI } from '../../../ABIs/DiceStreak.abi';
+import { diceStreakABI } from '../../../ABIs/DiceStreak.abi';
 
 declare global {
     interface Window {
@@ -36,7 +36,7 @@ export async function handlePlay({ input, params }: { input: string; params: Ter
         // Get the bet amount
         const viemContract = {
             address: contractAddress,
-            abi: diceStreakPlayABI,
+            abi: diceStreakABI,
         } as const;
 
         const betAmount = await publicClient.readContract({
@@ -47,7 +47,7 @@ export async function handlePlay({ input, params }: { input: string; params: Ter
         // Use commitRevealSpin for both commit and reveal phases
         const result = await commitRevealSpin({
             contractAddress,
-            contractABI: diceStreakPlayABI,
+            contractABI: diceStreakABI,
             spinFunctionName: 'play',
             spinArgs: [guess],
             value: betAmount,
@@ -57,10 +57,14 @@ export async function handlePlay({ input, params }: { input: string; params: Ter
             chainId,
         });
 
+        // Extract prize from outcome - DiceStreak inspectOutcome returns [prizeValue, description]
+        const outcome = result.outcome as readonly [bigint, string];
+        const prizeValue = Number(outcome[0]);
+
         return {
             description: `Bet committed for guess ${guess}. Results revealed.`,
             outcome: result.outcome,
-            prize: result.prize || '0',
+            prize: prizeValue > 0 ? prizeValue.toString() : '0',
             prizeType: 0,
             receipt: result.receipt,
         };
@@ -73,8 +77,8 @@ export async function handlePlay({ input, params }: { input: string; params: Ter
             spinFunction: diceStreakCommit,
             onWinState: setIsWin,
             onAccept: accept,
-            winDelay: 3000, // Time to wait before showing win state (for pending bets)
-            acceptDelay: 1000, // Minimal delay since accept() processes immediately
+            winDelay: 8000, // Time to wait before showing win state (for pending bets)
+            acceptDelay: 18000, // Minimal delay since accept() processes immediately
         }
     });
 
@@ -83,6 +87,14 @@ export async function handlePlay({ input, params }: { input: string; params: Ter
         ...result,
         isPrize: typeof result.isPrize === 'boolean' ? result.isPrize : undefined
     };
+}
+
+export async function handleAuto({ params }: { params: TerminalCommandParams }) {
+    const { gameParams } = params;
+    const { onAutoSpinToggle, autoSpin } = gameParams;
+    const output = [`Auto play: ${!autoSpin}`];
+    onAutoSpinToggle?.();
+    return { output };
 }
 
 export async function handleAccept({ params }: { params: TerminalCommandParams }) {

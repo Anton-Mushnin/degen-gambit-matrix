@@ -2,28 +2,8 @@ import { Account } from 'thirdweb/wallets';
 import { ThirdwebClient } from 'thirdweb';
 import { PublicClient } from 'viem';
 import { commitRevealSpin } from '../../../utils/commitRevealSpin';
+import { diceStreakABI } from '../../../ABIs/DiceStreak.abi';
 
-// ABI for accept function
-const diceStreakABI = [
-  {
-    "inputs": [],
-    "name": "accept",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  }
-] as const;
-
-// ABI for play function
-const diceStreakPlayABI = [
-  {
-    "inputs": [{"internalType": "uint8", "name": "guess", "type": "uint8"}],
-    "name": "play",
-    "outputs": [],
-    "stateMutability": "payable",
-    "type": "function"
-  }
-] as const;
 
 export type DiceStreakPlayResult = {
   description: string;
@@ -59,7 +39,7 @@ export const play = async (
     // Get the bet amount
     const viemContract = {
       address: contractAddress,
-      abi: diceStreakPlayABI,
+      abi: diceStreakABI,
     } as const;
 
     const betAmount = await publicClient.readContract({
@@ -70,7 +50,7 @@ export const play = async (
     // Use commitRevealSpin for both commit and reveal phases
     const result = await commitRevealSpin({
       contractAddress,
-      contractABI: diceStreakPlayABI,
+      contractABI: diceStreakABI,
       spinFunctionName: 'play',
       spinArgs: [guess],
       value: betAmount,

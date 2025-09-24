@@ -1,4 +1,4 @@
-export const diceStreakPlayABI = [
+export const diceStreakABI = [
   {
     "inputs": [
       {
