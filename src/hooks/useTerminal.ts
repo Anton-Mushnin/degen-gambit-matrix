@@ -4,14 +4,14 @@ import { useEffect, useMemo, useState } from "react";
 // Local imports
 import { CommandDispatcher } from '../commands/dispatcher';
 import { CommandDefinition } from '../commands/types';
-import { DegenGambitCommandParams, TerminalCommandParams } from '../games/degen-gambit/commands/degenGambit';
+import { TerminalCommandParams } from '../games/degen-gambit/commands/degenGambit';
 import { loggingMiddleware, errorHandlingMiddleware } from '../commands/middleware';
 import { gameManagementCommands, GameManagementParams } from '../commands/commands/gameManagement';
 
 // Custom hooks
 import { useBlockchain } from './useBlockchain';
 
-export const useTerminal = (gameParams: DegenGambitCommandParams) => {
+export const useTerminal = (gameParams: any) => {
     const { activeAccount, client, publicClient, displayName, gameContext } = useBlockchain();
     const [outputQueue, setOutputQueue] = useState<{text: string, toType: boolean}[]>([]);
     const [welcomeShown, setWelcomeShown] = useState(false);

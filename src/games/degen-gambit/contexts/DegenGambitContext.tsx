@@ -3,7 +3,6 @@ import { numbers } from '../../../config/symbols';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAccountToUse } from '../../../hooks';
 import { useTerminal } from '../../../hooks/useTerminal';
-import { DegenGambitCommandParams } from '../commands/degenGambit';
 
 const phrasesToType = ['Wake up', 'The Matrix', 'Prize'];
 
@@ -55,7 +54,7 @@ export const DegenGambitProvider: React.FC<DegenGambitProviderProps> = ({ childr
         return userNumbers;
     }, [userNumbers]);
 
-    const gameParams: DegenGambitCommandParams = {
+    const gameParams: any = {
         onSetNumbers: setUserNumbers,
         getCurrentNumbers,
         onAutoSpinToggle: toggleAutoSpin,
