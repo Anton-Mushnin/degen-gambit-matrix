@@ -2,6 +2,8 @@
 import React from 'react';
 import { CommandDefinition } from '../commands/types';
 import { Chain } from 'viem';
+import { GenericGameContext } from '../components/GameMain';
+import { EventConfig } from '../components/GameStream';
 
 // Base game interface that all games must implement
 export interface Game {
@@ -11,10 +13,10 @@ export interface Game {
     version: string;
     commands: CommandDefinition<unknown>[];
     components: {
-        main: React.ComponentType<unknown>;
+        main: GameMainConfig | React.ComponentType<unknown>;
         rules?: React.ComponentType<unknown>;
-        contractInfo?: React.ComponentType<unknown>;
-        stream?: React.ComponentType<unknown>;
+        contractInfo?: GameContractInfoConfig;
+        stream?: GameStreamConfig;
     };
     hooks: {
         [key: string]: (...args: unknown[]) => unknown;
@@ -78,3 +80,24 @@ export interface StaticDataItem {
 }
 
 export type DataItem = QueryDataItem | StaticDataItem;
+
+// Component configuration interfaces
+export interface GameMainConfig {
+  useGameContext: () => GenericGameContext;
+}
+
+export interface GameContractInfoConfig {
+  createDataItems: (params: {
+    publicClient: any;
+    activeAccount?: any;
+    displayName?: string;
+    queryClient?: any;
+    privateKeyAddress?: string;
+  }) => { contractData: DataItem[]; playerData: DataItem[] };
+}
+
+export interface GameStreamConfig {
+  contractAddress: string;
+  abi: any;
+  eventConfigs: EventConfig[];
+}

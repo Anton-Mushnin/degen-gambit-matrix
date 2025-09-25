@@ -9,7 +9,7 @@ import { commitRevealSpin } from '../../utils/commitRevealSpin.ts';
 import { ThirdwebClient } from 'thirdweb';
 import { viemAdapter } from 'thirdweb/adapters/viem';
 import { getViemChainById } from '../../config/networks.ts';
-import { degenGambitGame } from './index.ts';
+import { degenGambitGame } from './index';
 
 
     // Helper function to get the current block number and calculate blocks remaining

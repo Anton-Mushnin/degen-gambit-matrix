@@ -3,12 +3,12 @@ import { numbers } from '../../../config/symbols';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAccountToUse } from '../../../hooks';
 import { useTerminal } from '../../../hooks/useTerminal';
+import { useWinEffect } from '../../../contexts/WinEffectContext';
 
 const phrasesToType = ['Wake up', 'The Matrix', 'Prize'];
 
 interface GameState {
     userNumbers: number[];
-    isWin: boolean;
     autoSpin: boolean;
     isSpinning: boolean;
     isProcessing: boolean;
@@ -21,10 +21,10 @@ interface GameState {
 
 interface GameActions {
     setUserNumbers: (numbers: number[]) => void;
-    setIsWin: (isWin: boolean) => void;
     toggleAutoSpin: () => void;
     getCurrentNumbers: () => number[];
     handleInput: (input: string) => Promise<void>;
+    triggerWinEffect: (outcome?: any) => void;
 }
 
 type DegenGambitContextType = [GameState, GameActions];
@@ -38,9 +38,9 @@ interface DegenGambitProviderProps {
 export const DegenGambitProvider: React.FC<DegenGambitProviderProps> = ({ children }) => {
     const queryClient = useQueryClient();
     const { address: playerAddress } = useAccountToUse();
-    
+    const { triggerWinEffect } = useWinEffect();
+
     const [userNumbers, setUserNumbers] = useState<number[]>(numbers);
-    const [isWin, setIsWin] = useState(false);
     const [autoSpin, setAutoSpin] = useState(false);
     const [isSpinning, setIsSpinning] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
@@ -49,6 +49,12 @@ export const DegenGambitProvider: React.FC<DegenGambitProviderProps> = ({ childr
     const toggleAutoSpin = useCallback(() => {
         setAutoSpin(prev => !prev);
     }, []);
+
+    const setIsWin = useCallback((isWin: boolean, outcome?: any) => {
+        if (isWin) {
+            triggerWinEffect(outcome);
+        }
+    }, [triggerWinEffect]);
 
     const getCurrentNumbers = useCallback(() => {
         return userNumbers;
@@ -126,7 +132,6 @@ export const DegenGambitProvider: React.FC<DegenGambitProviderProps> = ({ childr
 
     const gameState: GameState = {
         userNumbers,
-        isWin,
         autoSpin,
         isSpinning,
         isProcessing,
@@ -136,10 +141,10 @@ export const DegenGambitProvider: React.FC<DegenGambitProviderProps> = ({ childr
 
     const gameActions: GameActions = {
         setUserNumbers,
-        setIsWin,
         toggleAutoSpin,
         getCurrentNumbers,
         handleInput,
+        triggerWinEffect,
     };
 
     const contextValue: DegenGambitContextType = [gameState, gameActions];

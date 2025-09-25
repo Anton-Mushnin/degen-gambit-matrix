@@ -1,4 +1,7 @@
 import { useGameContext } from "../contexts/GameContext";
+import GameMain from "./GameMain";
+import GameContractInfo from "./GameContractInfo";
+import GameStream from "./GameStream";
 import styles from "./Home.module.css";
 
 const Home = () => {
@@ -32,13 +35,35 @@ const Home = () => {
         );
     }
 
-    // Get game components
+    // Get game components and configurations
     const components = activeGame.components;
-    const MainComponent = components.main;
-    const RulesComponent = components.rules;
-    const ContractInfoComponent = components.contractInfo;
-    const StreamComponent = components.stream;
     const GameContextProvider = activeGame.context;
+
+    // Instantiate main component - either generic or custom
+    let MainComponent: React.ComponentType | null = null;
+    if (components.main) {
+      if (typeof components.main === 'function') {
+        // Custom component (like DegenGambitMain)
+        MainComponent = components.main as React.ComponentType;
+      } else {
+        // Generic GameMainConfig
+        MainComponent = () => <GameMain useGameContext={(components.main as any).useGameContext} />;
+      }
+    }
+    const RulesComponent = components.rules;
+    const ContractInfoComponent = components.contractInfo ? () => (
+        <GameContractInfo
+            createDataItems={components.contractInfo!.createDataItems}
+        />
+    ) : null;
+    const StreamComponent = components.stream ? () => (
+        <GameStream
+            contractAddress={components.stream!.contractAddress}
+            abi={components.stream!.abi}
+            eventConfigs={components.stream!.eventConfigs}
+            chainId={activeGame.network.id}
+        />
+    ) : null;
 
     const gameContent = (
         <div className={styles.container}>

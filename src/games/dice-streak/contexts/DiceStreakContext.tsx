@@ -1,8 +1,8 @@
-import React, { createContext, useContext, ReactNode, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, ReactNode, useState, useCallback } from 'react';
 import { useTerminal } from '../../../hooks/useTerminal';
+import { useWinEffect } from '../../../contexts/WinEffectContext';
 
 interface GameState {
-    isWin: boolean;
     autoSpin: boolean;
     isProcessing: boolean;
     terminalQueue: {
@@ -12,9 +12,9 @@ interface GameState {
 }
 
 interface GameActions {
-    setIsWin: (isWin: boolean) => void;
     toggleAutoSpin: () => void;
     handleInput: (input: string) => Promise<void>;
+    triggerWinEffect: (outcome?: any) => void;
 }
 
 type DiceStreakContextType = [GameState, GameActions];
@@ -26,17 +26,19 @@ interface DiceStreakProviderProps {
 }
 
 export const DiceStreakProvider: React.FC<DiceStreakProviderProps> = ({ children }) => {
-    const [isWin, setIsWin] = useState(false);
     const [autoSpin, setAutoSpin] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
+    const { triggerWinEffect } = useWinEffect();
 
     const toggleAutoSpin = useCallback(() => {
         setAutoSpin(prev => !prev);
     }, []);
 
-    useEffect(() => {
-        console.log(isWin);
-    }, [isWin]);
+    const setIsWin = useCallback((isWin: boolean, outcome?: any) => {
+        if (isWin) {
+            triggerWinEffect(outcome);
+        }
+    }, [triggerWinEffect]);
 
     const gameParams = {
         setIsWin,
@@ -89,16 +91,15 @@ export const DiceStreakProvider: React.FC<DiceStreakProviderProps> = ({ children
     };
 
     const gameState: GameState = {
-        isWin,
         autoSpin,
         isProcessing,
         terminalQueue: outputQueue,
     };
 
     const gameActions: GameActions = {
-        setIsWin,
         toggleAutoSpin,
         handleInput,
+        triggerWinEffect,
     };
 
     return (

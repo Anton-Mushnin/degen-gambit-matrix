@@ -3,7 +3,6 @@ import { watchContractEvent } from '@wagmi/core';
 import { wagmiConfig } from '../config/index.ts';
 import { useQueryClient } from '@tanstack/react-query';
 import { useActiveAccount } from 'thirdweb/react';
-import { degenGambitGame } from '../games/degen-gambit/index.ts';
 import styles from './GameStream.module.css';
 
 export interface StreamEvent {
@@ -26,13 +25,15 @@ export interface GameStreamProps {
   contractAddress: string;
   abi: any;
   eventConfigs: EventConfig[];
+  chainId?: number;
   className?: string;
 }
 
 const GameStream: React.FC<GameStreamProps> = ({
   contractAddress,
   abi,
-  eventConfigs
+  eventConfigs,
+  chainId = 37714555429 // Default to XAI testnet
 }) => {
   const [events, setEvents] = useState<StreamEvent[]>([]);
   const activeAccount = useActiveAccount();
@@ -71,7 +72,7 @@ const GameStream: React.FC<GameStreamProps> = ({
     eventConfigs.forEach(config => {
       const unwatch = watchContractEvent(wagmiConfig, {
         address: contractAddress,
-        chainId: degenGambitGame.network.id as any,
+        chainId: chainId as any,
         abi,
         eventName: config.eventName,
         onLogs: (logs) => {
@@ -92,7 +93,7 @@ const GameStream: React.FC<GameStreamProps> = ({
     return () => {
       unwatchers.forEach(unwatch => unwatch());
     };
-  }, [contractAddress, abi, eventConfigs, activeAccount?.address, degenGambitGame.network.id]);
+  }, [contractAddress, abi, eventConfigs, activeAccount?.address, chainId]);
 
   return (
     <div className={styles.container} ref={containerRef}>

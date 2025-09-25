@@ -9,16 +9,16 @@ const RandomNumbers = ({result, duration}: {result?: string, duration?: number})
         let timer: ReturnType<typeof setTimeout> | null = null;
         if (result && duration) {
             timer = setTimeout(() => {
-            setText(result); 
+            setText(result);
             if (intervalIdRef.current) clearInterval(intervalIdRef.current);
             }, duration);
         }
-        
+
         intervalIdRef.current = setInterval(() => {
             const randomNum = Math.floor(1000 + Math.random() * 9000);
             setText(randomNum.toString());
-        }, 50); 
-        
+        }, 50);
+
         return () => {
             if (timer) clearTimeout(timer);
             if (intervalIdRef.current) clearInterval(intervalIdRef.current);
