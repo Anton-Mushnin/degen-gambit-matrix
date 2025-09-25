@@ -5,11 +5,13 @@ import { degenGambitCommands } from './commands/degenGambit';
 import { NETWORKS } from '../../config/networks';
 
 // Import generic components
+import GameMain from '../../components/GameMain';
 import GameContractInfo from '../../components/GameContractInfo';
 import GameStream from '../../components/GameStream';
 
 // Import DegenGambit-specific components
-import DegenGambitMain from './components/DegenGambitMain';
+import RandomNumbers from './components/RandomNumbers';
+import styles from './components/MatrixTerminal.module.css';
 
 // Import configurations and functions
 import { createContractData, createDegenData, privateKeyAddress } from './info';
@@ -20,10 +22,30 @@ import { degenGambitABI } from '../../ABIs/DegenGambit.abi';
 import { DegenGambitProvider } from './contexts/DegenGambitContext';
 import { useDegenGambitContext } from './contexts/DegenGambitContext';
 
-// Create DegenGambit main component wrapper
-const DegenGambitMainWrapper = () => (
-  <DegenGambitMain useGameContext={useDegenGambitContext} />
-);
+// Create display components for different game states
+const DegenGambitProcessingComponent = ({ isSpinning }: { isSpinning?: boolean }) => {
+  if (!isSpinning) return null;
+
+  return (
+    <div className={styles.spinningContainer}>
+      <RandomNumbers />
+      <RandomNumbers />
+      <RandomNumbers />
+    </div>
+  );
+};
+
+const DegenGambitOutcomeComponent = ({ outcome }: { outcome?: any[] }) => {
+  if (!outcome || outcome.length === 0) return null;
+
+  return (
+    <div className={styles.spinningContainer}>
+      {outcome.map((item: string, index: number) => (
+        <RandomNumbers key={index} result={item} duration={2000 + index * 2000} />
+      ))}
+    </div>
+  );
+};
 
 // Create data items wrapper for generic component
 const createDegenGambitDataItems = ({ publicClient, activeAccount, displayName, queryClient }: any) => {
@@ -56,7 +78,13 @@ export const degenGambitGame: Game = {
     version: '1.0.0',
     commands: degenGambitCommands as CommandDefinition<unknown>[],
     components: {
-        main: DegenGambitMainWrapper,
+        main: {
+            useGameContext: useDegenGambitContext,
+            displayComponents: {
+                processingComponent: DegenGambitProcessingComponent,
+                outcomeComponent: DegenGambitOutcomeComponent,
+            },
+        },
         contractInfo: {
             createDataItems: createDegenGambitDataItems
         },
@@ -89,6 +117,13 @@ const StreamWrapper: React.FC = () => React.createElement(GameStream, {
 });
 
 // Export individual components and hooks for backward compatibility
+const DegenGambitMainWrapper: React.FC = () => React.createElement(GameMain, {
+  useGameContext: useDegenGambitContext,
+  displayComponents: {
+    processingComponent: DegenGambitProcessingComponent,
+    outcomeComponent: DegenGambitOutcomeComponent,
+  },
+});
 export { DegenGambitMainWrapper as DegenGambit };
 export { ContractInfoWrapper as ContractInfo };
 export { StreamWrapper as Stream };

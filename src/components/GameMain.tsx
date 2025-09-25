@@ -8,6 +8,10 @@ export interface GenericGameState {
     length: number;
     shift: () => { text: string; toType: boolean } | undefined;
   };
+  // Optional properties that games can use for display components
+  isSpinning?: boolean;
+  outcome?: any[];
+  gameStatus?: any;
 }
 
 export interface GenericGameActions {
@@ -17,21 +21,57 @@ export interface GenericGameActions {
 
 export type GenericGameContext = [GenericGameState, GenericGameActions];
 
-export interface GameMainProps {
-  useGameContext: () => GenericGameContext;
+// Interface for components that can be displayed during different game states
+export interface GameDisplayComponents {
+  // Component to display when processing/spinning
+  processingComponent?: React.ComponentType<any>;
+  // Component to display when showing outcomes/results
+  outcomeComponent?: React.ComponentType<any>;
+  // Component to display during general game status
+  statusComponent?: React.ComponentType<any>;
 }
 
-const GameMain: React.FC<GameMainProps> = ({ useGameContext }) => {
+export interface GameMainProps {
+  useGameContext: () => GenericGameContext;
+  displayComponents?: GameDisplayComponents;
+}
+
+const GameMain: React.FC<GameMainProps> = ({ useGameContext, displayComponents }) => {
   const [gameState, gameActions] = useGameContext();
-  const { isProcessing, terminalQueue } = gameState;
+  const { isProcessing, isSpinning, outcome, gameStatus, terminalQueue } = gameState;
+
+  // Determine what component to render based on game state
+  const renderDisplayComponent = () => {
+    if (!displayComponents) return null;
+
+    // Priority: outcome > spinning > status
+    if (outcome && outcome.length > 0 && displayComponents.outcomeComponent) {
+      const OutcomeComponent = displayComponents.outcomeComponent;
+      return <OutcomeComponent outcome={outcome} />;
+    }
+
+    if (isSpinning && displayComponents.processingComponent) {
+      const ProcessingComponent = displayComponents.processingComponent;
+      return <ProcessingComponent isSpinning={isSpinning} />;
+    }
+
+    if (gameStatus && displayComponents.statusComponent) {
+      const StatusComponent = displayComponents.statusComponent;
+      return <StatusComponent gameStatus={gameStatus} />;
+    }
+
+    return null;
+  };
 
   return (
     <div style={{ position: 'relative', width: '100%', maxHeight: '100%', height: '100%', paddingTop: '20px' }}>
       <Terminal
         queue={terminalQueue}
         onSubmit={gameActions.handleInput}
-        isInputDisabled={isProcessing}
-      />
+        isInputDisabled={isProcessing || Boolean(outcome && outcome.length > 0)}
+      >
+        {renderDisplayComponent()}
+      </Terminal>
     </div>
   );
 };

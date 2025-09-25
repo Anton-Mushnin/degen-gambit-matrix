@@ -2,7 +2,7 @@
 import React from 'react';
 import { CommandDefinition } from '../commands/types';
 import { Chain } from 'viem';
-import { GenericGameContext } from '../components/GameMain';
+import { GenericGameContext, GameDisplayComponents } from '../components/GameMain';
 import { EventConfig } from '../components/GameStream';
 
 // Base game interface that all games must implement
@@ -84,6 +84,7 @@ export type DataItem = QueryDataItem | StaticDataItem;
 // Component configuration interfaces
 export interface GameMainConfig {
   useGameContext: () => GenericGameContext;
+  displayComponents?: GameDisplayComponents;
 }
 
 export interface GameContractInfoConfig {

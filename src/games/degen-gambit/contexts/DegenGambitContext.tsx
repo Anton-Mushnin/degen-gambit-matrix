@@ -24,7 +24,7 @@ interface GameActions {
     toggleAutoSpin: () => void;
     getCurrentNumbers: () => number[];
     handleInput: (input: string) => Promise<void>;
-    triggerWinEffect: (outcome?: any) => void;
+    setIsWin: (isWin: boolean) => void;
 }
 
 type DegenGambitContextType = [GameState, GameActions];
@@ -50,11 +50,12 @@ export const DegenGambitProvider: React.FC<DegenGambitProviderProps> = ({ childr
         setAutoSpin(prev => !prev);
     }, []);
 
-    const setIsWin = useCallback((isWin: boolean, outcome?: any) => {
+    const setIsWin = useCallback((isWin: boolean) => {
         if (isWin) {
+            // Get the current outcome from the state
             triggerWinEffect(outcome);
         }
-    }, [triggerWinEffect]);
+    }, [triggerWinEffect, outcome]);
 
     const getCurrentNumbers = useCallback(() => {
         return userNumbers;
@@ -144,7 +145,7 @@ export const DegenGambitProvider: React.FC<DegenGambitProviderProps> = ({ childr
         toggleAutoSpin,
         getCurrentNumbers,
         handleInput,
-        triggerWinEffect,
+        setIsWin,
     };
 
     const contextValue: DegenGambitContextType = [gameState, gameActions];

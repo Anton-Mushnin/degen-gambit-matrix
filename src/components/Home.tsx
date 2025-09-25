@@ -47,7 +47,8 @@ const Home = () => {
         MainComponent = components.main as React.ComponentType;
       } else {
         // Generic GameMainConfig
-        MainComponent = () => <GameMain useGameContext={(components.main as any).useGameContext} />;
+        const mainConfig = components.main as any;
+        MainComponent = () => <GameMain useGameContext={mainConfig.useGameContext} displayComponents={mainConfig.displayComponents} />;
       }
     }
     const RulesComponent = components.rules;
