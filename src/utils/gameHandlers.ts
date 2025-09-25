@@ -20,7 +20,7 @@ export type AcceptResult = {
 
 export type CommitRevealAcceptParams = {
     spinFunction: (contractAddress: string, isBoost: boolean, activeAccount: Account | undefined, client: ThirdwebClient, publicClient: PublicClient) => Promise<SpinResult>;
-    onWinState?: (isWin: boolean) => void;
+    onWinState?: (isWin: boolean, outcome?: any) => void;
     onAccept?: (contractAddress: string, activeAccount: Account | undefined, client: ThirdwebClient, publicClient: PublicClient) => Promise<AcceptResult>;
     winDelay?: number; // milliseconds to wait before setting win state
     acceptDelay?: number; // milliseconds to wait before auto-accepting
@@ -87,7 +87,7 @@ export async function handleCommitRevealAccept({
 
         // Set win state after specified delay
         if (config.onWinState) {
-            setTimeout(() => config.onWinState!(true), winDelay);
+            setTimeout(() => config.onWinState!(true, spinResult.outcome), winDelay);
         }
 
         // Auto-accept after specified delay

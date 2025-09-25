@@ -4,8 +4,8 @@ import RandomNumbers from './RandomNumbers';
 import styles from './MatrixTerminal.module.css';
 
 interface DegenGambitGameState {
+  isBusy: boolean;
   isProcessing: boolean;
-  isSpinning: boolean;
   outcome: string[];
   terminalQueue: {
     length: number;
@@ -26,16 +26,16 @@ interface DegenGambitMainProps {
 
 const DegenGambitMain: React.FC<DegenGambitMainProps> = ({ useGameContext }) => {
   const [gameState, gameActions] = useGameContext();
-  const { isProcessing, isSpinning, outcome, terminalQueue } = gameState;
+  const { isBusy, isProcessing, outcome, terminalQueue } = gameState;
 
   return (
     <div style={{ position: 'relative', width: '100%', maxHeight: '100%', height: '100%', paddingTop: '20px' }}>
       <Terminal
         queue={terminalQueue}
         onSubmit={gameActions.handleInput}
-        isInputDisabled={isProcessing || isSpinning || outcome.length > 0}
+        isInputDisabled={isBusy || isProcessing || outcome.length > 0}
       >
-        {isSpinning && (
+        {isProcessing && (
           <div className={styles.spinningContainer}>
             <RandomNumbers />
             <RandomNumbers />

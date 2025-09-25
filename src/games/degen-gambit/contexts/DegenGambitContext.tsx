@@ -10,8 +10,8 @@ const phrasesToType = ['Wake up', 'The Matrix', 'Prize'];
 interface GameState {
     userNumbers: number[];
     autoSpin: boolean;
-    isSpinning: boolean;
     isProcessing: boolean;
+    isBusy: boolean;
     outcome: string[];
     terminalQueue: {
         length: number;
@@ -24,7 +24,7 @@ interface GameActions {
     toggleAutoSpin: () => void;
     getCurrentNumbers: () => number[];
     handleInput: (input: string) => Promise<void>;
-    setIsWin: (isWin: boolean) => void;
+    setIsWin: (isWin: boolean, outcome?: any) => void;
 }
 
 type DegenGambitContextType = [GameState, GameActions];
@@ -42,18 +42,18 @@ export const DegenGambitProvider: React.FC<DegenGambitProviderProps> = ({ childr
 
     const [userNumbers, setUserNumbers] = useState<number[]>(numbers);
     const [autoSpin, setAutoSpin] = useState(false);
-    const [isSpinning, setIsSpinning] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [isBusy, setIsBusy] = useState(false);
     const [outcome, setOutcome] = useState<string[]>([]);
 
     const toggleAutoSpin = useCallback(() => {
         setAutoSpin(prev => !prev);
     }, []);
 
-    const setIsWin = useCallback((isWin: boolean) => {
+    const setIsWin = useCallback((isWin: boolean, outcomeParam?: any) => {
         if (isWin) {
-            // Get the current outcome from the state
-            triggerWinEffect(outcome);
+            // Use provided outcome or get from state
+            triggerWinEffect(outcomeParam || outcome);
         }
     }, [triggerWinEffect, outcome]);
 
@@ -78,9 +78,9 @@ export const DegenGambitProvider: React.FC<DegenGambitProviderProps> = ({ childr
         }
 
         if (['spin', 'respin', 'spin boost'].includes(input)) {
-            setIsSpinning(true);
+            setIsProcessing(true);
         }
-        setIsProcessing(true);
+        setIsBusy(true);
         
         try {
             const result = await terminalHandleInput(input);
@@ -117,8 +117,8 @@ export const DegenGambitProvider: React.FC<DegenGambitProviderProps> = ({ childr
             const errorMessage = error.message ?? String(error);
             setOutputQueue(prev => [...prev, {text: errorMessage, toType: false}]);
         } finally {
-            setIsSpinning(false);
             setIsProcessing(false);
+            setIsBusy(false);
         }
     };
 
@@ -134,8 +134,8 @@ export const DegenGambitProvider: React.FC<DegenGambitProviderProps> = ({ childr
     const gameState: GameState = {
         userNumbers,
         autoSpin,
-        isSpinning,
         isProcessing,
+        isBusy,
         outcome,
         terminalQueue,
     };

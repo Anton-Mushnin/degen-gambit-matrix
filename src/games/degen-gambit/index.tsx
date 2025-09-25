@@ -23,8 +23,8 @@ import { DegenGambitProvider } from './contexts/DegenGambitContext';
 import { useDegenGambitContext } from './contexts/DegenGambitContext';
 
 // Create display components for different game states
-const DegenGambitProcessingComponent = ({ isSpinning }: { isSpinning?: boolean }) => {
-  if (!isSpinning) return null;
+const DegenGambitProcessingComponent = ({ isProcessing }: { isProcessing?: boolean }) => {
+  if (!isProcessing) return null;
 
   return (
     <div className={styles.spinningContainer}>

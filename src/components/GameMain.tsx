@@ -3,13 +3,13 @@ import { Terminal } from './matrixUI/Terminal';
 
 // Generic interfaces for game contexts
 export interface GenericGameState {
-  isProcessing: boolean;
+  isBusy: boolean;
   terminalQueue: {
     length: number;
     shift: () => { text: string; toType: boolean } | undefined;
   };
   // Optional properties that games can use for display components
-  isSpinning?: boolean;
+  isProcessing?: boolean;
   outcome?: any[];
   gameStatus?: any;
 }
@@ -38,21 +38,21 @@ export interface GameMainProps {
 
 const GameMain: React.FC<GameMainProps> = ({ useGameContext, displayComponents }) => {
   const [gameState, gameActions] = useGameContext();
-  const { isProcessing, isSpinning, outcome, gameStatus, terminalQueue } = gameState;
+  const { isBusy, isProcessing, outcome, gameStatus, terminalQueue } = gameState;
 
   // Determine what component to render based on game state
   const renderDisplayComponent = () => {
     if (!displayComponents) return null;
 
-    // Priority: outcome > spinning > status
+    // Priority: outcome > processing > status
     if (outcome && outcome.length > 0 && displayComponents.outcomeComponent) {
       const OutcomeComponent = displayComponents.outcomeComponent;
       return <OutcomeComponent outcome={outcome} />;
     }
 
-    if (isSpinning && displayComponents.processingComponent) {
+    if (isProcessing && displayComponents.processingComponent) {
       const ProcessingComponent = displayComponents.processingComponent;
-      return <ProcessingComponent isSpinning={isSpinning} />;
+      return <ProcessingComponent isProcessing={isProcessing} />;
     }
 
     if (gameStatus && displayComponents.statusComponent) {
@@ -68,7 +68,7 @@ const GameMain: React.FC<GameMainProps> = ({ useGameContext, displayComponents }
       <Terminal
         queue={terminalQueue}
         onSubmit={gameActions.handleInput}
-        isInputDisabled={isProcessing || Boolean(outcome && outcome.length > 0)}
+        isInputDisabled={isBusy || Boolean(outcome && outcome.length > 0)}
       >
         {renderDisplayComponent()}
       </Terminal>
