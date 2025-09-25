@@ -12,11 +12,31 @@ import GameStream from '../../components/GameStream';
 // Import configurations and functions
 import { createContractData, createPlayerData, privateKeyAddress } from './info';
 import { diceStreakStreamConfig } from './config/streamConfig';
-import { diceStreakABI } from '../../../ABIs/DiceStreak.abi';
+import { diceStreakABI } from '../../ABIs/DiceStreak.abi';
 
 // Import hooks and context
 import { DiceStreakProvider } from './contexts/DiceStreakContext';
 import { useDiceStreakContext } from './contexts/DiceStreakContext';
+
+// Create data items wrapper for generic component
+const createDiceStreakDataItems = ({ publicClient, activeAccount }: any) => {
+  const contractData = createContractData({
+    publicClient,
+    onDataUpdate: () => {
+      // Handle contract data updates
+    }
+  });
+
+  const playerData = createPlayerData({
+    publicClient,
+    playerAddress: activeAccount?.address || privateKeyAddress || '',
+    onDataUpdate: () => {
+      // Handle player data updates
+    }
+  });
+
+  return { contractData, playerData };
+};
 
 // Create the DiceStreak game module
 export const diceStreakGame: Game = {
@@ -28,9 +48,7 @@ export const diceStreakGame: Game = {
     components: {
         main: { useGameContext: useDiceStreakContext },
         contractInfo: {
-            createContractData,
-            createPlayerData,
-            privateKeyAddress
+            createDataItems: createDiceStreakDataItems
         },
         stream: {
             contractAddress: '0x874b7ebEE68624303aBA0D09eFd2EA3ee8385080',
@@ -52,9 +70,7 @@ export const diceStreakGame: Game = {
 // Create wrapper components for backward compatibility
 const DiceStreakWrapper: React.FC = () => React.createElement(GameMain, { useGameContext: useDiceStreakContext });
 const ContractInfoWrapper: React.FC = () => React.createElement(GameContractInfo, {
-  createContractData,
-  createPlayerData,
-  privateKeyAddress
+  createDataItems: createDiceStreakDataItems
 });
 const StreamWrapper: React.FC = () => React.createElement(GameStream, {
   contractAddress: "0x874b7ebEE68624303aBA0D09eFd2EA3ee8385080",
