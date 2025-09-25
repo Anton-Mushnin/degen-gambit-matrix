@@ -3,6 +3,7 @@ import './styles/fonts.css';
 import { TerminalOutput } from './components/matrixUI/TerminalOutput';
 import Home from './components/Home';
 import { GameProvider } from './contexts/GameContext';
+import { WinEffectProvider } from './contexts/WinEffectContext';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 
@@ -19,7 +20,9 @@ function App() {
       ) : (
         <ThirdwebProvider>
           <GameProvider>
-            <Home />
+            <WinEffectProvider>
+              <Home />
+            </WinEffectProvider>
           </GameProvider>
           <ReactQueryDevtools initialIsOpen={false} />
 
