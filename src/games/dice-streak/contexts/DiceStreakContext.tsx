@@ -5,6 +5,7 @@ import { useWinEffect } from '../../../contexts/WinEffectContext';
 interface GameState {
     autoSpin: boolean;
     isBusy: boolean;
+    isProcessing: boolean;
     terminalQueue: {
         length: number;
         shift: () => {text: string, toType: boolean} | undefined;
@@ -29,6 +30,8 @@ export const DiceStreakProvider: React.FC<DiceStreakProviderProps> = ({ children
     const [autoSpin, setAutoSpin] = useState(false);
     const [isBusy, setIsBusy] = useState(false);
     const { triggerWinEffect } = useWinEffect();
+    const [isProcessing, setIsProcessing] = useState(false);
+
 
     const toggleAutoSpin = useCallback(() => {
         setAutoSpin(prev => !prev);
@@ -53,7 +56,7 @@ export const DiceStreakProvider: React.FC<DiceStreakProviderProps> = ({ children
             setOutputQueue([]);
             return;
         }
-
+        setIsProcessing(true);
         setIsBusy(true);
 
         try {
@@ -86,6 +89,7 @@ export const DiceStreakProvider: React.FC<DiceStreakProviderProps> = ({ children
             console.error('DiceStreak input error:', error);
             setOutputQueue(prev => [...prev, {text: 'Error processing command', toType: false}]);
         } finally {
+            setIsProcessing(false);
             setIsBusy(false);
         }
     };
@@ -94,6 +98,7 @@ export const DiceStreakProvider: React.FC<DiceStreakProviderProps> = ({ children
         autoSpin,
         isBusy,
         terminalQueue: outputQueue,
+        isProcessing,
     };
 
     const gameActions: GameActions = {
