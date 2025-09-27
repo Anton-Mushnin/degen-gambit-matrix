@@ -27,6 +27,9 @@ interface DiceStreakProviderProps {
     children: ReactNode;
 }
 
+const phrasesToType = ['Wake up', 'The Matrix', 'Prize'];
+
+
 export const DiceStreakProvider: React.FC<DiceStreakProviderProps> = ({ children }) => {
     const [autoSpin, setAutoSpin] = useState(false);
     const [isBusy, setIsBusy] = useState(false);
@@ -79,8 +82,8 @@ export const DiceStreakProvider: React.FC<DiceStreakProviderProps> = ({ children
                 setTimeout(() => {
                     setOutputQueue(prev => [...prev, {text: outcomeValues.join(' '), toType: false}]);
                     const outputText = result.output.join('\n');
-                    if (outputText) {
-                        setOutputQueue(prev => [...prev, {text: outputText, toType: false}]);
+                    if (outputText) { 
+                        setOutputQueue(prev => [...prev, {text: outputText, toType: phrasesToType.some(str => outputText.startsWith(str))}]);
                     }
                     setOutcome([]);
                 }, 8000);
