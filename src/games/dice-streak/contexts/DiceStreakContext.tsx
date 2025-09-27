@@ -6,6 +6,7 @@ interface GameState {
     autoSpin: boolean;
     isBusy: boolean;
     isProcessing: boolean;
+    outcome: string[];
     terminalQueue: {
         length: number;
         shift: () => {text: string, toType: boolean} | undefined;
@@ -31,6 +32,7 @@ export const DiceStreakProvider: React.FC<DiceStreakProviderProps> = ({ children
     const [isBusy, setIsBusy] = useState(false);
     const { triggerWinEffect } = useWinEffect();
     const [isProcessing, setIsProcessing] = useState(false);
+    const [outcome, setOutcome] = useState<string[]>([]);
 
 
     const toggleAutoSpin = useCallback(() => {
@@ -72,13 +74,16 @@ export const DiceStreakProvider: React.FC<DiceStreakProviderProps> = ({ children
                         handleInput('play 1');
                     }, result.isPrize ? 22000 : 13000);
                 }
-                if (result.outcome && Array.isArray(result.outcome) && result.outcome.length > 0) {
-                    setOutputQueue(prev => [...prev, {text: (result.outcome as bigint[]).map(o => o.toString()).join(' '), toType: false}]);
-                }
-                const outputText = result.output.join('\n');
-                if (outputText) {
-                    setOutputQueue(prev => [...prev, {text: outputText, toType: false}]);
-                }
+                const outcomeValues = (result.outcome as bigint[]).map(o => o.toString());
+                setOutcome(outcomeValues);
+                setTimeout(() => {
+                    setOutputQueue(prev => [...prev, {text: outcomeValues.join(' '), toType: false}]);
+                    const outputText = result.output.join('\n');
+                    if (outputText) {
+                        setOutputQueue(prev => [...prev, {text: outputText, toType: false}]);
+                    }
+                    setOutcome([]);
+                }, 8000);
             }
         } catch (error) {
             if (autoSpin && input.startsWith('play')) {
@@ -94,11 +99,21 @@ export const DiceStreakProvider: React.FC<DiceStreakProviderProps> = ({ children
         }
     };
 
+    const terminalQueue = {
+        length: outputQueue.length,
+        shift: () => {
+            const item = outputQueue.shift();
+            setOutputQueue([...outputQueue]); // Trigger re-render
+            return item;
+        }
+    };
+
     const gameState: GameState = {
         autoSpin,
         isBusy,
-        terminalQueue: outputQueue,
         isProcessing,
+        outcome,
+        terminalQueue,
     };
 
     const gameActions: GameActions = {
