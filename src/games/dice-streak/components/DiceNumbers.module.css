@@ -4,3 +4,13 @@
   font-family: 'NimbusMono', 'Courier New', Courier, monospace;
   font-size: 16px;
 }
+
+.spinningContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: start;
+  color: #a1eeb5;
+  text-shadow: 0 0 10px #0dda9f;
+  gap: 10px;
+}
