@@ -163,16 +163,13 @@ contract CommitRevealRandomness {
         emit DataCommitted(msg.sender, dataHash, currentBlock, revealWindow);
     }
     
-    /// @notice Inspect the outcome of a committed move without executing the reveal
-    /// @dev Child contracts must override to return game-specific outcome information
+    /// @notice Child contracts should implement an inspectOutcome function
     /// @dev Useful for gambling games where users want to see outcomes before paying gas
     /// @dev Can be called multiple times within the reveal window
-    /// @param player The player's address to inspect outcome for
-    /// @return prizeValue The prize amount that would be won
-    /// @return description Description of the outcome
-    function inspectOutcome(address player) external view virtual returns (uint256 prizeValue, string memory description) {
-        revert("inspectOutcome must be implemented by child contract");
-    }
+    /// @dev Child contracts can define their own signature based on game needs
+    /// @dev Example signatures:
+    /// @dev - function inspectOutcome(address player) external view returns (uint256 prizeValue, string memory description)
+    /// @dev - function inspectDiceOutcome(address player) external view returns (uint8 diceResult, uint256 prizeValue, string memory description)
 
     /// @notice Reveal committed data and generate random number, consuming the commit
     /// @dev Handles both secure commit-reveal and simple randomness modes:

@@ -60,17 +60,18 @@ export async function handlePlay({ input, params }: { input: string; params: Ter
             chainId,
         });
 
-        // Extract prize from outcome - DiceStreak inspectOutcome returns [prizeValue, description]
-        const outcome = result.outcome as readonly [bigint, string];
-        const prizeValue = Number(outcome[0]);
+        // Extract result from outcome - DiceStreak inspectOutcome returns [diceResult, prizeValue, description]
+        const outcome = result.outcome as readonly [number, bigint, string];
+        const diceResult = outcome[0];
+        const prizeValue = Number(outcome[1]);
 
         let actionText = '';
-        if (Number(outcome[0]) > 0) {
+        if (prizeValue > 0) {
             const gameChain = wagmiConfig.chains.find(chain => chain.id === diceStreakGame.network.id) || wagmiConfig.chains[0]
 
-          actionText = `You won ${formatUnits(outcome[0], Number(18))} ${gameChain.nativeCurrency.symbol}`;
+          actionText = `You rolled ${diceResult}! You won ${formatUnits(outcome[1], Number(18))} ${gameChain.nativeCurrency.symbol}`;
         } else {
-          actionText = `The Matrix has you...`;
+          actionText = `You rolled ${diceResult}. The Matrix has you...`;
         }
 
         return {

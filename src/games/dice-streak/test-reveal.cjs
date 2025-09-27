@@ -38,9 +38,10 @@ async function main() {
 
     // First inspect the outcome to see what we're accepting
     try {
-      const outcome = await diceStreak.inspectOutcome(player.address);
-      const diceResult = (outcome % 6) + 1; // Convert to 1-6 range
+      const [diceResult, prizeValue, description] = await diceStreak.inspectOutcome(player.address);
       console.log("🎲 Inspected Outcome: dice rolled", diceResult);
+      console.log("💰 Prize value:", ethers.utils.formatEther(prizeValue), "ETH");
+      console.log("📝 Description:", description);
 
       // Get the player's guess from contract state
       const playerData = await diceStreak.players(player.address);

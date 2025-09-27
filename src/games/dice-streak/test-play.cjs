@@ -67,9 +67,10 @@ async function main() {
         await new Promise(resolve => setTimeout(resolve, 2000));
 
         // Inspect the outcome
-        const outcome = await diceStreak.inspectOutcome(player.address);
-        const diceResult = (outcome % 6) + 1; // Convert to 1-6 range
+        const [diceResult, prizeValue, description] = await diceStreak.inspectOutcome(player.address);
         console.log("🎲 Inspected Outcome: dice rolled", diceResult);
+        console.log("💰 Prize value:", ethers.utils.formatEther(prizeValue), "ETH");
+        console.log("📝 Description:", description);
         console.log("🎯 Your guess was:", 3);
         console.log("🏆 Result:", diceResult === 3 ? "WIN!" : "LOSS");
 

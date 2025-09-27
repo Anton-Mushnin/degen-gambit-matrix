@@ -174,7 +174,7 @@ contract EvenOdd is CommitRevealRandomness {
     /// @param player The player's address to inspect outcome for
     /// @return prizeValue The prize amount that would be won (0 for loss)
     /// @return description Description of the outcome
-    function inspectOutcome(address player) external view override returns (uint256 prizeValue, string memory description) {
+    function inspectOutcome(address player) external view returns (uint256 prizeValue, string memory description) {
         // Check if player has a bet
         Bet memory bet = playerBets[player];
         require(bytes(bet.choice).length > 0, "No active bet");

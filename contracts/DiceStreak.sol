@@ -40,6 +40,7 @@ contract DiceStreak is CommitRevealRandomness {
     mapping(uint8 => Statistics) public statistics; // 1-6
 
     // Events
+    event Spin(address indexed player);
     event PlayerWin(address indexed player, uint8 guess, uint8 result, uint256 payout);
     event PlayerWinWithCombo(address indexed player, uint8 guess, uint8 result, uint256 basePayout, uint256 bonusPayout, string comboType);
 
@@ -132,9 +133,10 @@ contract DiceStreak is CommitRevealRandomness {
 
     /// @notice Inspect the outcome of a dice roll without executing the reveal
     /// @param player The player's address to inspect outcome for
+    /// @return diceResult The dice roll result (1-6)
     /// @return prizeValue The prize amount that would be won (0 for loss)
     /// @return description Description of the outcome (e.g., "Win 5.5x payout" or "Loss")
-    function inspectOutcome(address player) external view override returns (uint256 prizeValue, string memory description) {
+    function inspectOutcome(address player) external view returns (uint8 diceResult, uint256 prizeValue, string memory description) {
         uint256 currentBlock = _blockNumber();
         CommitData storage commit = playerCommits[player];
 
@@ -158,6 +160,8 @@ contract DiceStreak is CommitRevealRandomness {
         uint8 result = uint8((randomNumber % 6) + 1);
         uint8 guess = players[player].pendingGuess;
 
+        diceResult = result;
+        
         if (result == guess) {
             // Calculate win amount (would need to check streak combos too)
             uint256 basePayout = (betAmount * payoutMultiplier) / 1000;
@@ -211,6 +215,9 @@ contract DiceStreak is CommitRevealRandomness {
     function _processGameResult(address player, uint256 randomNumber) internal {
         uint8 result = uint8((randomNumber % 6) + 1);
         uint8 guess = players[player].pendingGuess;
+        
+        // Emit spin event
+        emit Spin(player);
         
         // Update statistics
         statistics[result].occurrences++;

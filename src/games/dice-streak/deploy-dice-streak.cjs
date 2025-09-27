@@ -26,7 +26,7 @@ async function main() {
   console.log("🔗 Contract address:", diceStreak.address);
   
   // Fund the contract with some ETH for payouts
-  const fundingAmount = ethers.BigNumber.from("1000000000000000"); // 0.001 ETH
+  const fundingAmount = ethers.BigNumber.from("1000000000000"); // 0.000001 ETH
   console.log(`\n💰 Funding contract with ${ethers.utils.formatEther(fundingAmount)} ETH for payouts...`);
   
   const fundTx = await deployer.sendTransaction({

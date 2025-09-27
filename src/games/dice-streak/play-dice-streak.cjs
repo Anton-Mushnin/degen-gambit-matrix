@@ -53,7 +53,7 @@ async function main() {
   const abi = [
     "function play(uint8 guess) external payable",
     "function accept() external",
-    "function inspectOutcome(address player) view returns (uint256 prizeValue, string memory description)",
+    "function inspectOutcome(address player) view returns (uint8 diceResult, uint256 prizeValue, string memory description)",
     "function getBetAmount() view returns (uint256)",
     "function getPayoutMultiplier() view returns (uint256)",
     "function getBankBalance() view returns (uint256)",
@@ -108,8 +108,9 @@ async function main() {
 
         // Inspect the outcome first
         try {
-          const [prizeValue, description] = await diceStreak.inspectOutcome(wallet.address);
+          const [diceResult, prizeValue, description] = await diceStreak.inspectOutcome(wallet.address);
           console.log("\n🔍 Inspecting Outcome:");
+          console.log("- Dice Result:", diceResult);
           console.log("- Prize Value:", ethers.utils.formatEther(prizeValue), "ETH");
           console.log("- Description:", description);
 
@@ -167,8 +168,9 @@ async function main() {
               // Try inspect/accept again
               console.log("🔄 Retrying inspect/accept...");
               try {
-                const [retryPrizeValue, retryDescription] = await diceStreak.inspectOutcome(wallet.address);
+                const [retryDiceResult, retryPrizeValue, retryDescription] = await diceStreak.inspectOutcome(wallet.address);
                 console.log("\n🔍 Inspecting Outcome (retry):");
+                console.log("- Dice Result:", retryDiceResult);
                 console.log("- Prize Value:", ethers.utils.formatEther(retryPrizeValue), "ETH");
                 console.log("- Description:", retryDescription);
 

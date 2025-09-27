@@ -427,6 +427,11 @@ export const diceStreakABI = [
     "name": "inspectOutcome",
     "outputs": [
       {
+        "internalType": "uint8",
+        "name": "diceResult",
+        "type": "uint8"
+      },
+      {
         "internalType": "uint256",
         "name": "prizeValue",
         "type": "uint256"
