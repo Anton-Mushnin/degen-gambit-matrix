@@ -1,0 +1,9 @@
+.processingContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  color: #a1eeb5;
+  text-shadow: 0 0 10px #0dda9f;
+  gap: 10px;
+}
