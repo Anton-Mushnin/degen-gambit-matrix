@@ -14,7 +14,6 @@ export const DiceStreakProcessingComponent = ({
 
   return (
     <div className={styles.processingContainer}>
-      <span>Rolling dice...</span>
       <DiceNumbers result={result} duration={duration} />
     </div>
   );
