@@ -13,8 +13,6 @@ import GameStream from '../../components/GameStream';
 import { createContractData, createPlayerData, privateKeyAddress } from './info';
 import { diceStreakStreamConfig } from './config/streamConfig';
 import { diceStreakABI } from '../../ABIs/DiceStreak.abi';
-import RandomNumbers from '../degen-gambit/components/RandomNumbers';
-// import styles from '../degen-gamibt/components/MatrixTerminal.module.css';
 
 // Create data items wrapper for generic component
 const createDiceStreakDataItems = ({ publicClient, activeAccount }: any) => {
@@ -37,17 +35,9 @@ const createDiceStreakDataItems = ({ publicClient, activeAccount }: any) => {
 import { DiceStreakProvider } from './contexts/DiceStreakContext';
 import { useDiceStreakContext } from './contexts/DiceStreakContext';
 
-export const DiceStreakProcessingComponent = ({ isProcessing }: { isProcessing?: boolean }) => {
-  if (!isProcessing) return null;
+// Import components
+import { DiceStreakProcessingComponent } from './components';
 
-  return (
-    <div>
-      <RandomNumbers />
-      <RandomNumbers />
-      <RandomNumbers />
-    </div>
-  );
-};
 
 // Create the DiceStreak game module
 export const diceStreakGame: Game = {
