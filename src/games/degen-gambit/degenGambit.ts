@@ -275,7 +275,8 @@ export const spin = async (contractAddress: string, boost: boolean, account: Acc
   const outcome = result.outcome as readonly bigint[];
   let actionText = '';
   if (Number(outcome[4]) > 0) {
-    actionText = `You won ${formatUnits(outcome[4], Number(decimals))} ${Number(outcome[5]) === 1 ? wagmiConfig.chains[0].nativeCurrency.symbol : 'GAMBIT'}`;
+    const gameChain = wagmiConfig.chains.find(chain => chain.id === degenGambitGame.network.id) || wagmiConfig.chains[0]
+    actionText = `You won ${formatUnits(outcome[4], Number(decimals))} ${Number(outcome[5]) === 1 ? gameChain.nativeCurrency.symbol : 'GAMBIT'}`;
   } else {
     actionText = `The Matrix has you...`;
   }

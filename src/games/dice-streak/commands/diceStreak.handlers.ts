@@ -2,6 +2,9 @@ import { handleCommitRevealAccept, TerminalCommandParams } from "../../../utils/
 import { commitRevealSpin } from '../../../utils/commitRevealSpin';
 import { accept } from '../contractFunctions/write';
 import { diceStreakABI } from '../../../ABIs/DiceStreak.abi';
+import { wagmiConfig } from "../../../config";
+import { formatUnits } from "viem";
+import { diceStreakGame } from "..";
 
 declare global {
     interface Window {
@@ -61,8 +64,17 @@ export async function handlePlay({ input, params }: { input: string; params: Ter
         const outcome = result.outcome as readonly [bigint, string];
         const prizeValue = Number(outcome[0]);
 
+        let actionText = '';
+        if (Number(outcome[0]) > 0) {
+            const gameChain = wagmiConfig.chains.find(chain => chain.id === diceStreakGame.network.id) || wagmiConfig.chains[0]
+
+          actionText = `You won ${formatUnits(outcome[0], Number(18))} ${gameChain.nativeCurrency.symbol}`;
+        } else {
+          actionText = `The Matrix has you...`;
+        }
+
         return {
-            description: `Bet committed for guess ${guess}. Results revealed.`,
+            description: actionText,
             outcome: result.outcome,
             prize: prizeValue > 0 ? prizeValue.toString() : '0',
             prizeType: 0,
