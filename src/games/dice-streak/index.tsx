@@ -36,7 +36,7 @@ import { DiceStreakProvider } from './contexts/DiceStreakContext';
 import { useDiceStreakContext } from './contexts/DiceStreakContext';
 
 // Import components
-import { DiceStreakProcessingComponent } from './components';
+import { DiceStreakProcessingComponent, DiceStreakOutcomeComponent } from './components';
 
 
 // Create the DiceStreak game module
@@ -48,7 +48,10 @@ export const diceStreakGame: Game = {
     commands: diceStreakCommands as CommandDefinition<unknown>[],
     components: {
         main: { useGameContext: useDiceStreakContext, 
-                displayComponents: { processingComponent: DiceStreakProcessingComponent } 
+                displayComponents: { 
+                    processingComponent: DiceStreakProcessingComponent,
+                    outcomeComponent: DiceStreakOutcomeComponent
+                } 
               },
         contractInfo: {
             createDataItems: createDiceStreakDataItems
@@ -71,7 +74,7 @@ export const diceStreakGame: Game = {
 };
 
 // Create wrapper components for backward compatibility
-const DiceStreakWrapper: React.FC = () => React.createElement(GameMain, { useGameContext: useDiceStreakContext, displayComponents: { processingComponent: DiceStreakProcessingComponent } });
+const DiceStreakWrapper: React.FC = () => React.createElement(GameMain, { useGameContext: useDiceStreakContext, displayComponents: { processingComponent: DiceStreakProcessingComponent, outcomeComponent: DiceStreakOutcomeComponent } });
 const ContractInfoWrapper: React.FC = () => React.createElement(GameContractInfo, {
   createDataItems: createDiceStreakDataItems
 });
