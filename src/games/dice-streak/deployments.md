@@ -45,7 +45,35 @@
 - 6 streak: 50% of bank
 
 ### Deployment Status
-- [ ] Contract deployed
-- [ ] Contract funded
-- [ ] Basic functionality tested
-- [ ] Ready for use
+- [x] Contract deployed
+- [x] Contract funded
+- [x] Basic functionality tested
+- [x] Ready for use
+
+---
+
+## DiceStreakDev (Development Version)
+
+### Contract Details
+- **Contract Name:** DiceStreakDev
+- **Contract Address:** 0xa6054a4962Ade70f4e70809e494F5811a00dcca3
+- **Deployer:** 0x4eD919172bD08D74831f2914aAAe8edA690d08Ab
+- **Network:** XAI Testnet v2
+- **Chain ID:** 37714555429
+
+### Contract Parameters
+- **Bet Amount:** 10 WEI
+- **Payout Multiplier:** 5500 (5.5x)
+- **Initial Bank Balance:** 1000 WEI
+
+### Additional Dev Features
+- `setPredeterminedResult(uint8 result)` - Set predetermined dice result (1-6) or clear with 0
+- `getPredeterminedResult(address player)` - Get predetermined result for player
+- Predetermined results are automatically cleared after use
+- Falls back to normal randomness when no predetermined result is set
+
+### Deployment Status
+- [x] Contract deployed
+- [x] Contract funded
+- [x] Predetermined result functionality tested
+- [x] Ready for development testing
