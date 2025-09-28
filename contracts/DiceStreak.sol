@@ -136,7 +136,7 @@ contract DiceStreak is CommitRevealRandomness {
     /// @return diceResult The dice roll result (1-6)
     /// @return prizeValue The prize amount that would be won (0 for loss)
     /// @return description Description of the outcome (e.g., "Win 5.5x payout" or "Loss")
-    function inspectOutcome(address player) external view returns (uint8 diceResult, uint256 prizeValue, string memory description) {
+    function inspectOutcome(address player) external view virtual returns (uint8 diceResult, uint256 prizeValue, string memory description) {
         uint256 currentBlock = _blockNumber();
         CommitData storage commit = playerCommits[player];
 
@@ -212,7 +212,7 @@ contract DiceStreak is CommitRevealRandomness {
         return (false, 0, "");
     }
     
-    function _processGameResult(address player, uint256 randomNumber) internal {
+    function _processGameResult(address player, uint256 randomNumber) internal virtual {
         uint8 result = uint8((randomNumber % 6) + 1);
         uint8 guess = players[player].pendingGuess;
         
