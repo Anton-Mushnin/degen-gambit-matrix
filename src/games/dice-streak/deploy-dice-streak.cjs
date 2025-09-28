@@ -1,3 +1,24 @@
+/**
+ * DiceStreak Contract Deployment Script
+ * 
+ * DEPLOYMENT INSTRUCTIONS:
+ * 
+ * 1. Local deployment (for testing):
+ *    node src/games/dice-streak/deploy-dice-streak.cjs
+ * 
+ * 2. Network deployment (see hardhat.config.cjs for available networks):
+ *    npx hardhat run src/games/dice-streak/deploy-dice-streak.cjs --network <network-name>
+ * 
+ * REQUIREMENTS:
+ * - Set DEPLOYMENT_KEY in .env file with your private key
+ * - Ensure you have testnet tokens for the target network
+ * - For XAI testnet, get tokens from: https://faucet.quicknode.com/xai
+ * 
+ * NETWORK VERIFICATION:
+ * - Local: Account balance will be ~10000 ETH, address starts with 0xf39F...
+ * - Testnet: Account balance will be realistic, address matches your wallet
+ */
+
 const { ethers } = require("hardhat");
 
 async function main() {
