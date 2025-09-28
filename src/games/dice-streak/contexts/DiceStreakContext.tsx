@@ -80,13 +80,13 @@ export const DiceStreakProvider: React.FC<DiceStreakProviderProps> = ({ children
                 const outcomeValues = (result.outcome as bigint[]).map(o => o.toString());
                 setOutcome(outcomeValues);
                 setTimeout(() => {
-                    setOutputQueue(prev => [...prev, {text: outcomeValues.join(' '), toType: false}]);
+                    setOutputQueue(prev => [...prev, {text: [outcomeValues[0], outcomeValues[2]].join(' '), toType: false}]);
                     const outputText = result.output.join('\n');
                     if (outputText) { 
                         setOutputQueue(prev => [...prev, {text: outputText, toType: phrasesToType.some(str => outputText.startsWith(str))}]);
                     }
                     setOutcome([]);
-                }, 8000);
+                }, result.isPrize? 8000 : 1000);
             }
         } catch (error) {
             if (autoSpin && input.startsWith('play')) {

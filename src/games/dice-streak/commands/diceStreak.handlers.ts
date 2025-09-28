@@ -71,7 +71,7 @@ export async function handlePlay({ input, params }: { input: string; params: Ter
 
           actionText = `You rolled ${diceResult}! You won ${formatUnits(outcome[1], Number(18))} ${gameChain.nativeCurrency.symbol}`;
         } else {
-          actionText = `You rolled ${diceResult}. The Matrix has you...`;
+          actionText = `The Matrix has you...`;
         }
 
         return {
