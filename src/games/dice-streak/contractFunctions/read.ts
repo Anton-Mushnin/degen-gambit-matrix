@@ -240,12 +240,7 @@ export const getStatistics = async (contractAddress: string, number: number, pub
       args: [number],
     });
 
-    return {
-      occurrences: occurrences as bigint,
-      bets: bets as bigint,
-      wins: wins as bigint,
-      formatted: `${Number(wins)}/${Number(bets)} wins (${Number(occurrences)} occurrences)`
-    };
+    return [String(number), String(occurrences), String(bets), String(wins)];
   } catch (error) {
     throw new Error(`Failed to get statistics: ${error}`);
   }
@@ -262,10 +257,7 @@ export const getAllStatistics = async (contractAddress: string, publicClient: Pu
       getStatistics(contractAddress, 6, publicClient),
     ]);
 
-    return stats.map((stat, index) => ({
-      number: index + 1,
-      ...stat
-    }));
+    return stats;
   } catch (error) {
     throw new Error(`Failed to get all statistics: ${error}`);
   }

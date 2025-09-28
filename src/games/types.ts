@@ -61,8 +61,11 @@ export interface GameInitOptions {
 export interface QueryDataItem {
     type: 'query';
     label: string;
+    isTable?: boolean;
+    headers?: string[];
     queryKey: string[];
-    queryFn: () => Promise<{ formatted: string; value: bigint; decimals: number; } | null>;
+    queryFn?: () => Promise<{ formatted: string; value: bigint; decimals: number; } | null>;
+    tableQueryFn?: () => Promise<string[][]>;
     refetchInterval?: number;
     animation?: boolean;
     onDataUpdate?: (data: any) => void;

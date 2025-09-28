@@ -77,17 +77,11 @@ export const createContractData = ({
         type: 'query',
         label: 'Statistics: ',
         animation: false,
+        headers: ['Number', 'Occurrences', 'Bets', 'Wins'],
+        isTable: true,
         queryKey: ['allStatistics', diceStreakGame.config.contractAddress as string],
-        queryFn: async () => {
-            const stats = await getAllStatistics(diceStreakGame.config.contractAddress as string, publicClient);
-            const formatted = stats.map(stat => 
-                `${stat.number}: ${stat.formatted}`
-            ).join(' | ');
-            return {
-                value: BigInt(stats.length),
-                formatted: formatted,
-                decimals: 0
-            };
+        tableQueryFn: async () => {
+            return  getAllStatistics(diceStreakGame.config.contractAddress as string, publicClient);
         },
         onDataUpdate
     }

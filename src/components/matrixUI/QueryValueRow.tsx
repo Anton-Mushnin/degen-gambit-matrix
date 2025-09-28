@@ -9,7 +9,7 @@ const BLINK_INTERVAL = 1500;
 interface QueryValueRowProps {
   label: string
   queryKey: string[]
-  queryFn: () => Promise<{
+  queryFn?: () => Promise<{
     formatted: string
     value: bigint
     decimals: number
