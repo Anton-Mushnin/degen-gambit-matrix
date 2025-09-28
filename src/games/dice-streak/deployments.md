@@ -10,7 +10,7 @@
 
 ### Contract Details
 - **Contract Name:** DiceStreak
-- **Contract Address:** 0xCfD6407737Ee7569a9c96fc6803f2b99b8B5E69d
+- **Contract Address:** 0x2E1C39c9475C62f17493ABaFaFf90eD01640ce51
 - **Deployer:** 0x4eD919172bD08D74831f2914aAAe8edA690d08Ab
 - **Deployment Block:** [To be filled after deployment]
 - **Deployment Time:** [To be filled after deployment]
