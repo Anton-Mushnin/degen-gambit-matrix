@@ -68,5 +68,21 @@ export const diceStreakStreamConfig: EventConfig[] = [
       
       return events;
     }
+  },
+  {
+    eventName: 'Spin',
+    invalidateQueries: (logs: any[], activeAccount: string | undefined) => {
+      const queries: string[][] = [['bankBalance'], ['allStatistics']];
+      
+      if (logs.some((log: any) => log.args.player === activeAccount)) {
+        queries.push(['playerBalance'], ['gameStatus']);
+      }
+      console.log('queries', queries);
+      return queries;
+    },
+    processLogs: (logs: any[]) => {
+      // No display needed for Spin events, just return empty array
+      return [];
+    }
   }
 ];
