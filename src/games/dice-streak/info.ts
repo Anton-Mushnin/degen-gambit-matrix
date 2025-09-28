@@ -76,6 +76,7 @@ export const createContractData = ({
     {
         type: 'query',
         label: 'Statistics: ',
+        animation: false,
         queryKey: ['allStatistics', diceStreakGame.config.contractAddress as string],
         queryFn: async () => {
             const stats = await getAllStatistics(diceStreakGame.config.contractAddress as string, publicClient);
