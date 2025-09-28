@@ -1,8 +1,8 @@
 import React from 'react';
 import { Game } from '../types';
 import { CommandDefinition } from '../../commands/types';
-import { diceStreakCommands } from './commands/diceStreak';
 import { NETWORKS } from '../../config/networks';
+import { diceStreakCommands } from './commands/diceStreak';
 
 // Import generic components
 import GameMain from '../../components/GameMain';
@@ -40,6 +40,9 @@ import { DiceStreakProcessingComponent, DiceStreakOutcomeComponent } from './com
 
 
 // Create the DiceStreak game module
+// Contract address - single source of truth
+const DICE_STREAK_CONTRACT_ADDRESS = '0x2E1C39c9475C62f17493ABaFaFf90eD01640ce51';
+
 export const diceStreakGame: Game = {
     id: 'dice-streak',
     name: 'Dice Streak',
@@ -57,7 +60,7 @@ export const diceStreakGame: Game = {
             createDataItems: createDiceStreakDataItems
         },
         stream: {
-            contractAddress: '0x874b7ebEE68624303aBA0D09eFd2EA3ee8385080',
+            contractAddress: DICE_STREAK_CONTRACT_ADDRESS,
             abi: diceStreakABI,
             eventConfigs: diceStreakStreamConfig
         },
@@ -66,7 +69,7 @@ export const diceStreakGame: Game = {
     },
     context: DiceStreakProvider,
     config: {
-        contractAddress: '0x874b7ebEE68624303aBA0D09eFd2EA3ee8385080',
+        contractAddress: '0x2E1C39c9475C62f17493ABaFaFf90eD01640ce51',
         privateKey: '',
         wagmiConfig: null, // Will be set dynamically
     },
@@ -79,10 +82,10 @@ const ContractInfoWrapper: React.FC = () => React.createElement(GameContractInfo
   createDataItems: createDiceStreakDataItems
 });
 const StreamWrapper: React.FC = () => React.createElement(GameStream, {
-  contractAddress: "0x874b7ebEE68624303aBA0D09eFd2EA3ee8385080",
+  contractAddress: DICE_STREAK_CONTRACT_ADDRESS,
   abi: diceStreakABI,
   eventConfigs: diceStreakStreamConfig,
-  chainId: 37714555429
+  chainId: diceStreakGame.network.id
 });
 
 // Export individual components and hooks for backward compatibility
