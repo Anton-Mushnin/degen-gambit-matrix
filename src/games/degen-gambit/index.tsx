@@ -17,6 +17,7 @@ import styles from './components/MatrixTerminal.module.css';
 import { createContractData, createDegenData, privateKeyAddress } from './info';
 import { degenGambitStreamConfig } from './config/streamConfig';
 import { degenGambitABI } from '../../ABIs/DegenGambit.abi';
+import { degenGambitConfig } from './config/gameConfig';
 
 // Import hooks and context
 import { DegenGambitProvider } from './contexts/DegenGambitContext';
@@ -98,7 +99,8 @@ export const degenGambitGame: Game = {
     },
     context: DegenGambitProvider,
     config: {
-        contractAddress: '0xE01c848c4b5e4Ac90746cd7bef27aEF23c9fcEa6',
+        contractAddress: '0xE01c848c4b5e4Ac90746cd7bef27aEF23c9fcEa6', // Legacy fallback
+        gameContractConfig: degenGambitConfig, // New dev mode aware config
         privateKey: '',
         wagmiConfig: null, // Will be set dynamically
     },
