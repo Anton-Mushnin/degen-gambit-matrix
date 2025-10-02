@@ -147,7 +147,10 @@ export const createPlayerData = ({
                 getBankBalance(address, publicClient)
             ]);
 
-            return getComboPossibilityData(streak.value, bankBalance.value);
+            const comboData = getComboPossibilityData(streak.value, bankBalance.value);
+            return comboData.formatted === 'No combo possible'
+                ?  null
+                : comboData;
         },
         onDataUpdate
     },

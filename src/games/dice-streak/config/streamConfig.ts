@@ -74,10 +74,9 @@ export const diceStreakStreamConfig: EventConfig[] = [
     invalidateQueries: (logs: any[], activeAccount: string | undefined) => {
       const queries: string[][] = [['bankBalance'], ['allStatistics']];
 
-      if (logs.some((log: any) => log.args.player === activeAccount)) {
-        queries.push(['playerBalance'], ['gameStatus'], ['comboPossibility']);
-      }
-      console.log('queries', queries);
+      // if (logs.some((log: any) => log.args.player === activeAccount)) {
+      //   queries.push(['playerBalance'], ['gameStatus'], ['comboPossibility'], ['playerStreak'], ['lastBetResult']);
+      // }
       return queries;
     },
     processLogs: (_logs: any[]) => {

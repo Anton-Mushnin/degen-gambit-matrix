@@ -104,9 +104,9 @@ const QueryValueRow = ({ queryKey, label, queryFn, refetchInterval, animation = 
     useEffect(() => cleanupAnimations, []);
 
     return (
-        <div className={styles.container}>
+        <div className={styles.container} style={{ opacity: data ? 1 : 0 }}>
             <div className={styles.item} onClick={() => refetch()}>{label}</div>
-            <div className={isUpdated && blinkOnUpdate ? styles.blink : styles.item}>{data?.formatted}</div>
+            <div className={isUpdated && blinkOnUpdate ? styles.blink : styles.item}>{data?.formatted || ''}</div>
         </div>
     );
 }
