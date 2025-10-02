@@ -186,12 +186,12 @@ const devModeHandler = async (context: CommandContext<GameManagementParams>) => 
       output: ['Dev mode context not available']
     };
   }
-
+  const newDevMode = !devModeContext.isDevMode;
   devModeContext.toggleDevMode();
   
   return {
     output: [
-      `Dev mode ${devModeContext.isDevMode ? 'enabled' : 'disabled'}`
+      `Dev mode ${newDevMode ? 'enabled' : 'disabled'}`
     ]
   };
 };
