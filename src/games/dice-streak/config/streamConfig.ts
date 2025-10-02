@@ -6,11 +6,11 @@ export const diceStreakStreamConfig: EventConfig[] = [
     eventName: 'PlayerWin',
     invalidateQueries: (logs: any[], activeAccount: string | undefined) => {
       const queries: string[][] = [['bankBalance']];
-      
+
       if (logs.some((log: any) => log.args.player === activeAccount)) {
         queries.push(['playerBalance'], ['playerTotalWinnings'], ['playerStreak'], ['gameStatus'], ['lastBetResult']);
       }
-      
+
       return queries;
     },
     processLogs: (logs: any[]) => {
@@ -39,11 +39,11 @@ export const diceStreakStreamConfig: EventConfig[] = [
     eventName: 'PlayerWinWithCombo',
     invalidateQueries: (logs: any[], activeAccount: string | undefined) => {
       const queries: string[][] = [['bankBalance'], ['bestCombo']];
-      
+
       if (logs.some((log: any) => log.args.player === activeAccount)) {
         queries.push(['playerBalance'], ['playerTotalWinnings'], ['playerStreak'], ['gameStatus'], ['lastBetResult']);
       }
-      
+
       return queries;
     },
     processLogs: (logs: any[]) => {
@@ -73,9 +73,9 @@ export const diceStreakStreamConfig: EventConfig[] = [
     eventName: 'Spin',
     invalidateQueries: (logs: any[], activeAccount: string | undefined) => {
       const queries: string[][] = [['bankBalance'], ['allStatistics']];
-      
+
       if (logs.some((log: any) => log.args.player === activeAccount)) {
-        queries.push(['playerBalance'], ['gameStatus']);
+        queries.push(['playerBalance'], ['gameStatus'], ['comboPossibility']);
       }
       console.log('queries', queries);
       return queries;
