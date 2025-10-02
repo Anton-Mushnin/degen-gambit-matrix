@@ -33,6 +33,7 @@ export type TerminalCommandParams = {
     publicClient: PublicClient | null;
     gameParams: any; // Game-specific parameters
     contractAddress: string;
+    contractABI?: any; // Contract ABI based on dev mode
 };
 
 /**

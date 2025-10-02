@@ -10,9 +10,12 @@ import { gameManagementCommands, GameManagementParams } from '../commands/comman
 
 // Custom hooks
 import { useBlockchain } from './useBlockchain';
+import { useDevMode } from '../contexts/DevModeContext';
+import { getGameConfig, GameContractConfig } from '../utils/gameConfig';
 
 export const useTerminal = (gameParams: any) => {
     const { activeAccount, client, publicClient, displayName, gameContext } = useBlockchain();
+    const devModeContext = useDevMode();
     const [outputQueue, setOutputQueue] = useState<{text: string, toType: boolean}[]>([]);
     const [welcomeShown, setWelcomeShown] = useState(false);
 
@@ -75,6 +78,22 @@ export const useTerminal = (gameParams: any) => {
     }, [gameContext.activeGame?.id, welcomeShown]);
 
     const handleInput = async (input: string) => {
+        // Get contract configuration based on dev mode
+        let contractAddress = '';
+        let contractABI = null;
+        
+        if (gameContext.activeGame?.config?.gameContractConfig) {
+            const gameConfig = getGameConfig(
+                gameContext.activeGame.config.gameContractConfig as GameContractConfig,
+                devModeContext.isDevMode
+            );
+            contractAddress = gameConfig.contractAddress;
+            contractABI = gameConfig.abi;
+        } else {
+            // Fallback to legacy config
+            contractAddress = (gameContext.activeGame?.config?.contractAddress as string) || '';
+        }
+
         // Prepare combined parameters for both game and management commands
         const combinedParams = {
             // Terminal command params
@@ -82,7 +101,8 @@ export const useTerminal = (gameParams: any) => {
             client,
             publicClient,
             gameParams,
-            contractAddress: (gameContext.activeGame?.config?.contractAddress as string) || '',
+            contractAddress,
+            contractABI,
             // Game management params
             gameContext: {
                 activeGameId: gameContext.activeGame?.id || null,
@@ -90,7 +110,9 @@ export const useTerminal = (gameParams: any) => {
                 getGameNames: gameContext.getGameNames,
                 getGameInfo: gameContext.getGameInfo,
                 availableGames: gameContext.availableGames
-            }
+            },
+            // Dev mode params
+            devModeContext
         };
 
         return dispatcher.dispatch(input, combinedParams);
