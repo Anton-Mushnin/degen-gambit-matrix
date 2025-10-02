@@ -101,7 +101,6 @@ export interface GameContractInfoConfig {
 }
 
 export interface GameStreamConfig {
-  contractAddress: string;
-  abi: any;
+  gameContractConfig: import('../utils/gameConfig').GameContractConfig;
   eventConfigs: EventConfig[];
 }

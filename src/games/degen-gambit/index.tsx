@@ -7,7 +7,6 @@ import { NETWORKS } from '../../config/networks';
 // Import generic components
 import GameMain from '../../components/GameMain';
 import GameContractInfo from '../../components/GameContractInfo';
-import GameStream from '../../components/GameStream';
 
 // Import DegenGambit-specific components
 import RandomNumbers from './components/RandomNumbers';
@@ -16,7 +15,6 @@ import styles from './components/MatrixTerminal.module.css';
 // Import configurations and functions
 import { createContractData, createDegenData, privateKeyAddress } from './info';
 import { degenGambitStreamConfig } from './config/streamConfig';
-import { degenGambitABI } from '../../ABIs/DegenGambit.abi';
 import { degenGambitConfig } from './config/gameConfig';
 
 // Import hooks and context
@@ -90,8 +88,7 @@ export const degenGambitGame: Game = {
             createDataItems: createDegenGambitDataItems
         },
         stream: {
-            contractAddress: '0xE01c848c4b5e4Ac90746cd7bef27aEF23c9fcEa6',
-            abi: degenGambitABI,
+            gameContractConfig: degenGambitConfig,
             eventConfigs: degenGambitStreamConfig
         },
     },
@@ -111,12 +108,7 @@ export const degenGambitGame: Game = {
 const ContractInfoWrapper: React.FC = () => React.createElement(GameContractInfo, {
   createDataItems: createDegenGambitDataItems
 });
-const StreamWrapper: React.FC = () => React.createElement(GameStream, {
-  contractAddress: "0xE01c848c4b5e4Ac90746cd7bef27aEF23c9fcEa6",
-  abi: degenGambitABI,
-  eventConfigs: degenGambitStreamConfig,
-  chainId: 37714555429
-});
+// StreamWrapper removed - use Home.tsx dev mode aware rendering instead
 
 // Export individual components and hooks for backward compatibility
 const DegenGambitMainWrapper: React.FC = () => React.createElement(GameMain, {
@@ -128,7 +120,7 @@ const DegenGambitMainWrapper: React.FC = () => React.createElement(GameMain, {
 });
 export { DegenGambitMainWrapper as DegenGambit };
 export { ContractInfoWrapper as ContractInfo };
-export { StreamWrapper as Stream };
+// Stream export removed - use Home.tsx dev mode aware rendering instead
 
 export { useDegenGambitContext, DegenGambitProvider } from './contexts/DegenGambitContext';
 export { useAccountToUse } from '../../hooks';

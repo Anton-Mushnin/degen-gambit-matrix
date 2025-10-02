@@ -1,4 +1,6 @@
 import { useGameContext } from "../contexts/GameContext";
+import { useDevMode } from "../contexts/DevModeContext";
+import { getGameConfig, GameContractConfig } from "../utils/gameConfig";
 import GameMain from "./GameMain";
 import GameContractInfo from "./GameContractInfo";
 import GameStream from "./GameStream";
@@ -6,6 +8,7 @@ import styles from "./Home.module.css";
 
 const Home = () => {
     const { activeGame } = useGameContext();
+    const { isDevMode } = useDevMode();
 
     // If no active game, show a default message
     if (!activeGame) {
@@ -57,22 +60,30 @@ const Home = () => {
             createDataItems={components.contractInfo!.createDataItems}
         />
     ) : null;
-    const StreamComponent = components.stream ? () => (
-        <GameStream
-            contractAddress={components.stream!.contractAddress}
-            abi={components.stream!.abi}
-            eventConfigs={components.stream!.eventConfigs}
-            chainId={activeGame.network.id}
-        />
-    ) : null;
+    const StreamComponent = components.stream ? () => {
+        // Resolve contract address and ABI based on dev mode
+        const gameConfig = getGameConfig(
+            components.stream!.gameContractConfig as GameContractConfig,
+            isDevMode
+        );
+
+        return (
+            <GameStream
+                contractAddress={gameConfig.contractAddress}
+                abi={gameConfig.abi}
+                eventConfigs={components.stream!.eventConfigs}
+                chainId={activeGame.network.id}
+            />
+        );
+    } : null;
 
     const gameContent = (
         <div className={styles.container}>
-            <div className={styles.stack} style={{borderRight: '1px solid #636363'}}>
+            <div className={`${styles.stack} ${styles.leftPanel}`}>
                 {ContractInfoComponent && <ContractInfoComponent />}
                 {StreamComponent && <StreamComponent />}
             </div>
-            <div className={styles.stack} style={{flex: '1'}}>
+            <div className={`${styles.stack} ${styles.rightPanel}`}>
                 {MainComponent && <MainComponent />}
                 {RulesComponent && <RulesComponent />}
             </div>

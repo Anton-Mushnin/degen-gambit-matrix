@@ -7,12 +7,10 @@ import { diceStreakCommands } from './commands/diceStreak';
 // Import generic components
 import GameMain from '../../components/GameMain';
 import GameContractInfo from '../../components/GameContractInfo';
-import GameStream from '../../components/GameStream';
 
 // Import configurations and functions
 import { createContractData, createPlayerData, privateKeyAddress } from './info';
 import { diceStreakStreamConfig } from './config/streamConfig';
-import { diceStreakABI } from '../../ABIs/DiceStreak.abi';
 import { diceStreakConfig } from './config/gameConfig';
 
 // Create data items wrapper for generic component
@@ -41,8 +39,6 @@ import { DiceStreakProcessingComponent, DiceStreakOutcomeComponent } from './com
 
 
 // Create the DiceStreak game module
-// Contract address - single source of truth
-const DICE_STREAK_CONTRACT_ADDRESS = '0x2E1C39c9475C62f17493ABaFaFf90eD01640ce51';
 
 export const diceStreakGame: Game = {
     id: 'dice-streak',
@@ -61,8 +57,7 @@ export const diceStreakGame: Game = {
             createDataItems: createDiceStreakDataItems
         },
         stream: {
-            contractAddress: DICE_STREAK_CONTRACT_ADDRESS,
-            abi: diceStreakABI,
+            gameContractConfig: diceStreakConfig,
             eventConfigs: diceStreakStreamConfig
         },
     },
@@ -83,17 +78,12 @@ const DiceStreakWrapper: React.FC = () => React.createElement(GameMain, { useGam
 const ContractInfoWrapper: React.FC = () => React.createElement(GameContractInfo, {
   createDataItems: createDiceStreakDataItems
 });
-const StreamWrapper: React.FC = () => React.createElement(GameStream, {
-  contractAddress: DICE_STREAK_CONTRACT_ADDRESS,
-  abi: diceStreakABI,
-  eventConfigs: diceStreakStreamConfig,
-  chainId: diceStreakGame.network.id
-});
+// StreamWrapper removed - use Home.tsx dev mode aware rendering instead
 
 // Export individual components and hooks for backward compatibility
 export { DiceStreakWrapper as DiceStreak };
 export { ContractInfoWrapper as ContractInfo };
-export { StreamWrapper as Stream };
+// Stream export removed - use Home.tsx dev mode aware rendering instead
 
 export { useDiceStreakContext, DiceStreakProvider } from './contexts/DiceStreakContext';
 export { useAccountToUse } from '../../hooks';
