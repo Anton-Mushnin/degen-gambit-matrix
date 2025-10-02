@@ -1,7 +1,7 @@
 const { ethers } = require('hardhat');
 
 async function main() {
-  console.log("🚀 Deploying DiceStreak contract to XAI Testnet...");
+  console.log("🚀 Deploying DiceStreakDev contract to XAI Testnet...");
 
   // Get the deployer account
   const [deployer] = await ethers.getSigners();
@@ -16,20 +16,20 @@ async function main() {
   console.log("- Bet amount:", betAmount.toString(), "WEI");
   console.log("- Payout multiplier:", payoutMultiplier, "(5.5x)");
 
-  // Deploy the DiceStreak contract
-  const DiceStreak = await ethers.getContractFactory("DiceStreak");
-  const diceStreak = await DiceStreak.deploy(betAmount, payoutMultiplier);
+  // Deploy the DiceStreakDev contract
+  const DiceStreakDev = await ethers.getContractFactory("DiceStreakDev");
+  const diceStreakDev = await DiceStreakDev.deploy(betAmount, payoutMultiplier);
 
-  await diceStreak.deployed();
+  await diceStreakDev.deployed();
 
-  console.log("✅ DiceStreak deployed to:", diceStreak.address);
+  console.log("✅ DiceStreakDev deployed to:", diceStreakDev.address);
 
   // Fund the contract with some ETH for payouts
   const fundingAmount = ethers.BigNumber.from("1000"); // 1000 wei
   console.log(`💰 Funding contract with ${fundingAmount.toString()} WEI for payouts...`);
 
   const fundTx = await deployer.sendTransaction({
-    to: diceStreak.address,
+    to: diceStreakDev.address,
     value: fundingAmount
   });
   await fundTx.wait();
@@ -37,12 +37,12 @@ async function main() {
 
   // Verify deployment
   console.log("\n📋 Contract verification:");
-  console.log("- Bet amount:", ethers.utils.formatEther(await diceStreak.getBetAmount()), "ETH");
-  console.log("- Payout multiplier:", (await diceStreak.getPayoutMultiplier()).toString());
-  console.log("- Bank balance:", ethers.utils.formatEther(await diceStreak.getBankBalance()), "ETH");
+  console.log("- Bet amount:", ethers.utils.formatEther(await diceStreakDev.getBetAmount()), "ETH");
+  console.log("- Payout multiplier:", (await diceStreakDev.getPayoutMultiplier()).toString());
+  console.log("- Bank balance:", ethers.utils.formatEther(await diceStreakDev.getBankBalance()), "ETH");
 
   console.log("\n🎉 Deployment completed successfully!");
-  console.log("🎲 Contract address:", diceStreak.address);
+  console.log("🎲 Contract address:", diceStreakDev.address);
 
 }
 
