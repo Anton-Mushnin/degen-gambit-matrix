@@ -4,6 +4,7 @@ import { TerminalOutput } from './components/matrixUI/TerminalOutput';
 import Home from './components/Home';
 import { GameProvider } from './contexts/GameContext';
 import { WinEffectProvider } from './contexts/WinEffectContext';
+import { DevModeProvider } from './contexts/DevModeContext';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 
@@ -19,11 +20,13 @@ function App() {
         </div>
       ) : (
         <ThirdwebProvider>
-          <GameProvider>
-            <WinEffectProvider>
-              <Home />
-            </WinEffectProvider>
-          </GameProvider>
+          <DevModeProvider>
+            <GameProvider>
+              <WinEffectProvider>
+                <Home />
+              </WinEffectProvider>
+            </GameProvider>
+          </DevModeProvider>
           <ReactQueryDevtools initialIsOpen={false} />
 
         </ThirdwebProvider>

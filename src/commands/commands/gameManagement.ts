@@ -10,6 +10,10 @@ export interface GameManagementParams {
     getGameInfo: () => any;
     availableGames: any[];
   };
+  devModeContext?: {
+    isDevMode: boolean;
+    toggleDevMode: () => void;
+  };
 }
 
 // List all available games
@@ -173,6 +177,25 @@ const gameManagementHandler = async (context: CommandContext<GameManagementParam
   return listGamesHandler(context);
 };
 
+// Dev mode toggle handler
+const devModeHandler = async (context: CommandContext<GameManagementParams>) => {
+  const devModeContext = context.params.devModeContext;
+  
+  if (!devModeContext) {
+    return {
+      output: ['Dev mode context not available']
+    };
+  }
+
+  devModeContext.toggleDevMode();
+  
+  return {
+    output: [
+      `Dev mode ${devModeContext.isDevMode ? 'enabled' : 'disabled'}`
+    ]
+  };
+};
+
 // Command definitions
 export const gameManagementCommands: CommandDefinition<GameManagementParams>[] = [
   {
@@ -212,6 +235,7 @@ export const gameManagementCommands: CommandDefinition<GameManagementParams>[] =
         '• games list - List available games',
         '• games switch <name> - Switch to a game',
         '• games info [name] - Get game information',
+        '• dev - Toggle development mode',
         '• help - Show this help',
         ''
       ];
@@ -230,5 +254,14 @@ export const gameManagementCommands: CommandDefinition<GameManagementParams>[] =
 
       return { output };
     },
+  },
+  {
+    pattern: {
+      pattern: /^dev$/i,
+      name: 'dev',
+      description: 'Toggle development mode',
+      usage: 'dev',
+    },
+    handler: devModeHandler,
   }
 ]; 

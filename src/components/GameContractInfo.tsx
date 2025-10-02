@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useActiveAccount } from 'thirdweb/react';
 
 import { useAccountToUse, useBlockchain } from '../hooks';
+import { useDevMode } from '../contexts/DevModeContext';
 import { DataItem } from '../games/types';
 import QueryValueRow from './matrixUI/QueryValueRow';
 import QueryValueTable from './matrixUI/QueryValueTable';
@@ -25,6 +26,7 @@ const GameContractInfo: React.FC<GameContractInfoProps> = ({
   const { displayName } = useAccountToUse();
   const { publicClient } = useBlockchain();
   const queryClient = useQueryClient();
+  const { isDevMode } = useDevMode();
 
   const { contractData, playerData } = publicClient ? createDataItems({
     publicClient,
@@ -35,6 +37,17 @@ const GameContractInfo: React.FC<GameContractInfoProps> = ({
 
   return (
     <div className={styles.container}>
+      {isDevMode && (
+        <ValueRow
+          label="Mode"
+          data={{
+            formatted: "Dev mode on",
+            value: BigInt(1),
+            decimals: 0
+          }}
+          animation={false}
+        />
+      )}
       {contractData.map((item, index) => (
         item.type === 'query' ? (
           item.tableQueryFn ? (
