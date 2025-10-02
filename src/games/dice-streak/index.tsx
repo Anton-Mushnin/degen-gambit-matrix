@@ -14,9 +14,10 @@ import { diceStreakStreamConfig } from './config/streamConfig';
 import { diceStreakConfig } from './config/gameConfig';
 
 // Create data items wrapper for generic component
-const createDiceStreakDataItems = ({ publicClient, activeAccount }: any) => {
+const createDiceStreakDataItems = ({ publicClient, activeAccount, contractAddress }: any) => {
   const contractData = createContractData({
     publicClient,
+    contractAddress: contractAddress || (diceStreakConfig.production.contractAddress), // Use passed address or fallback
     onDataUpdate: () => console.log('Contract data updated')
   });
 
@@ -24,6 +25,7 @@ const createDiceStreakDataItems = ({ publicClient, activeAccount }: any) => {
   const playerData = playerAddress ? createPlayerData({
     publicClient,
     playerAddress,
+    contractAddress: contractAddress || (diceStreakConfig.production.contractAddress), // Use passed address or fallback
     onDataUpdate: () => console.log('Player data updated')
   }) : [];
 
@@ -54,6 +56,7 @@ export const diceStreakGame: Game = {
                 } 
               },
         contractInfo: {
+            gameContractConfig: diceStreakConfig,
             createDataItems: createDiceStreakDataItems
         },
         stream: {

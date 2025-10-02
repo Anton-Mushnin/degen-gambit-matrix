@@ -91,12 +91,15 @@ export interface GameMainConfig {
 }
 
 export interface GameContractInfoConfig {
+  gameContractConfig?: import('../utils/gameConfig').GameContractConfig; // New dev mode aware config
   createDataItems: (params: {
     publicClient: any;
     activeAccount?: any;
     displayName?: string;
     queryClient?: any;
     privateKeyAddress?: string;
+    contractAddress?: string; // Dev mode aware contract address
+    contractABI?: any; // Dev mode aware contract ABI
   }) => { contractData: DataItem[]; playerData: DataItem[] };
 }
 

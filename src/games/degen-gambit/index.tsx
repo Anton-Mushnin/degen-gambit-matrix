@@ -47,9 +47,10 @@ const DegenGambitOutcomeComponent = ({ outcome }: { outcome?: any[] }) => {
 };
 
 // Create data items wrapper for generic component
-const createDegenGambitDataItems = ({ publicClient, activeAccount, displayName, queryClient }: any) => {
+const createDegenGambitDataItems = ({ publicClient, activeAccount, displayName, queryClient, contractAddress }: any) => {
   const contractData = createContractData({
     publicClient,
+    contractAddress: contractAddress || (degenGambitConfig.production.contractAddress), // Use passed address or fallback
     onCurrentBlockUpdate: (data: any) => {
       console.log('onCurrentBlockUpdate', data);
       queryClient?.invalidateQueries({ queryKey: ['blocksLeft', activeAccount?.address] });
@@ -61,6 +62,7 @@ const createDegenGambitDataItems = ({ publicClient, activeAccount, displayName, 
     degenAddress: activeAccount?.address || privateKeyAddress,
     displayName,
     queryClient,
+    contractAddress: contractAddress || (degenGambitConfig.production.contractAddress), // Use passed address or fallback
     onLastSpinBlockUpdate: () => {
       queryClient?.invalidateQueries({ queryKey: ['blocksLeft', activeAccount?.address] });
     }
@@ -85,6 +87,7 @@ export const degenGambitGame: Game = {
             },
         },
         contractInfo: {
+            gameContractConfig: degenGambitConfig,
             createDataItems: createDegenGambitDataItems
         },
         stream: {

@@ -55,11 +55,30 @@ const Home = () => {
       }
     }
     const RulesComponent = components.rules;
-    const ContractInfoComponent = components.contractInfo ? () => (
-        <GameContractInfo
-            createDataItems={components.contractInfo!.createDataItems}
-        />
-    ) : null;
+    const ContractInfoComponent = components.contractInfo ? () => {
+        // Resolve contract address and ABI based on dev mode (same pattern as GameStream)
+        let contractAddress = '';
+        let contractABI = null;
+        
+        if (components.contractInfo!.gameContractConfig) {
+            const gameConfig = getGameConfig(
+                components.contractInfo!.gameContractConfig as GameContractConfig,
+                isDevMode
+            );
+            contractAddress = gameConfig.contractAddress;
+            contractABI = gameConfig.abi;
+        }
+
+        return (
+            <GameContractInfo
+                createDataItems={(params) => components.contractInfo!.createDataItems({
+                    ...params,
+                    contractAddress,
+                    contractABI
+                })}
+            />
+        );
+    } : null;
     const StreamComponent = components.stream ? () => {
         // Resolve contract address and ABI based on dev mode
         const gameConfig = getGameConfig(

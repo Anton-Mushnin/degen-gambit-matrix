@@ -23,23 +23,27 @@ export const privateKeyAddress = privateKey ? privateKeyToAccount(privateKey).ad
 
 export const createContractData = ({
     publicClient,
+    contractAddress,
     onDataUpdate,
 }: {
     publicClient: PublicClient;
+    contractAddress?: string;
     onDataUpdate?: () => void;
-}): DataItem[] => [
+}): DataItem[] => {
+    const address: string = contractAddress || (diceStreakGame.config.contractAddress as string);
+    return [
     {
         type: 'query',
         label: 'Bank Balance: ',
-        queryKey: ['bankBalance', diceStreakGame.config.contractAddress as string],
-        queryFn: () => getBankBalance(diceStreakGame.config.contractAddress as string, publicClient),
+        queryKey: ['bankBalance', address],
+        queryFn: () => getBankBalance(address, publicClient),
         onDataUpdate
     },
     {
         type: 'static',
         label: 'Contract Address: ',
         data: {
-            formatted: (diceStreakGame.config.contractAddress as string).slice(0, 6) + '...' + (diceStreakGame.config.contractAddress as string).slice(-4),
+            formatted: address.slice(0, 6) + '...' + address.slice(-4),
             value: BigInt(0),
             decimals: 0
         },
@@ -48,23 +52,23 @@ export const createContractData = ({
     {
         type: 'query',
         label: 'Bet Amount: ',
-        queryKey: ['betAmount', diceStreakGame.config.contractAddress as string],
-        queryFn: () => getBetAmount(diceStreakGame.config.contractAddress as string, publicClient),
+        queryKey: ['betAmount', address],
+        queryFn: () => getBetAmount(address, publicClient),
         onDataUpdate
     },
     {
         type: 'query',
         label: 'Payout Multiplier: ',
-        queryKey: ['payoutMultiplier', diceStreakGame.config.contractAddress as string],
-        queryFn: () => getPayoutMultiplier(diceStreakGame.config.contractAddress as string, publicClient),
+        queryKey: ['payoutMultiplier', address],
+        queryFn: () => getPayoutMultiplier(address, publicClient),
         onDataUpdate
     },
     {
         type: 'query',
         label: 'Best Combo: ',
-        queryKey: ['bestCombo', diceStreakGame.config.contractAddress as string],
+        queryKey: ['bestCombo', address],
         queryFn: async () => {
-            const combo = await getBestCombo(diceStreakGame.config.contractAddress as string, publicClient);
+            const combo = await getBestCombo(address, publicClient);
             return {
                 value: BigInt(combo.streakFaces.length),
                 formatted: combo.formatted,
@@ -79,23 +83,28 @@ export const createContractData = ({
         animation: false,
         headers: ['Number', 'Occurrences', 'Bets', 'Wins'],
         isTable: true,
-        queryKey: ['allStatistics', diceStreakGame.config.contractAddress as string],
+        queryKey: ['allStatistics', address],
         tableQueryFn: async () => {
-            return  getAllStatistics(diceStreakGame.config.contractAddress as string, publicClient);
+            return  getAllStatistics(address, publicClient);
         },
         onDataUpdate
     }
 ];
+};
 
 export const createPlayerData = ({
     publicClient,
     playerAddress,
+    contractAddress,
     onDataUpdate,
 }: {
     publicClient: PublicClient;
     playerAddress: string;
+    contractAddress?: string;
     onDataUpdate?: () => void;
-}): DataItem[] => [
+}): DataItem[] => {
+    const address: string = contractAddress || (diceStreakGame.config.contractAddress as string);
+    return [
     {
         type: 'static',
         label: 'Player Address: ',
@@ -116,9 +125,9 @@ export const createPlayerData = ({
     {
         type: 'query',
         label: 'Current Streak: ',
-        queryKey: ['playerStreak', diceStreakGame.config.contractAddress as string, playerAddress],
+        queryKey: ['playerStreak', address, playerAddress],
         queryFn: async () => {
-            const streak = await getPlayerStreak(diceStreakGame.config.contractAddress as string, playerAddress, publicClient);
+            const streak = await getPlayerStreak(address, playerAddress, publicClient);
             return {
                 value: BigInt(streak.value.length),
                 formatted: streak.formatted,
@@ -130,16 +139,16 @@ export const createPlayerData = ({
     {
         type: 'query',
         label: 'Total Winnings: ',
-        queryKey: ['playerTotalWinnings', diceStreakGame.config.contractAddress as string, playerAddress],
-        queryFn: () => getPlayerTotalWinnings(diceStreakGame.config.contractAddress as string, playerAddress, publicClient),
+        queryKey: ['playerTotalWinnings', address, playerAddress],
+        queryFn: () => getPlayerTotalWinnings(address, playerAddress, publicClient),
         onDataUpdate
     },
     {
         type: 'query',
         label: 'Game Status: ',
-        queryKey: ['gameStatus', diceStreakGame.config.contractAddress as string, playerAddress],
+        queryKey: ['gameStatus', address, playerAddress],
         queryFn: async () => {
-            const status = await getGameStatus(diceStreakGame.config.contractAddress as string, playerAddress, publicClient);
+            const status = await getGameStatus(address, playerAddress, publicClient);
             return {
                 value: BigInt(Number(status.value)),
                 formatted: status.formatted,
@@ -151,9 +160,9 @@ export const createPlayerData = ({
     {
         type: 'query',
         label: 'Last Bet Result: ',
-        queryKey: ['lastBetResult', diceStreakGame.config.contractAddress as string, playerAddress],
+        queryKey: ['lastBetResult', address, playerAddress],
         queryFn: async () => {
-            const result = await getLastBetResult(diceStreakGame.config.contractAddress as string, playerAddress, publicClient);
+            const result = await getLastBetResult(address, playerAddress, publicClient);
             return {
                 value: BigInt(Number(result.value)),
                 formatted: result.formatted,
@@ -163,3 +172,4 @@ export const createPlayerData = ({
         onDataUpdate
     }
 ];
+};

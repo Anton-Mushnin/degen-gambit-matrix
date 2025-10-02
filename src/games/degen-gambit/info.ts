@@ -12,25 +12,29 @@ export const privateKeyAddress = privateKey ? privateKeyToAccount(privateKey).ad
 
 export const createContractData = ({
     publicClient,
+    contractAddress,
     onDataUpdate,
     onCurrentBlockUpdate
 }: {
     publicClient: PublicClient;
+    contractAddress?: string;
     onDataUpdate?: () => void;
     onCurrentBlockUpdate?: (data: any) => void;
-}): DataItem[] => [
+}): DataItem[] => {
+    const address: string = contractAddress || (degenGambitGame.config.contractAddress as string);
+    return [
     {
         type: 'query',
         label: 'Pot: ',
-        queryKey: ['contractBalance', degenGambitGame.config.contractAddress as string],
-        queryFn: () => getBalance(wagmiConfig, {address: degenGambitGame.config.contractAddress as string, chainId: degenGambitGame.network.id as any}),
+        queryKey: ['contractBalance', address],
+        queryFn: () => getBalance(wagmiConfig, {address: address, chainId: degenGambitGame.network.id as any}),
         onDataUpdate
     },
     {
         type: 'static',
         label: 'Contract Address: ',
         data: {
-            formatted: (degenGambitGame.config.contractAddress as string).slice(0, 6) + '...' + (degenGambitGame.config.contractAddress as string).slice(-4),
+            formatted: (address).slice(0, 6) + '...' + (address).slice(-4),
             value: BigInt(0),
             decimals: 0
         },
@@ -39,8 +43,8 @@ export const createContractData = ({
     {
         type: 'query',
         label: 'Gambit Supply: ',
-        queryKey: ['gambitSupply', degenGambitGame.config.contractAddress as string],
-        queryFn: () => getSupply(degenGambitGame.config.contractAddress as string, publicClient)
+        queryKey: ['gambitSupply', address],
+        queryFn: () => getSupply(address, publicClient)
     },
     {
         type: 'query',
@@ -57,24 +61,28 @@ export const createContractData = ({
         type: 'query',
         label: 'Blocks To Act: ',
         queryKey: ['blocksToAct'],
-        queryFn: () => getBlocksToAct(degenGambitGame.config.contractAddress as string, publicClient),
+        queryFn: () => getBlocksToAct(address, publicClient),
         animation: false
     }
 ];
+};
 
 export const createDegenData = ({
     publicClient,
     degenAddress,
     displayName,
     queryClient,
+    contractAddress,
     onLastSpinBlockUpdate,
 }: {
     publicClient: PublicClient;
     degenAddress: string | undefined;
     displayName: string | undefined;
     queryClient: any;
+    contractAddress?: string;
     onLastSpinBlockUpdate?: () => void;
 }): DataItem[] => {
+    const address: string = contractAddress || (degenGambitGame.config.contractAddress as string);
     if (!degenAddress) return [];
 
     return [
@@ -98,20 +106,20 @@ export const createDegenData = ({
             type: 'query',
             label: 'GAMBIT: ',
             queryKey: ['accountGambitBalance', degenAddress],
-            queryFn: () => getBalanceOf(degenGambitGame.config.contractAddress as string, degenAddress, publicClient)
+            queryFn: () => getBalanceOf(address, degenAddress, publicClient)
         },
         {
             type: 'query',
             label: 'Cost to Spin: ',
             queryKey: ['costToSpin', degenAddress],
-            queryFn: () => getCostToSpin(degenGambitGame.config.contractAddress as string, degenAddress, publicClient),
+            queryFn: () => getCostToSpin(address, degenAddress, publicClient),
             animation: false
         },
         {
             type: 'query',
             label: 'Last Spin Block: ',
             queryKey: ['lastSpinBlock', degenAddress],
-            queryFn: () => getLastSpinBlock(degenGambitGame.config.contractAddress as string, degenAddress, publicClient),
+            queryFn: () => getLastSpinBlock(address, degenAddress, publicClient),
             animation: false,
             onDataUpdate: () => {
                 onLastSpinBlockUpdate?.();
@@ -149,13 +157,13 @@ export const createDegenData = ({
             type: 'query',
             label: 'Daily Streak: ',
             queryKey: ['dailyStreak', degenAddress],
-            queryFn: () => getCurrentDailyStreakLength(degenGambitGame.config.contractAddress as string, degenAddress, publicClient)
+            queryFn: () => getCurrentDailyStreakLength(address, degenAddress, publicClient)
         },
         {
             type: 'query',
             label: 'Weekly Streak: ',
             queryKey: ['weeklyStreak', degenAddress],
-            queryFn: () => getCurrentWeeklyStreakLength(degenGambitGame.config.contractAddress as string, degenAddress, publicClient)
+            queryFn: () => getCurrentWeeklyStreakLength(address, degenAddress, publicClient)
         }
     ];
 }; 
