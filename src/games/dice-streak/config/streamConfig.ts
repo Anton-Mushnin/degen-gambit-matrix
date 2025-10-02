@@ -80,7 +80,7 @@ export const diceStreakStreamConfig: EventConfig[] = [
       console.log('queries', queries);
       return queries;
     },
-    processLogs: (logs: any[]) => {
+    processLogs: (_logs: any[]) => {
       // No display needed for Spin events, just return empty array
       return [];
     }

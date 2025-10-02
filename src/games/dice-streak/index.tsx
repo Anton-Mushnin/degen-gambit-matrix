@@ -13,6 +13,7 @@ import GameStream from '../../components/GameStream';
 import { createContractData, createPlayerData, privateKeyAddress } from './info';
 import { diceStreakStreamConfig } from './config/streamConfig';
 import { diceStreakABI } from '../../ABIs/DiceStreak.abi';
+import { diceStreakConfig } from './config/gameConfig';
 
 // Create data items wrapper for generic component
 const createDiceStreakDataItems = ({ publicClient, activeAccount }: any) => {
@@ -69,7 +70,8 @@ export const diceStreakGame: Game = {
     },
     context: DiceStreakProvider,
     config: {
-        contractAddress: '0x2E1C39c9475C62f17493ABaFaFf90eD01640ce51',
+        contractAddress: '0x2E1C39c9475C62f17493ABaFaFf90eD01640ce51', // Legacy fallback
+        gameContractConfig: diceStreakConfig, // New dev mode aware config
         privateKey: '',
         wagmiConfig: null, // Will be set dynamically
     },
