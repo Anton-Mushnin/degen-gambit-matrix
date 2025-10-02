@@ -3,8 +3,9 @@ const { ethers } = require("hardhat");
 async function main() {
   console.log("✅ Testing DiceStreak accept functionality...");
 
-  // Contract address
-  const contractAddress = "0xCfD6407737Ee7569a9c96fc6803f2b99b8B5E69d";
+  // Get contract address from config
+  const config = require('./config.cjs');
+  const contractAddress = config.production.contractAddress;
 
   try {
     // Get player account

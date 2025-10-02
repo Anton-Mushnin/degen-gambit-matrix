@@ -3,8 +3,9 @@ const { ethers } = require("hardhat");
 async function main() {
   console.log("🎲 Testing DiceStreak play functionality...");
   
-  // Contract address
-  const contractAddress = "0xCfD6407737Ee7569a9c96fc6803f2b99b8B5E69d";
+  // Get contract address from config
+  const config = require('./config.cjs');
+  const contractAddress = config.production.contractAddress;
   
   if (contractAddress === "0x0000000000000000000000000000000000000000") {
     console.log("❌ Please update the contract address in this script first");
