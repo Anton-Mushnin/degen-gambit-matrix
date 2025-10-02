@@ -14,96 +14,12 @@ import {
     getLastBetResult,
     getAllStatistics
 } from './contractFunctions/read';
-import { formatUnits } from 'viem';
+import { getComboPossibilityData } from './comboUtils';
 import { DataItem } from '../types';
 import { diceStreakGame } from '.';
 
 export const privateKey = import.meta.env.VITE_PRIVATE_KEY;
 export const privateKeyAddress = privateKey ? privateKeyToAccount(privateKey).address : undefined;
-
-// Combo detection and calculation logic (mirroring contract logic)
-const detectCombo = (numbers: number[]): { isCombo: boolean; comboType: string } => {
-    if (numbers.length < 3) {
-        return { isCombo: false, comboType: '' };
-    }
-
-    // Check all equal
-    const allEqual = numbers.every(num => num === numbers[0]);
-    if (allEqual) {
-        return { isCombo: true, comboType: 'All Equal' };
-    }
-
-    // Check increasing sequence
-    const increasing = numbers.every((num, index) =>
-        index === 0 || num === numbers[index - 1] + 1
-    );
-    if (increasing) {
-        return { isCombo: true, comboType: 'Increasing' };
-    }
-
-    // Check decreasing sequence
-    const decreasing = numbers.every((num, index) =>
-        index === 0 || num === numbers[index - 1] - 1
-    );
-    if (decreasing) {
-        return { isCombo: true, comboType: 'Decreasing' };
-    }
-
-    return { isCombo: false, comboType: '' };
-};
-
-const getBankShare = (streakLength: number): number => {
-    if (streakLength === 3) return 200; // 2%
-    if (streakLength === 4) return 500; // 5%
-    if (streakLength === 5) return 1500; // 15%
-    if (streakLength === 6) return 5000; // 50%
-    return 0;
-};
-
-const checkComboPossibility = (currentStreak: number[], bankBalance: bigint): {
-    possibleNumbers: number[];
-    nextPayout: bigint;
-    comboType: string;
-} => {
-    if (currentStreak.length === 0) {
-        return { possibleNumbers: [], nextPayout: BigInt(0), comboType: '' };
-    }
-
-    const possibleNumbers: number[] = [];
-    let maxPayout = BigInt(0);
-    let bestComboType = '';
-
-    // Try each possible next number (1-6)
-    for (let nextNum = 1; nextNum <= 6; nextNum++) {
-        const testStreak = [...currentStreak, nextNum];
-        const newLength = testStreak.length;
-
-        // Check if this creates a combo of length 3 or more
-        for (let comboLength = 3; comboLength <= newLength; comboLength++) {
-            const lastNumbers = testStreak.slice(-comboLength);
-            const { isCombo, comboType } = detectCombo(lastNumbers);
-
-            if (isCombo) {
-                const bankShare = getBankShare(comboLength);
-                const bonus = (bankBalance * BigInt(bankShare)) / BigInt(10000);
-
-                if (bonus > maxPayout) {
-                    maxPayout = bonus;
-                    bestComboType = comboType;
-                }
-
-                possibleNumbers.push(nextNum);
-                break; // Found a combo for this number
-            }
-        }
-    }
-
-    return {
-        possibleNumbers: [...new Set(possibleNumbers)], // Remove duplicates
-        nextPayout: maxPayout,
-        comboType: bestComboType
-    };
-};
 
 
 export const createContractData = ({
@@ -231,26 +147,7 @@ export const createPlayerData = ({
                 getBankBalance(address, publicClient)
             ]);
 
-            const comboInfo = checkComboPossibility(streak.value, bankBalance.value);
-
-            if (comboInfo.possibleNumbers.length === 0) {
-                return {
-                    value: BigInt(0),
-                    formatted: 'No combo possible',
-                    decimals: 0
-                };
-            }
-
-            const numbers = comboInfo.possibleNumbers.join(', ');
-            const payout = comboInfo.nextPayout > BigInt(0)
-                ? ` → ${formatUnits(comboInfo.nextPayout, 18)} ETH bonus`
-                : '';
-
-            return {
-                value: BigInt(comboInfo.possibleNumbers.length),
-                formatted: `Roll ${numbers}${payout}`,
-                decimals: 0
-            };
+            return getComboPossibilityData(streak.value, bankBalance.value);
         },
         onDataUpdate
     },
