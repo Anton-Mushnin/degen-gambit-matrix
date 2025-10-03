@@ -1,10 +1,7 @@
-import { handleCommitRevealAccept, TerminalCommandParams } from "../../../utils/gameHandlers";
-import { commitRevealSpin } from '../../../utils/commitRevealSpin';
+import { TerminalCommandParams } from "../../../utils/gameHandlers";
 import { accept } from '../contractFunctions/write';
-import { diceStreakABI } from '../../../ABIs/DiceStreak.abi';
-import { wagmiConfig } from "../../../config";
-import { formatUnits } from "viem";
-import { diceStreakGame } from "..";
+import { commitRevealAccept } from "../../../utils/commitRevealAccept";
+
 
 declare global {
     interface Window {
@@ -17,8 +14,7 @@ declare global {
 }
 
 export async function handlePlay({ input, params }: { input: string; params: TerminalCommandParams }) {
-    const { gameParams } = params;
-    const { setIsWin } = gameParams;
+    const { contractAddress, contractABI, publicClient, activeAccount, client } = params;
 
     // Parse the guess from input (format: "play 3")
     const match = input.match(/^play (\d)$/);
@@ -31,75 +27,46 @@ export async function handlePlay({ input, params }: { input: string; params: Ter
         return { output: ["Guess must be between 1 and 6"] };
     }
 
-    // Create a dice-streak specific spin function that handles both commit and reveal
-    const diceStreakCommit = async (contractAddress: string, _isBoost: boolean, activeAccount: any, client: any, publicClient: any) => {
 
-        const chainId = await publicClient.getChainId();
+    const viemContract = {
+        address: contractAddress,
+        abi: [{
+            name: "getBetAmount",
+            type: "function",
+            stateMutability: "view",
+            inputs: [],
+            outputs: [{ internalType: "uint256", name: "", type: "uint256" }]
+        }],
+    } as const;
 
-        // Get the bet amount
-        const viemContract = {
-            address: contractAddress,
-            abi: diceStreakABI,
-        } as const;
+    if (!publicClient) {
+        throw new Error("Public client not available");
+    }
 
-        const betAmount = await publicClient.readContract({
-            ...viemContract,
-            functionName: 'getBetAmount',
-        });
-
-        // Use commitRevealSpin for both commit and reveal phases
-        const result = await commitRevealSpin({
-            contractAddress,
-            contractABI: diceStreakABI,
-            spinFunctionName: 'play',
-            spinArgs: [guess],
-            value: betAmount,
-            account: activeAccount,
-            client,
-            publicClient,
-            chainId,
-        });
-
-        // Extract result from outcome - DiceStreak inspectOutcome returns [diceResult, prizeValue, description]
-        const outcome = result.outcome as readonly [number, bigint, string];
-        const diceResult = outcome[0];
-        const prizeValue = Number(outcome[1]);
-
-        let actionText = '';
-        if (prizeValue > 0) {
-            const gameChain = wagmiConfig.chains.find(chain => chain.id === diceStreakGame.network.id) || wagmiConfig.chains[0]
-
-          actionText = `You rolled ${diceResult}! You won ${formatUnits(outcome[1], Number(18))} ${gameChain.nativeCurrency.symbol}`;
-        } else {
-          actionText = `The Matrix has you...`;
-        }
-
-        return {
-            description: actionText,
-            outcome: result.outcome,
-            prize: prizeValue > 0 ? prizeValue.toString() : '0',
-            prizeType: 0,
-            receipt: result.receipt,
-        };
-    };
-
-    const result = await handleCommitRevealAccept({
-        input,
-        params,
-        config: {
-            spinFunction: diceStreakCommit,
-            onWinState: setIsWin,
-            onAccept: accept,
-            winDelay: 8000, // Time to wait before showing win state (for pending bets)
-            acceptDelay: 18000, // Minimal delay since accept() processes immediately
-        }
+    const betAmount = await publicClient.readContract({
+        ...viemContract,
+        functionName: 'getBetAmount',
     });
 
-    // Ensure isPrize is boolean | undefined, not boolean | "" | undefined
+    const chainId = await publicClient.getChainId();
+
+
+    const result = await commitRevealAccept({
+        contractAddress,
+        contractABI: contractABI,
+        commitFunctionName: 'play',
+        commitArgs: [guess],
+        value: betAmount,
+        account: activeAccount,
+        client,
+        publicClient,
+        chainId,
+    });
+
     return {
-        ...result,
-        isPrize: typeof result.isPrize === 'boolean' ? result.isPrize : undefined
+        outcome: result.outcome,
     };
+
 }
 
 export async function handleAuto({ params }: { params: TerminalCommandParams }) {

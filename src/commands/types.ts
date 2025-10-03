@@ -1,6 +1,6 @@
 export type CommandResult<T = any> = {
     output: string[];
-    outcome?: bigint[];
+    outcome?: [bigint, `0x${string}`];
     isPrize?: boolean;
     data?: T;
 };

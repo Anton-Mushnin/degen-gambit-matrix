@@ -1,6 +1,13 @@
 import React, { createContext, useContext, ReactNode, useState, useCallback } from 'react';
 import { useTerminal } from '../../../hooks/useTerminal';
 import { useWinEffect } from '../../../contexts/WinEffectContext';
+import { decodeAbiParameters } from "viem";
+import { wagmiConfig } from "../../../config";
+import { diceStreakGame } from "..";
+import { formatEtherOrWei } from "../utils";
+
+
+
 
 interface GameState {
     autoSpin: boolean;
@@ -71,23 +78,48 @@ export const DiceStreakProvider: React.FC<DiceStreakProviderProps> = ({ children
                 if (outputText) {
                     setOutputQueue(prev => [...prev, {text: outputText, toType: false}]);
                 }
-            } else if (result?.outcome) {
-                if (autoSpin && input.startsWith('play')) {
-                    setTimeout(() => {
-                        handleInput('play 1');
-                    }, result.isPrize ? 22000 : 13000);
-                }
-                const outcomeValues = (result.outcome as bigint[]).map(o => o.toString());
-                setOutcome(outcomeValues);
-                setTimeout(() => {
-                    setOutputQueue(prev => [...prev, {text: [outcomeValues[0], outcomeValues[2]].join(' '), toType: false}]);
-                    const outputText = result.output.join('\n');
-                    if (outputText) { 
-                        setOutputQueue(prev => [...prev, {text: outputText, toType: phrasesToType.some(str => outputText.startsWith(str))}]);
-                    }
-                    setOutcome([]);
-                }, result.isPrize? 8000 : 1000);
+                setIsProcessing(false);
+                setIsBusy(false);
+                return;
             }
+            const rollOutcome = result.outcome as readonly [bigint, `0x${string}`];
+            const prizeValue = rollOutcome[0];
+            const isPrize = prizeValue > 0;
+            const additionalData = rollOutcome[1];
+            console.log("!!!!!!!DiceStreakContext result", result)
+            
+            // Decode the uint32 result from bytes
+            const [decodedResult] = decodeAbiParameters([{ type: 'uint32' }], additionalData);
+            const diceResult = Number(decodedResult);
+
+            console.log("!!!!!!!DiceStreakContext result", result)
+
+            if (autoSpin && input.startsWith('play')) {
+                setTimeout(() => {
+                    handleInput('play 1');
+                }, isPrize ? 22000 : 13000);
+            }
+            setOutcome([diceResult.toString()]);
+            if (isPrize) {
+                setTimeout(() => {
+                        setIsWin(true, result.outcome);
+                    }, 1000);
+            }
+            
+            setTimeout(() => {
+                let actionText = '';
+                setOutputQueue(prev => [...prev, {text: [diceResult.toString(), isPrize ? 'Win' : 'Loss'].join(' '), toType: false}]);
+                if (isPrize) {
+                    const gameChain = wagmiConfig.chains.find(chain => chain.id === diceStreakGame.network.id) || wagmiConfig.chains[0]
+                    actionText = `You rolled ${diceResult}! You won ${formatEtherOrWei(prizeValue, gameChain.nativeCurrency.decimals ?? 18).formatted} ${gameChain.nativeCurrency.symbol}`;
+                } else {
+                    actionText = `The Matrix has you...`;
+                }
+                setOutputQueue(prev => [...prev, {text: actionText, toType: phrasesToType.some(str => actionText.startsWith(str))}]);
+                // }
+                setOutcome([]);
+            }, isPrize ? 8000 : 1000);
+            
         } catch (error) {
             if (autoSpin && input.startsWith('play')) {
                 setTimeout(() => {
