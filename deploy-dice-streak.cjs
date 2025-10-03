@@ -9,7 +9,7 @@ async function main() {
   console.log("💰 Account balance:", ethers.utils.formatEther(await deployer.getBalance()), "ETH");
 
   // Contract parameters
-  const betAmount = ethers.BigNumber.from("10"); // 1 wei
+  const betAmount = ethers.BigNumber.from("10"); // 10 wei
   const payoutMultiplier = 5500; // 5.5x (5500 basis points)
 
   console.log("📋 Contract parameters:");
