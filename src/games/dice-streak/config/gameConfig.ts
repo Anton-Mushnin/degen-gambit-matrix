@@ -5,12 +5,12 @@ import { diceStreakDevABI } from '../../../ABIs/DiceStreakDev.abi';
 // DiceStreak contract configuration - single source of truth
 export const diceStreakConfig: GameContractConfig = {
   production: {
-    contractAddress: "0xA80a04Ce901fefE86418b2E6452E6a594a4c140C",
+    contractAddress: "0x3FdBc51baEDCa43a2DA5a659f4880E89e921150f",
     name: "DiceStreak",
     abi: diceStreakABI
   },
   dev: {
-    contractAddress: "0x0e9466BB274dB751c1F89523Ecb387e8B165a74f",
+    contractAddress: "0x1799861b104763A708E8c1F0c41be73Df713C56E",
     name: "DiceStreakDev",
     abi: diceStreakDevABI
   },

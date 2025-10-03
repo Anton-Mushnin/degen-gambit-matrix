@@ -10,13 +10,13 @@
 
 ### Contract Details
 - **Contract Name:** DiceStreak
-- **Contract Address:** 0xA80a04Ce901fefE86418b2E6452E6a594a4c140C
+- **Contract Address:** 0x3FdBc51baEDCa43a2DA5a659f4880E89e921150f
 - **Deployer:** 0x4eD919172bD08D74831f2914aAAe8edA690d08Ab
 - **Deployment Block:** Confirmed deployed
-- **Deployment Time:** 2025-01-03 (Latest deployment)
+- **Deployment Time:** 2025-10-03 (Latest deployment - uint32 encoding)
 
 ### Contract Parameters
-- **Bet Amount:** 1 WEI
+- **Bet Amount:** 10 WEI
 - **Payout Multiplier:** 5500 (5.5x)
 
 ### Contract Functions
@@ -58,15 +58,15 @@
 
 ### Contract Details
 - **Contract Name:** DiceStreakDev
-- **Contract Address:** 0x0e9466BB274dB751c1F89523Ecb387e8B165a74f
+- **Contract Address:** 0x1799861b104763A708E8c1F0c41be73Df713C56E
 - **Deployer:** 0x4eD919172bD08D74831f2914aAAe8edA690d08Ab
 - **Network:** XAI Testnet v2
 - **Chain ID:** 37714555429
 - **Deployment Block:** Confirmed deployed
-- **Deployment Time:** 2025-01-03 (Latest deployment)
+- **Deployment Time:** 2025-10-03 (Latest deployment - uint32 encoding)
 
 ### Contract Parameters
-- **Bet Amount:** 1 WEI
+- **Bet Amount:** 10 WEI
 - **Payout Multiplier:** 5500 (5.5x)
 - **Initial Bank Balance:** 0.000001 ETH
 
