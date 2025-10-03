@@ -1,5 +1,5 @@
 import { PublicClient } from 'viem';
-import { formatUnits } from 'viem';
+import { formatEtherOrWei } from '@/utils/formatting';
 
 // Define DiceStreak ABI (inline for now)
 const diceStreakABI = [
@@ -85,10 +85,11 @@ export const getBetAmount = async (contractAddress: string, publicClient: Public
       functionName: 'getBetAmount',
     });
 
+    const formatted = formatEtherOrWei(betAmount);
     return {
       value: betAmount,
-      formatted: `${formatUnits(betAmount, 18)} ETH`,
-      decimals: 18
+      formatted: formatted.formatted,
+      decimals: formatted.decimals
     };
   } catch (error) {
     throw new Error(`Failed to get bet amount: ${error}`);
@@ -121,10 +122,11 @@ export const getBankBalance = async (contractAddress: string, publicClient: Publ
       functionName: 'getBankBalance',
     });
 
+    const formatted = formatEtherOrWei(balance);
     return {
       value: balance,
-      formatted: `${formatUnits(balance, 18)} ETH`,
-      decimals: 18
+      formatted: formatted.formatted,
+      decimals: formatted.decimals
     };
   } catch (error) {
     throw new Error(`Failed to get bank balance: ${error}`);
@@ -177,10 +179,11 @@ export const getPlayerTotalWinnings = async (contractAddress: string, playerAddr
       args: [playerAddress],
     });
 
+    const formatted = formatEtherOrWei(winnings);
     return {
       value: winnings,
-      formatted: `${formatUnits(winnings, 18)} ETH`,
-      decimals: 18
+      formatted: formatted.formatted,
+      decimals: formatted.decimals
     };
   } catch (error) {
     throw new Error(`Failed to get player total winnings: ${error}`);

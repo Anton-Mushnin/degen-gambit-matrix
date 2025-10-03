@@ -1,4 +1,4 @@
-import { formatUnits } from 'viem';
+import { formatEtherOrWei } from '@/utils/formatting';
 
 // Combo detection and calculation logic (mirroring contract logic)
 export const detectCombo = (numbers: number[]): { isCombo: boolean; comboType: string } => {
@@ -88,7 +88,7 @@ export const getComboPossibilityData = (
     }
 
     const payout = comboInfo.nextPayout > BigInt(0)
-        ? ` → ${formatUnits(comboInfo.nextPayout, 18)} ETH bonus`
+        ? ` → ${formatEtherOrWei(comboInfo.nextPayout).formatted} bonus`
         : '';
 
     return {
