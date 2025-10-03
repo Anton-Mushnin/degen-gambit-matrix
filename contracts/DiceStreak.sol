@@ -134,16 +134,14 @@ contract DiceStreak is CommitRevealRandomness {
     /// @notice Inspect the outcome of a dice roll without executing the reveal
     /// @param player The player's address to inspect outcome for
     /// @return prizeValue The prize amount that would be won (0 for loss)
-    /// @return additionalData Encoded dice result and description: abi.encode(uint8 diceResult, string description)
+    /// @return additionalData Encoded dice result: abi.encode(uint32 result)
     function inspectOutcome(address player) external view virtual override returns (uint256 prizeValue, bytes memory additionalData) {
         // Use parent's previewReveal function to get the random number
-        uint256 randomNumber = super.previewReveal("");
+        uint256 randomNumber = super.previewReveal("", player);
 
         // Generate the dice result from the random number
         uint8 result = uint8((randomNumber % 6) + 1);
         uint8 guess = players[player].pendingGuess;
-
-        string memory description;
 
         if (result == guess) {
             // Calculate win amount (would need to check streak combos too)
@@ -153,18 +151,12 @@ contract DiceStreak is CommitRevealRandomness {
             (bool hasCombo, uint256 bonusPayout, ) = _checkStreakComboPreview(player, result);
 
             prizeValue = basePayout + bonusPayout;
-            if (hasCombo) {
-                description = "Win with combo bonus";
-            } else {
-                description = "Win";
-            }
         } else {
             prizeValue = 0;
-            description = "Loss";
         }
-
-        // Encode additional data: dice result and description
-        additionalData = abi.encode(result, description);
+        
+        // Encode as uint32
+        additionalData = abi.encode(uint32(result));
     }
 
     /// @notice Preview streak combo check without modifying state

@@ -168,7 +168,7 @@ abstract contract CommitRevealRandomness {
     /// @dev First return value must be uint256 prizeValue for consistent interface
     /// @param player The player's address to inspect outcome for
     /// @return prizeValue The prize amount that would be won (0 for loss)
-    /// @return additionalData Additional game-specific return data (e.g., dice result, description)
+    /// @return additionalData Additional game-specific return data encoded as bytes (e.g., abi.encode(result))
     function inspectOutcome(address player) external view virtual returns (uint256 prizeValue, bytes memory additionalData);
 
     /// @notice Reveal committed data and generate random number, consuming the commit
@@ -192,7 +192,7 @@ abstract contract CommitRevealRandomness {
         }
 
         // Use helper for validation and random generation
-        randomNumber = _validateAndGetRandom(data);
+        randomNumber = _validateAndGetRandom(data, msg.sender);
 
         // Clear commit data after successful reveal
         delete playerCommits[msg.sender];
@@ -251,9 +251,9 @@ abstract contract CommitRevealRandomness {
     /// @dev Does not modify state - only validates and generates random number
     /// @param data The original data that was committed, or bytes32(0) for simple mode
     /// @return randomNumber The generated random number
-    function _validateAndGetRandom(bytes memory data) internal view returns (uint256 randomNumber) {
+    function _validateAndGetRandom(bytes memory data, address player) internal view returns (uint256 randomNumber) {
         uint256 currentBlock = _blockNumber();
-        CommitData storage commit = playerCommits[msg.sender];
+        CommitData storage commit = playerCommits[player];
 
         // Check if player has committed data
         if (commit.commitBlock == 0) {
@@ -275,14 +275,14 @@ abstract contract CommitRevealRandomness {
             if (data.length == 0) {
                 revert("Invalid reveal");
             }
-            bytes32 expectedHash = keccak256(abi.encodePacked(data, msg.sender));
+            bytes32 expectedHash = keccak256(abi.encodePacked(data, player));
             if (expectedHash != commit.committedHash) {
                 revert("Invalid reveal");
             }
         }
 
         // Generate random number using entropy
-        randomNumber = _entropy(msg.sender, commit.commitBlock);
+        randomNumber = _entropy(player, commit.commitBlock);
     }
 
     /// @notice Preview what random number would be generated without consuming the commit
@@ -290,9 +290,10 @@ abstract contract CommitRevealRandomness {
     /// @dev Useful for inspection patterns where users want to see outcome before revealing
     /// @dev Can be called by child contracts internally
     /// @param data The original data that was committed, or bytes32(0) for simple mode
+    /// @param player The player address to preview reveal for
     /// @return randomNumber The random number that would be generated
-    function previewReveal(bytes memory data) public view returns (uint256 randomNumber) {
-        randomNumber = _validateAndGetRandom(data);
+    function previewReveal(bytes memory data, address player) public view returns (uint256 randomNumber) {
+        randomNumber = _validateAndGetRandom(data, player);
     }
 
     /// @notice Get commit details for a player

@@ -65,21 +65,20 @@ contract DiceStreakDev is DiceStreak {
     /// @notice Override inspect outcome to use predetermined results when available
     /// @param player The player's address to inspect outcome for
     /// @return prizeValue The prize amount that would be won (0 for loss)
-    /// @return additionalData Encoded dice result and description: abi.encode(uint8 diceResult, string description)
+    /// @return additionalData Encoded dice result: abi.encode(uint32 result)
     function inspectOutcome(address player) external view override returns (uint256 prizeValue, bytes memory additionalData) {
         uint8 result;
-
+        
         // Check if there's a predetermined result for this player
         if (predeterminedResults[player] != 0) {
             result = predeterminedResults[player];
         } else {
             // Use parent's previewReveal function to get the random number
-            uint256 randomNumber = super.previewReveal("");
+            uint256 randomNumber = super.previewReveal("", player);
             result = uint8((randomNumber % 6) + 1);
         }
 
         uint8 guess = players[player].pendingGuess;
-        string memory description;
 
         if (result == guess) {
             // Calculate win amount (would need to check streak combos too)
@@ -89,17 +88,11 @@ contract DiceStreakDev is DiceStreak {
             (bool hasCombo, uint256 bonusPayout, ) = _checkStreakComboPreview(player, result);
 
             prizeValue = basePayout + bonusPayout;
-            if (hasCombo) {
-                description = "Win with combo bonus";
-            } else {
-                description = "Win";
-            }
         } else {
             prizeValue = 0;
-            description = "Loss";
         }
-
-        // Encode additional data: dice result and description
-        additionalData = abi.encode(result, description);
+        
+        // Encode as uint32
+        additionalData = abi.encode(uint32(result));
     }
 }
