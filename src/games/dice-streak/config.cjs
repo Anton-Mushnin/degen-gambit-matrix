@@ -2,11 +2,11 @@
 // This should match DICE_STREAK_CONTRACT_ADDRESS in index.tsx
 module.exports = {
   production: {
-    contractAddress: "0x2E1C39c9475C62f17493ABaFaFf90eD01640ce51",
+    contractAddress: "0x6e60CA85550592627363ecc419Ce2491675A85ff",
     name: "DiceStreak"
   },
   dev: {
-    contractAddress: "0xa6054a4962Ade70f4e70809e494F5811a00dcca3",
+    contractAddress: "0x89B28fBa24c5a694d9cCa0738d435Bb35Be615A2",
     name: "DiceStreakDev"
   },
   network: {
