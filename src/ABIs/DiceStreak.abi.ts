@@ -579,6 +579,11 @@ export const diceStreakABI = [
         "internalType": "bytes",
         "name": "data",
         "type": "bytes"
+      },
+      {
+        "internalType": "address",
+        "name": "player",
+        "type": "address"
       }
     ],
     "name": "previewReveal",
@@ -694,4 +699,4 @@ export const diceStreakABI = [
     "stateMutability": "payable",
     "type": "receive"
   }
-];
+] as const;
