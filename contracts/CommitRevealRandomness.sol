@@ -183,41 +183,20 @@ abstract contract CommitRevealRandomness {
     function reveal(bytes memory data) public returns (uint256 randomNumber) {
         uint256 currentBlock = _blockNumber();
         CommitData storage commit = playerCommits[msg.sender];
-        
-        // Check if player has committed data
-        if (commit.commitBlock == 0) {
-            revert ("No commit to reveal");
-        }
-        
-        // Check if reveal block has been mined
-        if (currentBlock <= commit.commitBlock) {
-            revert("Reveal block not yet mined");
-        }
-        
-        // Check if reveal is within the allowed window
-        if (currentBlock > commit.commitBlock + commit.revealWindow) {
+
+        // Check if reveal is within the allowed window (special handling for expired commits)
+        if (currentBlock > commit.commitBlock + commit.revealWindow && commit.commitBlock != 0) {
             // Clear expired commit
             clearExpiredCommit();
             revert("Reveal window expired");
         }
-        
-        // If a hash was committed, data must be provided and must match
-        if (commit.committedHash != bytes32(0)) {
-            if (data.length == 0) {
-                revert("Invalid reveal");
-            }
-            bytes32 expectedHash = keccak256(abi.encodePacked(data, msg.sender));
-            if (expectedHash != commit.committedHash) {
-                revert("Invalid reveal");
-            }
-        }
-        
-        // Generate random number using entropy
-        randomNumber = _entropy(msg.sender, commit.commitBlock);
-        
+
+        // Use helper for validation and random generation
+        randomNumber = _validateAndGetRandom(data);
+
         // Clear commit data after successful reveal
         delete playerCommits[msg.sender];
-        
+
 
     }
     
@@ -267,13 +246,12 @@ abstract contract CommitRevealRandomness {
         hasCommitted = commit.commitBlock != 0;
     }
     
-    /// @notice Preview what random number would be generated without consuming the commit
-    /// @dev View function that performs same validation as reveal but doesn't delete commit data
-    /// @dev Useful for inspection patterns where users want to see outcome before revealing
-    /// @dev Can be called by child contracts internally
+    /// @notice Validate commit data and generate random number (view version)
+    /// @dev Internal view helper for validation logic shared between reveal and previewReveal
+    /// @dev Does not modify state - only validates and generates random number
     /// @param data The original data that was committed, or bytes32(0) for simple mode
-    /// @return randomNumber The random number that would be generated
-    function previewReveal(bytes memory data) public view returns (uint256 randomNumber) {
+    /// @return randomNumber The generated random number
+    function _validateAndGetRandom(bytes memory data) internal view returns (uint256 randomNumber) {
         uint256 currentBlock = _blockNumber();
         CommitData storage commit = playerCommits[msg.sender];
 
@@ -303,8 +281,18 @@ abstract contract CommitRevealRandomness {
             }
         }
 
-        // Generate random number using entropy (same as reveal)
+        // Generate random number using entropy
         randomNumber = _entropy(msg.sender, commit.commitBlock);
+    }
+
+    /// @notice Preview what random number would be generated without consuming the commit
+    /// @dev View function that performs same validation as reveal but doesn't delete commit data
+    /// @dev Useful for inspection patterns where users want to see outcome before revealing
+    /// @dev Can be called by child contracts internally
+    /// @param data The original data that was committed, or bytes32(0) for simple mode
+    /// @return randomNumber The random number that would be generated
+    function previewReveal(bytes memory data) public view returns (uint256 randomNumber) {
+        randomNumber = _validateAndGetRandom(data);
     }
 
     /// @notice Get commit details for a player
