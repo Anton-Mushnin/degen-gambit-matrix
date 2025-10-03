@@ -10,10 +10,10 @@
 
 ### Contract Details
 - **Contract Name:** DiceStreak
-- **Contract Address:** 0x2E1C39c9475C62f17493ABaFaFf90eD01640ce51
+- **Contract Address:** 0xA80a04Ce901fefE86418b2E6452E6a594a4c140C
 - **Deployer:** 0x4eD919172bD08D74831f2914aAAe8edA690d08Ab
-- **Deployment Block:** [To be filled after deployment]
-- **Deployment Time:** [To be filled after deployment]
+- **Deployment Block:** Confirmed deployed
+- **Deployment Time:** 2025-01-03 (Latest deployment)
 
 ### Contract Parameters
 - **Bet Amount:** 1 WEI
@@ -22,6 +22,7 @@
 ### Contract Functions
 - `play(uint8 guess)` - Player guesses 1-6, pays bet amount (commit phase)
 - `inspectOutcome(address)` - Player can preview the dice result before accepting
+- `previewReveal(bytes)` - Preview random number without consuming commit (view function)
 - `accept()` - Player accepts the result and processes the game (reveal + process)
 - `getBetAmount()` - Returns fixed bet amount
 - `getPayoutMultiplier()` - Returns payout multiplier
@@ -33,6 +34,7 @@
 - `getLastBetResult(address)` - Returns player's last bet result
 - `getStatistics(uint8)` - Returns statistics for number 1-6
 - `hasCommit(address)` - Returns if player has pending commit
+- `getCommitDetails(address)` - Returns commit hash and block for player
 
 ### Events
 - `PlayerWin(address indexed player, uint8 guess, uint8 result, uint256 payout)`
@@ -56,15 +58,17 @@
 
 ### Contract Details
 - **Contract Name:** DiceStreakDev
-- **Contract Address:** 0xa6054a4962Ade70f4e70809e494F5811a00dcca3
+- **Contract Address:** 0x0e9466BB274dB751c1F89523Ecb387e8B165a74f
 - **Deployer:** 0x4eD919172bD08D74831f2914aAAe8edA690d08Ab
 - **Network:** XAI Testnet v2
 - **Chain ID:** 37714555429
+- **Deployment Block:** Confirmed deployed
+- **Deployment Time:** 2025-01-03 (Latest deployment)
 
 ### Contract Parameters
-- **Bet Amount:** 10 WEI
+- **Bet Amount:** 1 WEI
 - **Payout Multiplier:** 5500 (5.5x)
-- **Initial Bank Balance:** 1000 WEI
+- **Initial Bank Balance:** 0.000001 ETH
 
 ### Additional Dev Features
 - `setPredeterminedResult(uint8 result)` - Set predetermined dice result (1-6) or clear with 0
