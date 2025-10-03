@@ -34,7 +34,7 @@ pragma solidity ^0.8.19;
 /// @dev RANDOMNESS: Always generated using commit block hash + player address
 /// @dev - Block hash is unpredictable at commit time
 /// @dev - Player address prevents identical results across players
-contract CommitRevealRandomness {
+abstract contract CommitRevealRandomness {
     
 
     
@@ -163,13 +163,13 @@ contract CommitRevealRandomness {
         emit DataCommitted(msg.sender, dataHash, currentBlock, revealWindow);
     }
     
-    /// @notice Child contracts should implement an inspectOutcome function
-    /// @dev Useful for gambling games where users want to see outcomes before paying gas
-    /// @dev Can be called multiple times within the reveal window
-    /// @dev Child contracts can define their own signature based on game needs
-    /// @dev Example signatures:
-    /// @dev - function inspectOutcome(address player) external view returns (uint256 prizeValue, string memory description)
-    /// @dev - function inspectDiceOutcome(address player) external view returns (uint8 diceResult, uint256 prizeValue, string memory description)
+    /// @notice Child contracts must implement inspectOutcome function
+    /// @dev Enforced abstract function that all child contracts must implement
+    /// @dev First return value must be uint256 prizeValue for consistent interface
+    /// @param player The player's address to inspect outcome for
+    /// @return prizeValue The prize amount that would be won (0 for loss)
+    /// @return additionalData Additional game-specific return data (e.g., dice result, description)
+    function inspectOutcome(address player) external view virtual returns (uint256 prizeValue, bytes memory additionalData);
 
     /// @notice Reveal committed data and generate random number, consuming the commit
     /// @dev Handles both secure commit-reveal and simple randomness modes:
@@ -267,6 +267,46 @@ contract CommitRevealRandomness {
         hasCommitted = commit.commitBlock != 0;
     }
     
+    /// @notice Preview what random number would be generated without consuming the commit
+    /// @dev View function that performs same validation as reveal but doesn't delete commit data
+    /// @dev Useful for inspection patterns where users want to see outcome before revealing
+    /// @dev Can be called by child contracts internally
+    /// @param data The original data that was committed, or bytes32(0) for simple mode
+    /// @return randomNumber The random number that would be generated
+    function previewReveal(bytes memory data) public view returns (uint256 randomNumber) {
+        uint256 currentBlock = _blockNumber();
+        CommitData storage commit = playerCommits[msg.sender];
+
+        // Check if player has committed data
+        if (commit.commitBlock == 0) {
+            revert ("No commit to reveal");
+        }
+
+        // Check if reveal block has been mined
+        if (currentBlock <= commit.commitBlock) {
+            revert("Reveal block not yet mined");
+        }
+
+        // Check if reveal is within the allowed window
+        if (currentBlock > commit.commitBlock + commit.revealWindow) {
+            revert("Reveal window expired");
+        }
+
+        // If a hash was committed, data must be provided and must match
+        if (commit.committedHash != bytes32(0)) {
+            if (data.length == 0) {
+                revert("Invalid reveal");
+            }
+            bytes32 expectedHash = keccak256(abi.encodePacked(data, msg.sender));
+            if (expectedHash != commit.committedHash) {
+                revert("Invalid reveal");
+            }
+        }
+
+        // Generate random number using entropy (same as reveal)
+        randomNumber = _entropy(msg.sender, commit.commitBlock);
+    }
+
     /// @notice Get commit details for a player
     /// @param player Player address
     /// @return committedHash Hash of committed data

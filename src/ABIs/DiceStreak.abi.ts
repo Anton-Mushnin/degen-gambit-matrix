@@ -166,6 +166,19 @@ export const diceStreakABI = [
     "type": "event"
   },
   {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "player",
+        "type": "address"
+      }
+    ],
+    "name": "Spin",
+    "type": "event"
+  },
+  {
     "inputs": [],
     "name": "COMMIT_REVEAL_RANDOMNESS_VERSION",
     "outputs": [
@@ -427,19 +440,14 @@ export const diceStreakABI = [
     "name": "inspectOutcome",
     "outputs": [
       {
-        "internalType": "uint8",
-        "name": "diceResult",
-        "type": "uint8"
-      },
-      {
         "internalType": "uint256",
         "name": "prizeValue",
         "type": "uint256"
       },
       {
-        "internalType": "string",
-        "name": "description",
-        "type": "string"
+        "internalType": "bytes",
+        "name": "additionalData",
+        "type": "bytes"
       }
     ],
     "stateMutability": "view",
@@ -461,6 +469,19 @@ export const diceStreakABI = [
     "name": "move",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -560,6 +581,25 @@ export const diceStreakABI = [
         "type": "bytes"
       }
     ],
+    "name": "previewReveal",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "randomNumber",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes",
+        "name": "data",
+        "type": "bytes"
+      }
+    ],
     "name": "reveal",
     "outputs": [
       {
@@ -642,5 +682,16 @@ export const diceStreakABI = [
     ],
     "stateMutability": "view",
     "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "withdraw",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "stateMutability": "payable",
+    "type": "receive"
   }
-] as const;
+];

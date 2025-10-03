@@ -133,35 +133,18 @@ contract DiceStreak is CommitRevealRandomness {
 
     /// @notice Inspect the outcome of a dice roll without executing the reveal
     /// @param player The player's address to inspect outcome for
-    /// @return diceResult The dice roll result (1-6)
     /// @return prizeValue The prize amount that would be won (0 for loss)
-    /// @return description Description of the outcome (e.g., "Win 5.5x payout" or "Loss")
-    function inspectOutcome(address player) external view virtual returns (uint8 diceResult, uint256 prizeValue, string memory description) {
-        uint256 currentBlock = _blockNumber();
-        CommitData storage commit = playerCommits[player];
+    /// @return additionalData Encoded dice result and description: abi.encode(uint8 diceResult, string description)
+    function inspectOutcome(address player) external view virtual override returns (uint256 prizeValue, bytes memory additionalData) {
+        // Use parent's previewReveal function to get the random number
+        uint256 randomNumber = super.previewReveal("");
 
-        // Check if player has committed data
-        if (commit.commitBlock == 0) {
-            revert("No commit to reveal");
-        }
-
-        // Check if reveal block has been mined
-        if (currentBlock <= commit.commitBlock) {
-            revert("Reveal block not yet mined");
-        }
-
-        // Check if reveal is within the allowed window
-        if (currentBlock > commit.commitBlock + commit.revealWindow) {
-            revert("Reveal window expired");
-        }
-
-        // Generate the dice result
-        uint256 randomNumber = _entropy(player, commit.commitBlock);
+        // Generate the dice result from the random number
         uint8 result = uint8((randomNumber % 6) + 1);
         uint8 guess = players[player].pendingGuess;
 
-        diceResult = result;
-        
+        string memory description;
+
         if (result == guess) {
             // Calculate win amount (would need to check streak combos too)
             uint256 basePayout = (betAmount * payoutMultiplier) / 1000;
@@ -179,6 +162,9 @@ contract DiceStreak is CommitRevealRandomness {
             prizeValue = 0;
             description = "Loss";
         }
+
+        // Encode additional data: dice result and description
+        additionalData = abi.encode(result, description);
     }
 
     /// @notice Preview streak combo check without modifying state

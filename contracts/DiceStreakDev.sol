@@ -63,40 +63,24 @@ contract DiceStreakDev is DiceStreak {
     }
     
     /// @notice Override inspect outcome to use predetermined results when available
-    function inspectOutcome(address player) external view override returns (uint8 diceResult, uint256 prizeValue, string memory description) {
-        uint256 currentBlock = _blockNumber();
-        CommitData storage commit = playerCommits[player];
-
-        // Check if player has committed data
-        if (commit.commitBlock == 0) {
-            revert("No commit to reveal");
-        }
-
-        // Check if reveal block has been mined
-        if (currentBlock <= commit.commitBlock) {
-            revert("Reveal block not yet mined");
-        }
-
-        // Check if reveal is within the allowed window
-        if (currentBlock > commit.commitBlock + commit.revealWindow) {
-            revert("Reveal window expired");
-        }
-
+    /// @param player The player's address to inspect outcome for
+    /// @return prizeValue The prize amount that would be won (0 for loss)
+    /// @return additionalData Encoded dice result and description: abi.encode(uint8 diceResult, string description)
+    function inspectOutcome(address player) external view override returns (uint256 prizeValue, bytes memory additionalData) {
         uint8 result;
-        
+
         // Check if there's a predetermined result for this player
         if (predeterminedResults[player] != 0) {
             result = predeterminedResults[player];
         } else {
-            // Generate the dice result normally
-            uint256 randomNumber = _entropy(player, commit.commitBlock);
+            // Use parent's previewReveal function to get the random number
+            uint256 randomNumber = super.previewReveal("");
             result = uint8((randomNumber % 6) + 1);
         }
-        
-        uint8 guess = players[player].pendingGuess;
 
-        diceResult = result;
-        
+        uint8 guess = players[player].pendingGuess;
+        string memory description;
+
         if (result == guess) {
             // Calculate win amount (would need to check streak combos too)
             uint256 basePayout = (betAmount * payoutMultiplier) / 1000;
@@ -114,5 +98,8 @@ contract DiceStreakDev is DiceStreak {
             prizeValue = 0;
             description = "Loss";
         }
+
+        // Encode additional data: dice result and description
+        additionalData = abi.encode(result, description);
     }
 }
