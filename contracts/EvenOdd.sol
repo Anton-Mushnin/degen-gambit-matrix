@@ -173,26 +173,16 @@ contract EvenOdd is CommitRevealRandomness {
     /// @notice Inspect the outcome of an even/odd bet without executing the reveal
     /// @param player The player's address to inspect outcome for
     /// @return prizeValue The prize amount that would be won (0 for loss)
-    /// @return description Description of the outcome
-    function inspectOutcome(address player) external view returns (uint256 prizeValue, string memory description) {
+    /// @return additionalData Encoded random number: abi.encode(uint32 randomNumber)
+    function inspectOutcome(address player) external view override returns (uint256 prizeValue, bytes memory additionalData) {
         // Check if player has a bet
         Bet memory bet = playerBets[player];
         require(bytes(bet.choice).length > 0, "No active bet");
 
-        uint256 currentBlock = _blockNumber();
-        CommitData storage commit = playerCommits[player];
-
-        // Check if player has committed data
-        require(commit.commitBlock != 0, "No commit to reveal");
-
-        // Check if reveal block has been mined
-        require(currentBlock > commit.commitBlock, "Reveal block not yet mined");
-
-        // Check if reveal is within the allowed window
-        require(currentBlock <= commit.commitBlock + commit.revealWindow, "Reveal window expired");
-
-        // Generate the random number
-        uint256 randomNumber = _entropy(player, commit.commitBlock) % 100;
+        // Use parent's previewReveal function to get the random number
+        uint256 fullRandomNumber = super.previewReveal("", player);
+        uint256 randomNumber = fullRandomNumber % 100;
+        uint32 result = uint32(randomNumber);
         bool isOdd = randomNumber % 2 == 1;
 
         // Determine if player would win
@@ -201,23 +191,12 @@ contract EvenOdd is CommitRevealRandomness {
 
         if (won) {
             prizeValue = WIN_PAYOUT;
-            description = string(abi.encodePacked(
-                "Win - Number: ",
-                _uint2str(randomNumber),
-                " (",
-                isOdd ? "odd" : "even",
-                ")"
-            ));
         } else {
             prizeValue = 0;
-            description = string(abi.encodePacked(
-                "Loss - Number: ",
-                _uint2str(randomNumber),
-                " (",
-                isOdd ? "odd" : "even",
-                ")"
-            ));
         }
+        
+        // Encode as uint32
+        additionalData = abi.encode(result);
     }
 
     function withdraw() external onlyOwner {

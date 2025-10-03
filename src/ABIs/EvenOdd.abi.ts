@@ -1,4 +1,4 @@
-[
+export const evenOddABI = [
   {
     "inputs": [],
     "stateMutability": "nonpayable",
@@ -285,9 +285,9 @@
         "type": "uint256"
       },
       {
-        "internalType": "string",
-        "name": "description",
-        "type": "string"
+        "internalType": "bytes",
+        "name": "additionalData",
+        "type": "bytes"
       }
     ],
     "stateMutability": "view",
@@ -460,6 +460,30 @@
         "internalType": "bytes",
         "name": "data",
         "type": "bytes"
+      },
+      {
+        "internalType": "address",
+        "name": "player",
+        "type": "address"
+      }
+    ],
+    "name": "previewReveal",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "randomNumber",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes",
+        "name": "data",
+        "type": "bytes"
       }
     ],
     "name": "reveal",
@@ -553,4 +577,4 @@
     "stateMutability": "payable",
     "type": "receive"
   }
-]
+];
