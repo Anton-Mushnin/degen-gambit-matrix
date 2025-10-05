@@ -1,8 +1,7 @@
-export type CommandResult<T = any> = {
-    output: string[];
-    outcome?: [bigint, `0x${string}`];
-    isPrize?: boolean;
-    data?: T;
+export type CommandResult = {
+    output?: string[]; // Output text to display in the terminal
+    outcome?: string[]; //Outcome text to display in the terminal
+    isPrize?: boolean; //If the outcome is a prize
 };
 
 export type CommandContext<T = any> = {
@@ -10,9 +9,9 @@ export type CommandContext<T = any> = {
     params: T;
 };
 
-export type CommandHandler<T = any, R = any> = (
+export type CommandHandler<T = any> = (
     context: CommandContext<T>
-) => Promise<CommandResult<R>>;
+) => Promise<CommandResult>;
 
 export type CommandPattern = {
     pattern: RegExp;
@@ -21,9 +20,9 @@ export type CommandPattern = {
     usage?: string;
 };
 
-export type CommandDefinition<T = any, R = any> = {
+export type CommandDefinition<T = any> = {
     pattern?: CommandPattern;
-    handler: CommandHandler<T, R>;
+    handler: CommandHandler<T>;
     middleware?: CommandMiddleware[];
     isDefault?: boolean;
 };

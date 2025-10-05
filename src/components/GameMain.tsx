@@ -1,5 +1,6 @@
 import React from 'react';
 import { Terminal } from './matrixUI/Terminal';
+import { useTerminal } from '../hooks/useTerminal';
 
 // Generic interfaces for game contexts
 export interface GenericGameState {
@@ -12,6 +13,7 @@ export interface GenericGameState {
   isProcessing?: boolean;
   outcome?: any[];
   gameStatus?: any;
+  gameParams?: any;
 }
 
 export interface GenericGameActions {
@@ -38,7 +40,8 @@ export interface GameMainProps {
 
 const GameMain: React.FC<GameMainProps> = ({ useGameContext, displayComponents }) => {
   const [gameState, gameActions] = useGameContext();
-  const { isBusy, isProcessing, outcome, gameStatus, terminalQueue } = gameState;
+  const {  outcome, gameStatus, gameParams } = gameState;
+  const { handleInput: terminalHandleInput, outputQueue: terminalQueue, isBusy, isProcessing } = useTerminal(gameParams);
 
   // Determine what component to render based on game state
   const renderDisplayComponent = () => {
@@ -67,7 +70,7 @@ const GameMain: React.FC<GameMainProps> = ({ useGameContext, displayComponents }
     <div style={{ position: 'relative', width: '100%', maxHeight: '100%', height: '100%', paddingTop: '20px' }}>
       <Terminal
         queue={terminalQueue}
-        onSubmit={gameActions.handleInput}
+        onSubmit={terminalHandleInput}
         isInputDisabled={isBusy || Boolean(outcome && outcome.length > 0)}
       >
         {renderDisplayComponent()}

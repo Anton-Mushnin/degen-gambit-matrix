@@ -12,12 +12,19 @@ import { gameManagementCommands, GameManagementParams } from '../commands/comman
 import { useBlockchain } from './useBlockchain';
 import { useDevMode } from '../contexts/DevModeContext';
 import { getGameConfig, GameContractConfig } from '../utils/gameConfig';
+import { useWinEffect } from "@/contexts/WinEffectContext";
+
+const phrasesToType = ['Wake up', 'The Matrix', 'Prize'];
+
 
 export const useTerminal = (gameParams: any) => {
     const { activeAccount, client, publicClient, displayName, gameContext } = useBlockchain();
     const devModeContext = useDevMode();
     const [outputQueue, setOutputQueue] = useState<{text: string, toType: boolean}[]>([]);
     const [welcomeShown, setWelcomeShown] = useState(false);
+    const { triggerWinEffect } = useWinEffect();
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [isBusy, setIsBusy] = useState(false);
 
     // Create and configure command dispatcher
     const dispatcher = useMemo(() => {
@@ -79,6 +86,8 @@ export const useTerminal = (gameParams: any) => {
 
     const handleInput = async (input: string) => {
         // Get contract configuration based on dev mode
+        setIsProcessing(true);
+        setIsBusy(true);
         let contractAddress = '';
         let contractABI = null;
         
@@ -114,14 +123,49 @@ export const useTerminal = (gameParams: any) => {
             // Dev mode params
             devModeContext
         };
-
-        return dispatcher.dispatch(input, combinedParams);
+        try {
+        const result = await dispatcher.dispatch(input, combinedParams);
+        console.log("!!!!!!!USE TERMINAL RESULT", result)
+        if (result?.output && !result.outcome) {
+            const outputText = result.output.join('\n');
+            console.log("!!!!!!!USE TERMINAL OUTPUT TEXT", outputText)
+            if (outputText) {
+                setOutputQueue(prev => [...prev, {text: outputText, toType: false}]);
+            }
+            return result;
+        } else if (result?.outcome) {
+            if (result.isPrize) {
+                setTimeout(() => {
+                        triggerWinEffect(result.outcome);
+                    }, 1000);
+            }
+            setTimeout(() => {
+                if (result.output) {
+                    setOutputQueue(prev => [...prev, {text: result.output?.join(' ') || '', toType: false}]);
+                }
+                setOutputQueue(prev => [...prev, {
+                    text: result.outcome?.join('\n') || '', 
+                    toType: phrasesToType.some(str => (result.outcome?.join('\n') || '').startsWith(str))}]);
+                
+            }, result.isPrize ? 8000 : 1000);
+        }
+        } catch (error) {
+            console.error('UseTerminal input error:', error);
+            setOutputQueue(prev => [...prev, {text: 'Error processing command', toType: false}]);
+        } finally {
+            setIsProcessing(false);
+            setTimeout(() => {
+                setIsBusy(false);
+            }, 8000);
+        }
     }
 
     return {
         outputQueue,
         setOutputQueue,
         handleInput,
-        currentGame: gameContext.activeGame
+        currentGame: gameContext.activeGame,
+        isProcessing,
+        isBusy
     };
 }; 

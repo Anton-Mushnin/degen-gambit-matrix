@@ -1,6 +1,10 @@
 import { TerminalCommandParams } from "../../../utils/gameHandlers";
 import { accept } from '../contractFunctions/write';
 import { commitRevealAccept } from "../../../utils/commitRevealAccept";
+import { decodeAbiParameters } from "viem";
+import { wagmiConfig } from "../../../config";
+import { diceStreakGame } from "..";
+import { formatEtherOrWei } from "../utils";
 
 
 declare global {
@@ -62,9 +66,27 @@ export async function handlePlay({ input, params }: { input: string; params: Ter
         publicClient,
         chainId,
     });
+    const rollOutcome = result.outcome as readonly [bigint, `0x${string}`];
+    const prizeValue = rollOutcome[0];
+    const isPrize = prizeValue > 0;
+    const additionalData = rollOutcome[1];
+    // Decode the uint32 result from bytes
+    const [decodedResult] = decodeAbiParameters([{ type: 'uint32' }], additionalData);
+    const diceResult = Number(decodedResult);
+    const output = [];
+    output.push([diceResult.toString(), isPrize ? 'Win' : 'Loss'].join(' '));
+    const outcome = [];
+    if (isPrize) {
+        const gameChain = wagmiConfig.chains.find(chain => chain.id === diceStreakGame.network.id) || wagmiConfig.chains[0]
+        outcome.push(`You rolled ${diceResult}! You won ${formatEtherOrWei(prizeValue, gameChain.nativeCurrency.decimals ?? 18).formatted} ${gameChain.nativeCurrency.symbol}`);
+    } else {
+        outcome.push(`The Matrix has you...`);
+    }
 
     return {
-        outcome: result.outcome,
+        output,
+        outcome,
+        isPrize,
     };
 
 }
