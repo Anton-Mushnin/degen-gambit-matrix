@@ -146,6 +146,7 @@ export const createPlayerData = ({
         type: 'query',
         label: 'Current Streak: ',
         queryKey: ['playerStreak', address, playerAddress],
+        animation: false,
         queryFn: async () => {
             const streak = await getPlayerStreak(address, playerAddress, publicClient);
             return {
