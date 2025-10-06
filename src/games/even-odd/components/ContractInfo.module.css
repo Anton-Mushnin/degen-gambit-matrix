@@ -4,7 +4,7 @@
     align-items: start;
     justify-content: start;
     height: 100%;
-    padding: 40px;
+    padding: 24px;
     width: 100%;
     box-sizing: border-box;
     border-bottom: 1px solid #636363;
@@ -14,7 +14,7 @@
     color: #a1eeb5;
     text-shadow: 0 0 10px #0dda9f;
     font-family: 'NimbusMono', 'Courier New', Courier, monospace;
-    font-size: 20px;
+    font-size: 16px;
 }
 
 .blink {
