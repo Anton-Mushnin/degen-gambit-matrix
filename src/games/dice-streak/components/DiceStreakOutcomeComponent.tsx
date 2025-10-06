@@ -8,7 +8,6 @@ interface DiceStreakOutcomeComponentProps {
 
 const DiceStreakOutcomeComponent: React.FC<DiceStreakOutcomeComponentProps> = ({ outcome }) => {
   if (!outcome || outcome.length === 0) return null;
-  console.log('outcome', outcome);
 
   // DiceStreak outcome structure: the dice roll result is typically the first element
   // Based on the contract and handlers, outcome should contain the dice result
@@ -16,7 +15,7 @@ const DiceStreakOutcomeComponent: React.FC<DiceStreakOutcomeComponentProps> = ({
 
   return (
     <div className={styles.spinningContainer}>
-      <DiceNumbers result={diceResult} duration={3000} />
+      <DiceNumbers result={diceResult} duration={2000} />
     </div>
   );
 };

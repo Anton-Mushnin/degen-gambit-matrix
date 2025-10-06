@@ -21,10 +21,11 @@ export const useTerminal = (gameParams: any) => {
     const { activeAccount, client, publicClient, displayName, gameContext } = useBlockchain();
     const devModeContext = useDevMode();
     const [outputQueue, setOutputQueue] = useState<{text: string, toType: boolean}[]>([]);
-    const [welcomeShown, setWelcomeShown] = useState(false);
+    const [welcomeShown, setWelcomeShown] = useState(true);
     const { triggerWinEffect } = useWinEffect();
     const [isProcessing, setIsProcessing] = useState(false);
     const [isBusy, setIsBusy] = useState(false);
+    const [outcome, setOutcome] = useState<string[]>([]);
 
     // Create and configure command dispatcher
     const dispatcher = useMemo(() => {
@@ -63,26 +64,12 @@ export const useTerminal = (gameParams: any) => {
     // Handle initial welcome message
     useEffect(() => {
         if (displayName && !welcomeShown) {
-            const currentGame = gameContext.activeGame;
-            const gameInfo = currentGame ? ` - ${currentGame.name}` : '';
             setOutputQueue(prev => [...prev, 
-                {text: `Wake up, ${displayName}${gameInfo}`, toType: true},
-                {text: 'Type "help" for available commands', toType: true}
+                {text: `Wake up, ${displayName}`, toType: true},
             ]);
             setWelcomeShown(true);
         }
     }, [welcomeShown, displayName, gameContext.activeGame]);
-
-    // Show game switch notification
-    useEffect(() => {
-        if (welcomeShown && gameContext.activeGame) {
-            const game = gameContext.activeGame;
-            setOutputQueue(prev => [...prev, {
-                text: `[SYSTEM] Active game: ${game.name} - Type "help" to see commands`, 
-                toType: false
-            }]);
-        }
-    }, [gameContext.activeGame?.id, welcomeShown]);
 
     const handleInput = async (input: string) => {
         // Get contract configuration based on dev mode
@@ -125,15 +112,14 @@ export const useTerminal = (gameParams: any) => {
         };
         try {
         const result = await dispatcher.dispatch(input, combinedParams);
-        console.log("!!!!!!!USE TERMINAL RESULT", result)
         if (result?.output && !result.outcome) {
             const outputText = result.output.join('\n');
-            console.log("!!!!!!!USE TERMINAL OUTPUT TEXT", outputText)
             if (outputText) {
                 setOutputQueue(prev => [...prev, {text: outputText, toType: false}]);
             }
             return result;
         } else if (result?.outcome) {
+            setOutcome(result.output || []);
             if (result.isPrize) {
                 setTimeout(() => {
                         triggerWinEffect(result.outcome);
@@ -146,17 +132,15 @@ export const useTerminal = (gameParams: any) => {
                 setOutputQueue(prev => [...prev, {
                     text: result.outcome?.join('\n') || '', 
                     toType: phrasesToType.some(str => (result.outcome?.join('\n') || '').startsWith(str))}]);
-                
-            }, result.isPrize ? 8000 : 1000);
+                setIsBusy(false);
+                setOutcome([]);
+            }, result.isPrize ? 8000 : 3000);
         }
         } catch (error) {
             console.error('UseTerminal input error:', error);
             setOutputQueue(prev => [...prev, {text: 'Error processing command', toType: false}]);
         } finally {
             setIsProcessing(false);
-            setTimeout(() => {
-                setIsBusy(false);
-            }, 8000);
         }
     }
 
@@ -166,6 +150,7 @@ export const useTerminal = (gameParams: any) => {
         handleInput,
         currentGame: gameContext.activeGame,
         isProcessing,
-        isBusy
+        isBusy,
+        outcome,
     };
 }; 

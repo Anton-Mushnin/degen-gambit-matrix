@@ -40,8 +40,8 @@ export interface GameMainProps {
 
 const GameMain: React.FC<GameMainProps> = ({ useGameContext, displayComponents }) => {
   const [gameState, gameActions] = useGameContext();
-  const {  outcome, gameStatus, gameParams } = gameState;
-  const { handleInput: terminalHandleInput, outputQueue: terminalQueue, isBusy, isProcessing } = useTerminal(gameParams);
+  const { gameStatus, gameParams } = gameState;
+  const { handleInput: terminalHandleInput, outputQueue: terminalQueue, isBusy, isProcessing, outcome } = useTerminal(gameParams);
 
   // Determine what component to render based on game state
   const renderDisplayComponent = () => {

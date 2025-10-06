@@ -74,7 +74,7 @@ export async function handlePlay({ input, params }: { input: string; params: Ter
     const [decodedResult] = decodeAbiParameters([{ type: 'uint32' }], additionalData);
     const diceResult = Number(decodedResult);
     const output = [];
-    output.push([diceResult.toString(), isPrize ? 'Win' : 'Loss'].join(' '));
+    output.push(diceResult.toString());
     const outcome = [];
     if (isPrize) {
         const gameChain = wagmiConfig.chains.find(chain => chain.id === diceStreakGame.network.id) || wagmiConfig.chains[0]
