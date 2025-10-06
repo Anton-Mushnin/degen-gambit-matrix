@@ -10,14 +10,15 @@
 
 ### Contract Details
 - **Contract Name:** DiceStreak
-- **Contract Address:** 0x3FdBc51baEDCa43a2DA5a659f4880E89e921150f
+- **Contract Address:** 0x57AF8f9EA5d9D6741ff45dc7d4E13BA13dbAEC27
 - **Deployer:** 0x4eD919172bD08D74831f2914aAAe8edA690d08Ab
 - **Deployment Block:** Confirmed deployed
-- **Deployment Time:** 2025-10-03 (Latest deployment - uint32 encoding)
+- **Deployment Time:** 2025-10-06 (Latest deployment - with unresolved bet preview)
 
 ### Contract Parameters
 - **Bet Amount:** 10 WEI
 - **Payout Multiplier:** 5500 (5.5x)
+- **Bank Balance:** 1000 WEI
 
 ### Contract Functions
 - `play(uint8 guess)` - Player guesses 1-6, pays bet amount (commit phase)
@@ -58,17 +59,17 @@
 
 ### Contract Details
 - **Contract Name:** DiceStreakDev
-- **Contract Address:** 0x1799861b104763A708E8c1F0c41be73Df713C56E
+- **Contract Address:** 0x02E87BC88bf8617b13238DBa40DF589ceAc9a2a0
 - **Deployer:** 0x4eD919172bD08D74831f2914aAAe8edA690d08Ab
 - **Network:** XAI Testnet v2
 - **Chain ID:** 37714555429
 - **Deployment Block:** Confirmed deployed
-- **Deployment Time:** 2025-10-03 (Latest deployment - uint32 encoding)
+- **Deployment Time:** 2025-10-06 (Latest deployment - with unresolved bet preview)
 
 ### Contract Parameters
 - **Bet Amount:** 10 WEI
 - **Payout Multiplier:** 5500 (5.5x)
-- **Initial Bank Balance:** 0.000001 ETH
+- **Bank Balance:** 1000 WEI
 
 ### Additional Dev Features
 - `setPredeterminedResult(uint8 result)` - Set predetermined dice result (1-6) or clear with 0

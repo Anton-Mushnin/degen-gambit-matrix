@@ -85,7 +85,7 @@ contract DiceStreakDev is DiceStreak {
             uint256 basePayout = (betAmount * payoutMultiplier) / 1000;
 
             // Check for streak combo (simplified - would need full logic)
-            (bool hasCombo, uint256 bonusPayout, ) = _checkStreakComboPreview(player, result);
+            (, uint256 bonusPayout, ) = _checkStreakComboPreview(player, result);
 
             prizeValue = basePayout + bonusPayout;
         } else {

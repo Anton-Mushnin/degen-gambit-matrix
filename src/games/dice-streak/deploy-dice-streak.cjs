@@ -30,7 +30,7 @@ async function main() {
   console.log("💰 Account balance:", (await deployer.getBalance()).toString());
 
   // Contract parameters
-  const betAmount = ethers.BigNumber.from("1"); // 1 WEI
+  const betAmount = ethers.BigNumber.from("10"); // 10 WEI
   const payoutMultiplier = 5500; // 5.5x (5500 basis points)
   
   console.log("📋 Contract parameters:");
@@ -47,8 +47,8 @@ async function main() {
   console.log("🔗 Contract address:", diceStreak.address);
   
   // Fund the contract with some ETH for payouts
-  const fundingAmount = ethers.BigNumber.from("1000000000000"); // 0.000001 ETH
-  console.log(`\n💰 Funding contract with ${ethers.utils.formatEther(fundingAmount)} ETH for payouts...`);
+  const fundingAmount = ethers.BigNumber.from("1000"); // 1000 WEI
+  console.log(`\n💰 Funding contract with ${fundingAmount.toString()} WEI for payouts...`);
   
   const fundTx = await deployer.sendTransaction({
     to: diceStreak.address,

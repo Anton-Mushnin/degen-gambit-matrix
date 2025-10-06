@@ -42,7 +42,7 @@ contract DiceStreak is CommitRevealRandomness {
     // Events
     event Spin(address indexed player);
     event PlayerWin(address indexed player, uint8 guess, uint8 result, uint256 payout);
-    event PlayerWinWithCombo(address indexed player, uint8 guess, uint8 result, uint256 basePayout, uint256 bonusPayout, string comboType);
+    event PlayerWinWithCombo(address indexed player, uint8 guess, uint8 result, uint256 basePayout, uint256 bonusPayout);
 
     modifier onlyOwner() {
         require(msg.sender == owner, "Only owner can call this function");
@@ -73,6 +73,28 @@ contract DiceStreak is CommitRevealRandomness {
     }
     
     function getPlayerStreak(address player) public view returns (uint8[] memory) {
+        // If player has unresolved bet, preview the outcome
+        if (players[player].gameStatus == GameStatus.Rolling) {
+            uint256 randomNumber = super.previewReveal("", player);
+            uint8 result = uint8((randomNumber % 6) + 1);
+            uint8 guess = players[player].pendingGuess;
+            
+            if (result == guess) {
+                // Win: return streak with pending result appended
+                uint8[] memory currentStreak = players[player].streak;
+                uint8[] memory previewStreak = new uint8[](currentStreak.length + 1);
+                for (uint8 i = 0; i < currentStreak.length; i++) {
+                    previewStreak[i] = currentStreak[i];
+                }
+                previewStreak[currentStreak.length] = result;
+                return previewStreak;
+            } else {
+                // Loss: return empty array
+                return new uint8[](0);
+            }
+        }
+        
+        // No pending bet, return current streak
         return players[player].streak;
     }
     
@@ -148,7 +170,7 @@ contract DiceStreak is CommitRevealRandomness {
             uint256 basePayout = (betAmount * payoutMultiplier) / 1000;
 
             // Check for streak combo (simplified - would need full logic)
-            (bool hasCombo, uint256 bonusPayout, ) = _checkStreakComboPreview(player, result);
+            (, uint256 bonusPayout, ) = _checkStreakComboPreview(player, result);
 
             prizeValue = basePayout + bonusPayout;
         } else {
@@ -163,6 +185,10 @@ contract DiceStreak is CommitRevealRandomness {
     function _checkStreakComboPreview(address player, uint8 newResult) internal view returns (bool hasCombo, uint256 bonusPayout, string memory comboType) {
         uint8[] memory currentStreak = players[player].streak;
         uint8 newLength = uint8(currentStreak.length + 1);
+        
+        if (newLength < 3) {
+            return (false, 0, "");
+        }
 
         // Create temporary streak with new result
         uint8[] memory tempStreak = new uint8[](newLength);
@@ -171,22 +197,13 @@ contract DiceStreak is CommitRevealRandomness {
         }
         tempStreak[newLength - 1] = newResult;
 
-        // Check combos in the temp streak
-        for (uint8 i = 3; i <= newLength; i++) {
-            uint8[] memory lastNumbers = new uint8[](i);
-            for (uint8 j = 0; j < i; j++) {
-                lastNumbers[j] = tempStreak[newLength - i + j];
-            }
-
-            (bool isCombo, string memory detectedType) = _detectCombo(lastNumbers);
-            if (isCombo) {
-                uint256 bankShare = _getBankShare(i);
-                uint256 bonus = (address(this).balance * bankShare) / 10000;
-
-                return (true, bonus, detectedType);
-            }
+        // Check if last 3 elements form a combo pattern
+        if (tempStreak[newLength - 1] - tempStreak[newLength - 2] == tempStreak[newLength - 2] - tempStreak[newLength - 3]) {
+            uint256 bankShare = _getBankShare(newLength);
+            uint256 bonus = (address(this).balance * bankShare) / 10000;
+            return (true, bonus, "");
         }
-
+        
         return (false, 0, "");
     }
     
@@ -219,12 +236,12 @@ contract DiceStreak is CommitRevealRandomness {
         players[player].streak.push(result);
         
         // Check for streak combo
-        (bool hasCombo, uint256 bonusPayout, string memory comboType) = _checkStreakCombo(player);
+        (bool hasCombo, uint256 bonusPayout) = _checkStreakCombo(player);
         
         uint256 totalPayout = basePayout;
         if (hasCombo) {
             totalPayout += bonusPayout;
-            emit PlayerWinWithCombo(player, guess, result, basePayout, bonusPayout, comboType);
+            emit PlayerWinWithCombo(player, guess, result, basePayout, bonusPayout);
         } else {
             emit PlayerWin(player, guess, result, basePayout);
         }
@@ -246,37 +263,21 @@ contract DiceStreak is CommitRevealRandomness {
         players[player].lastBetResult = BetResult.Loss;
     }
     
-    function _checkStreakCombo(address player) internal returns (bool hasCombo, uint256 bonusPayout, string memory comboType) {
+    function _checkStreakCombo(address player) internal view returns (bool hasCombo, uint256 bonusPayout) {
         uint8[] memory streak = players[player].streak;
         uint8 length = uint8(streak.length);
         
         if (length < 3) {
-            return (false, 0, "");
+            return (false, 0);
+        }
+
+        if (streak[length - 1] - streak[length - 2] == streak[length - 2] - streak[length - 3]) {
+            uint256 bankShare = _getBankShare(length);
+            uint256 bonus = (address(this).balance * bankShare) / 10000;
+            return (true, bonus);
         }
         
-        // Check last 3+ numbers for combos
-        for (uint8 i = 3; i <= length; i++) {
-            uint8[] memory lastNumbers = new uint8[](i);
-            for (uint8 j = 0; j < i; j++) {
-                lastNumbers[j] = streak[length - i + j];
-            }
-            
-            (bool isCombo, string memory detectedType) = _detectCombo(lastNumbers);
-            if (isCombo) {
-                uint256 bankShare = _getBankShare(i);
-                uint256 bonus = (address(this).balance * bankShare) / 10000; // Basis points
-                
-                // Update best combo if this is better
-                if (i > bestCombo.streakFaces.length) {
-                    bestCombo.streakFaces = lastNumbers;
-                    bestCombo.player = player;
-                }
-                
-                return (true, bonus, detectedType);
-            }
-        }
-        
-        return (false, 0, "");
+        return (false, 0);
     }
     
     function _detectCombo(uint8[] memory numbers) internal pure returns (bool isCombo, string memory comboType) {
