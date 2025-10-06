@@ -29,6 +29,7 @@ export type CommandDefinition<T = any> = {
     middleware?: CommandMiddleware[];
     isDefault?: boolean;
     isAutoCommand?: boolean;
+    isDevCommand?: boolean;
     queriesToInvalidate?: string[];
 };
 

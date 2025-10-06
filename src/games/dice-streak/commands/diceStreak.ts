@@ -3,6 +3,7 @@ import { CommandDefinition, CommandPattern } from '../../../commands/types';
 import {
     handlePlay,
     handleAccept,
+    handleSetDice,
 } from './diceStreak.handlers';
 import { TerminalCommandParams } from '../../../utils/gameHandlers';
 
@@ -39,22 +40,33 @@ export const diceStreakCommands: CommandDefinition<TerminalCommandParams>[] = [
         queriesToInvalidate: ['prizeToClaim', 'playerBalance', 'playerStreak', 'comboPossibility', 'playerTotalWinnings', 'bankBalance']
     },
     {
+        pattern: {
+            pattern: /^setDice(\d)$|^setDice (\d)$/,
+            name: 'setDice',
+            description: 'Set predetermined dice outcome for dev mode (1-6)',
+            usage: 'setDice<number> or setDice <number> (1-6)'
+        },
+        handler: handleSetDice,
+        isDevCommand: true,
+        queriesToInvalidate: []
+    },
+    {
         isDefault: true,
-        handler: async ({ input }) => {
+        handler: async ({ input, params }) => {
+            const devModeContext = (params as any)?.devModeContext;
+            const availableCommands = diceStreakCommands
+                .filter((cmd): cmd is CommandDefinition<TerminalCommandParams> & { pattern: CommandPattern } =>
+                    cmd.pattern !== undefined)
+                .filter(cmd => !cmd.isDevCommand || (devModeContext?.isDevMode ?? true));
+
             const helpText = [
                 `Command not found: "${input}"`,
                 '',
                 'Available commands:',
-                ...diceStreakCommands
-                    .filter((cmd): cmd is CommandDefinition<TerminalCommandParams> & { pattern: CommandPattern } =>
-                        cmd.pattern !== undefined)
-                    .map(cmd => `• ${cmd.pattern.name}: ${cmd.pattern.description}`),
+                ...availableCommands.map(cmd => `• ${cmd.pattern.name}: ${cmd.pattern.description}`),
                 '',
                 'Usage examples:',
-                ...diceStreakCommands
-                    .filter((cmd): cmd is CommandDefinition<TerminalCommandParams> & { pattern: CommandPattern } =>
-                        cmd.pattern !== undefined)
-                    .map(cmd => `  ${cmd.pattern.usage}`)
+                ...availableCommands.map(cmd => `  ${cmd.pattern.usage}`)
             ];
 
             return { output: helpText };

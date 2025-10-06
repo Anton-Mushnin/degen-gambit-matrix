@@ -147,6 +147,16 @@ export class CommandDispatcher<T = any> {
             for (const command of allCommands) {
                 if (command.isDefault) continue; // Skip default command in normal search
                 if (command.pattern?.pattern.test(input)) {
+                    // Check if this is a dev-only command and dev mode is disabled
+                    const devModeContext = (params as any)?.devModeContext;
+                    if (command.isDevCommand && devModeContext && !devModeContext.isDevMode) {
+                        return {
+                            output: [
+                                `Command '${command.pattern.name}' is only available in dev mode.`,
+                                'Enable dev mode to use this command.'
+                            ]
+                        };
+                    }
                     return this.executeCommandWithMiddleware(command, context);
                 }
             }
@@ -167,7 +177,7 @@ export class CommandDispatcher<T = any> {
             }
 
             // No command and no default handler found
-            const availableCommands = this.getAvailableCommandsList();
+            const availableCommands = this.getAvailableCommandsList(params);
             return {
                 output: [
                     `Command not found: ${input}`,
@@ -190,14 +200,16 @@ export class CommandDispatcher<T = any> {
     }
 
     // Get a formatted list of available commands
-    private getAvailableCommandsList(): string[] {
+    private getAvailableCommandsList(params?: any): string[] {
         const commands: string[] = [];
-        
+        const devModeContext = params?.devModeContext;
+
         // Global commands
         const globalCommands = Array.from(this.registry.values())
             .filter(cmd => !cmd.isDefault && cmd.pattern)
+            .filter(cmd => !cmd.isDevCommand || (devModeContext?.isDevMode ?? true))
             .map(cmd => `• ${cmd.pattern!.name}: ${cmd.pattern!.description}`);
-        
+
         if (globalCommands.length > 0) {
             commands.push('Global commands:');
             commands.push(...globalCommands);
@@ -207,8 +219,9 @@ export class CommandDispatcher<T = any> {
         if (this.gameContext) {
             const gameCommands = this.gameContext.getGameCommands()
                 .filter(cmd => !cmd.isDefault && cmd.pattern)
+                .filter(cmd => !cmd.isDevCommand || (devModeContext?.isDevMode ?? true))
                 .map(cmd => `• ${cmd.pattern!.name}: ${cmd.pattern!.description}`);
-            
+
             if (gameCommands.length > 0) {
                 commands.push('', `Current game commands (${this.gameContext.activeGameId}):`);
                 commands.push(...gameCommands);

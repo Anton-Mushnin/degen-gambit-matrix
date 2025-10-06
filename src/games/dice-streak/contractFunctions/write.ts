@@ -1,4 +1,4 @@
-import { WalletClient, PublicClient } from 'viem';
+import { WalletClient, PublicClient, Abi } from 'viem';
 import { ThirdwebClient } from 'thirdweb';
 import { Account } from 'thirdweb/wallets';
 import { viemAdapter } from 'thirdweb/adapters/viem';
@@ -8,6 +8,7 @@ import { getViemChainById } from '../../../config/networks';
 import { getBetAmount } from './read';
 import { commitRevealSpin } from '../../../utils/commitRevealSpin';
 import { diceStreakABI } from '../../../ABIs/DiceStreak.abi';
+import { diceStreakDevABI } from '../../../ABIs/DiceStreakDev.abi';
 
 export type DiceStreakPlayResult = {
   description: string;
@@ -45,16 +46,14 @@ export const play = async (contractAddress: string, guess: number, client: Walle
     });
   } else if (account) {
     // ThirdwebClient
-    const viemContract = {
-      address: contractAddress,
-      abi: diceStreakABI,
-    } as const;
-
     const chainId = await publicClient.getChainId();
     const chain = getViemChainById(chainId);
 
     const contract = viemAdapter.contract.fromViem({
-      viemContract: viemContract,
+      viemContract: {
+        address: contractAddress,
+        abi: diceStreakABI as Abi,
+      },
       chain: {
         ...chain,
         rpc: chain.rpcUrls["default"].http[0],
@@ -69,8 +68,8 @@ export const play = async (contractAddress: string, guess: number, client: Walle
 
     // Execute the play transaction
     const tx = prepareContractCall({
-      contract,
-      method: "play",
+      contract: contract as any,
+      method: "play" as any,
       params: [guess],
       value: betAmount.value,
     });
@@ -107,7 +106,7 @@ export const accept = async (
     // Use commitRevealSpin for the accept function (reveal phase)
     const result = await commitRevealSpin({
       contractAddress,
-      contractABI: diceStreakABI,
+      contractABI: diceStreakABI as Abi,
       spinFunctionName: 'accept',
       spinArgs: [],
       value: BigInt(0), // accept doesn't require payment
@@ -130,5 +129,55 @@ export const accept = async (
       error: errorMessage,
     };
   }
+};
+
+/**
+ * Set predetermined result for dev mode testing
+ */
+export const setPredeterminedResult = async (
+  contractAddress: string,
+  result: number,
+  account: Account | undefined,
+  client: ThirdwebClient,
+  publicClient: PublicClient
+): Promise<string> => {
+  if (!account) {
+    throw new Error("No account provided");
+  }
+
+  const chainId = await publicClient.getChainId();
+  const chain = getViemChainById(chainId);
+
+  const contract = viemAdapter.contract.fromViem({
+    viemContract: {
+      address: contractAddress,
+      abi: diceStreakDevABI as Abi,
+    },
+    chain: {
+      ...chain,
+      rpc: chain.rpcUrls["default"].http[0],
+      blockExplorers: [{
+        name: chain.blockExplorers?.default.name ?? "",
+        url: chain.blockExplorers?.default.url ?? ""
+      }],
+      testnet: true
+    },
+    client,
+  });
+
+  // Execute the setPredeterminedResult transaction
+  const tx = prepareContractCall({
+    contract: contract as any,
+    method: "setPredeterminedResult" as any,
+    params: [result],
+  });
+
+  const transactionResult = await sendTransaction({
+    transaction: tx,
+    account,
+  });
+
+  const receipt = await waitForReceipt(transactionResult);
+  return receipt.transactionHash;
 };
 

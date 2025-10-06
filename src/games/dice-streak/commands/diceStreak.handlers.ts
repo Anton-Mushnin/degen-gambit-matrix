@@ -1,5 +1,5 @@
 import { TerminalCommandParams } from "../../../utils/gameHandlers";
-import { accept } from '../contractFunctions/write';
+import { accept, setPredeterminedResult } from '../contractFunctions/write';
 import { commitRevealAccept } from "../../../utils/commitRevealAccept";
 import { decodeAbiParameters } from "viem";
 import { wagmiConfig } from "../../../config";
@@ -105,5 +105,34 @@ export async function handleAccept({ params }: { params: TerminalCommandParams }
     } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         return { output: [`Failed to accept results: ${errorMessage}`] };
+    }
+}
+
+export async function handleSetDice({ input, params }: { input: string; params: TerminalCommandParams }) {
+    const { activeAccount, client, publicClient, contractAddress } = params;
+
+    if (!client || !publicClient) {
+        return { output: ["No account selected or public client not available"] };
+    }
+
+    // Parse the dice number from input (format: "setDice3" or "setDice 3")
+    const match = input.match(/^setDice(\d)$/) || input.match(/^setDice (\d)$/);
+    if (!match) {
+        return { output: ["Invalid format. Use: setDice<number> (1-6) or setDice <number> (1-6)"] };
+    }
+
+    const diceNumber = parseInt(match[1]);
+    if (diceNumber < 1 || diceNumber > 6) {
+        return { output: ["Dice number must be between 1 and 6"] };
+    }
+
+    try {
+        const receipt = await setPredeterminedResult(contractAddress, diceNumber, activeAccount, client, publicClient);
+        return {
+            output: [`Set predetermined dice result to ${diceNumber}`, `Transaction: ${receipt}`]
+        };
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        return { output: [`Failed to set predetermined result: ${errorMessage}`] };
     }
 }

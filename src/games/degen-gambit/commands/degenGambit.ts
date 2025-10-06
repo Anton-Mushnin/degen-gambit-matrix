@@ -60,21 +60,21 @@ export const degenGambitCommands: CommandDefinition<TerminalCommandParams>[] = [
     },
     {
         isDefault: true,
-        handler: async ({ input }) => {
+        handler: async ({ input, params }) => {
+            const devModeContext = (params as any)?.devModeContext;
+            const availableCommands = degenGambitCommands
+                .filter((cmd): cmd is CommandDefinition<TerminalCommandParams> & { pattern: CommandPattern } =>
+                    cmd.pattern !== undefined)
+                .filter(cmd => !cmd.isDevCommand || (devModeContext?.isDevMode ?? true));
+
             const helpText = [
                 `Command not found: "${input}"`,
                 '',
                 'Available commands:',
-                ...degenGambitCommands
-                    .filter((cmd): cmd is CommandDefinition<TerminalCommandParams> & { pattern: CommandPattern } => 
-                        cmd.pattern !== undefined)
-                    .map(cmd => `• ${cmd.pattern.name}: ${cmd.pattern.description}`),
+                ...availableCommands.map(cmd => `• ${cmd.pattern.name}: ${cmd.pattern.description}`),
                 '',
                 'Usage examples:',
-                ...degenGambitCommands
-                    .filter((cmd): cmd is CommandDefinition<TerminalCommandParams> & { pattern: CommandPattern } => 
-                        cmd.pattern !== undefined)
-                    .map(cmd => `  ${cmd.pattern.usage}`)
+                ...availableCommands.map(cmd => `  ${cmd.pattern.usage}`)
             ];
 
             return { output: helpText };
