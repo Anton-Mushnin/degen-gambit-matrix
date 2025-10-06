@@ -86,6 +86,29 @@ export class CommandDispatcher<T = any> {
         return execute(0);
     }
 
+    private getCombinedMiddleware(command: CommandDefinition<T>): CommandMiddleware[] {
+        return [
+            ...this.globalMiddleware,
+            ...(command.middleware || [])
+        ];
+    }
+
+    private async executeCommandWithMiddleware(
+        command: CommandDefinition<T>,
+        context: CommandContext<T>
+    ): Promise<CommandResult> {
+        const middleware = this.getCombinedMiddleware(command);
+        const result = await this.executeMiddleware(
+            {...context, isAutoCommand: command.isAutoCommand},
+            middleware,
+            command.handler
+        );
+        return {
+            ...result,
+            queriesToInvalidate: command.queriesToInvalidate
+        };
+    }
+
     // Get all available commands (global + game-specific)
     private getAllAvailableCommands(): CommandDefinition<T>[] {
         const globalCommands = Array.from(this.registry.values());
@@ -124,31 +147,14 @@ export class CommandDispatcher<T = any> {
             for (const command of allCommands) {
                 if (command.isDefault) continue; // Skip default command in normal search
                 if (command.pattern?.pattern.test(input)) {
-                    const allMiddleware = [
-                        ...this.globalMiddleware,
-                        ...(command.middleware || [])
-                    ];
-                    const result = await this.executeMiddleware(
-                        {...context, isAutoCommand: command.isAutoCommand},
-                        allMiddleware,
-                        command.handler
-                    );
-                    return result;
+                    return this.executeCommandWithMiddleware(command, context);
                 }
             }
 
             // If no command found, try default command from global registry first
             const defaultCommand = this.registry.get('__default__');
             if (defaultCommand) {
-                const allMiddleware = [
-                    ...this.globalMiddleware,
-                    ...(defaultCommand.middleware || [])
-                ];
-                return this.executeMiddleware(
-                    context,
-                    allMiddleware,
-                    defaultCommand.handler
-                );
+                return this.executeCommandWithMiddleware(defaultCommand, context);
             }
 
             // Try default command from current game
@@ -156,15 +162,7 @@ export class CommandDispatcher<T = any> {
                 const gameCommands = this.gameContext.getGameCommands();
                 const gameDefaultCommand = gameCommands.find(cmd => cmd.isDefault);
                 if (gameDefaultCommand) {
-                    const allMiddleware = [
-                        ...this.globalMiddleware,
-                        ...(gameDefaultCommand.middleware || [])
-                    ];
-                    return this.executeMiddleware(
-                        context,
-                        allMiddleware,
-                        gameDefaultCommand.handler
-                    );
+                    return this.executeCommandWithMiddleware(gameDefaultCommand, context);
                 }
             }
 

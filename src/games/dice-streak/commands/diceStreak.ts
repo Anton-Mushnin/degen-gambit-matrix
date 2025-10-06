@@ -25,7 +25,8 @@ export const diceStreakCommands: CommandDefinition<TerminalCommandParams>[] = [
             usage: 'play <number> (1-6)'
         },
         handler: handlePlay,
-        isAutoCommand: true
+        isAutoCommand: true,
+        queriesToInvalidate: ['playerBalance', 'playerStreak', 'comboPossibility', 'playerTotalWinnings', 'prizeToClaim', 'bankBalance']
     },
     {
         pattern: {
@@ -34,7 +35,8 @@ export const diceStreakCommands: CommandDefinition<TerminalCommandParams>[] = [
             description: 'Accept and reveal results for pending bet',
             usage: 'accept'
         },
-        handler: handleAccept
+        handler: handleAccept,
+        queriesToInvalidate: ['prizeToClaim', 'playerBalance', 'playerStreak', 'comboPossibility', 'playerTotalWinnings', 'bankBalance']
     },
     {
         isDefault: true,

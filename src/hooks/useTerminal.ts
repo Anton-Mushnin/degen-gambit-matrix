@@ -13,6 +13,7 @@ import { useBlockchain } from './useBlockchain';
 import { useDevMode } from '../contexts/DevModeContext';
 import { getGameConfig, GameContractConfig } from '../utils/gameConfig';
 import { useWinEffect } from "@/contexts/WinEffectContext";
+import { useQueryClient } from '@tanstack/react-query';
 
 const phrasesToType = ['Wake up', 'The Matrix', 'Prize'];
 
@@ -27,6 +28,7 @@ export const useTerminal = () => {
     const [isBusy, setIsBusy] = useState(false);
     const [outcome, setOutcome] = useState<string[]>([]);
     const autoSpinRef = useRef(false);
+    const queryClient = useQueryClient();
 
     // Create and configure command dispatcher
     const dispatcher = useMemo(() => {
@@ -123,6 +125,12 @@ export const useTerminal = () => {
                 if (outputText) {
                     setOutputQueue(prev => [...prev, {text: outputText, toType: false}]);
                 }
+                // Invalidate queries if specified
+                if (result.queriesToInvalidate) {
+                    result.queriesToInvalidate.forEach(queryKey => {
+                        queryClient.invalidateQueries({ queryKey: [queryKey] });
+                    });
+                }
                 return result;
             } else if (result?.outcome) {
                 setOutcome(result.output || []);
@@ -136,10 +144,16 @@ export const useTerminal = () => {
                         setOutputQueue(prev => [...prev, {text: result.output?.join(' ') || '', toType: false}]);
                     }
                     setOutputQueue(prev => [...prev, {
-                        text: result.outcome?.join('\n') || '', 
+                        text: result.outcome?.join('\n') || '',
                         toType: phrasesToType.some(str => (result.outcome?.join('\n') || '').startsWith(str))}]);
                     setIsBusy(false);
                     setOutcome([]);
+                    // Invalidate queries if specified
+                    if (result.queriesToInvalidate) {
+                        result.queriesToInvalidate.forEach(queryKey => {
+                            queryClient.invalidateQueries({ queryKey: [queryKey] });
+                        });
+                    }
                     setTimeout(() => {
                     if (autoSpinRef.current && result.autoCommand) {
                         setOutputQueue(prev => [...prev, {text: `Auto spin: ${result.autoCommand}`, toType: false}]);

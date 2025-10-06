@@ -3,6 +3,7 @@ export type CommandResult = {
     outcome?: string[]; //Outcome text to display in the terminal
     isPrize?: boolean; //If the outcome is a prize
     autoCommand?: string; //If the command is auto, the input command
+    queriesToInvalidate?: string[]; // Query keys to invalidate after command execution
 };
 
 export type CommandContext<T = any> = {
@@ -28,6 +29,7 @@ export type CommandDefinition<T = any> = {
     middleware?: CommandMiddleware[];
     isDefault?: boolean;
     isAutoCommand?: boolean;
+    queriesToInvalidate?: string[];
 };
 
 export type CommandMiddleware = (
