@@ -61,15 +61,15 @@ export const DegenGambitProvider: React.FC<DegenGambitProviderProps> = ({ childr
         return userNumbers;
     }, [userNumbers]);
 
-    const gameParams: any = {
-        onSetNumbers: setUserNumbers,
-        getCurrentNumbers,
-        onAutoSpinToggle: toggleAutoSpin,
-        setIsWin,
-        autoSpin,
-    };
+    // const gameParams: any = {
+    //     onSetNumbers: setUserNumbers,
+    //     getCurrentNumbers,
+    //     onAutoSpinToggle: toggleAutoSpin,
+    //     setIsWin,
+    //     autoSpin,
+    // };
 
-    const { handleInput: terminalHandleInput, outputQueue, setOutputQueue } = useTerminal(gameParams);
+    const { handleInput: terminalHandleInput, outputQueue, setOutputQueue } = useTerminal();
 
     const handleInput = async (input: string) => {
         if (input === 'clear') {
@@ -101,7 +101,7 @@ export const DegenGambitProvider: React.FC<DegenGambitProviderProps> = ({ childr
                 setOutcome(outcomeValues);
                 setTimeout(() => {
                     setOutputQueue(prev => [...prev, {text: outcomeValues.join(' '), toType: false}]);
-                    const outputText = result.output.join('\n');
+                    const outputText = result.output?.join('\n');
                     if (outputText) { 
                         setOutputQueue(prev => [...prev, {text: outputText, toType: phrasesToType.some(str => outputText.startsWith(str))}]);
                     }

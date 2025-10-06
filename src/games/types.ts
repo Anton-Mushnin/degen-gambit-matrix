@@ -86,7 +86,7 @@ export type DataItem = QueryDataItem | StaticDataItem;
 
 // Component configuration interfaces
 export interface GameMainConfig {
-  useGameContext: () => GenericGameContext;
+  useGameContext?: () => GenericGameContext;
   displayComponents?: GameDisplayComponents;
 }
 

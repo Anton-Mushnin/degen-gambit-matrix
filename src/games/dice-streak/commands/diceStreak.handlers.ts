@@ -91,13 +91,6 @@ export async function handlePlay({ input, params }: { input: string; params: Ter
 
 }
 
-export async function handleAuto({ params }: { params: TerminalCommandParams }) {
-    const { gameParams } = params;
-    const { onAutoSpinToggle, autoSpin } = gameParams;
-    const output = [`Auto play: ${!autoSpin}`];
-    onAutoSpinToggle?.();
-    return { output };
-}
 
 export async function handleAccept({ params }: { params: TerminalCommandParams }) {
     const { activeAccount, client, publicClient, contractAddress } = params;

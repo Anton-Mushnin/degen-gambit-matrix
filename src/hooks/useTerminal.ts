@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { CommandDispatcher } from '../commands/dispatcher';
 import { CommandDefinition } from '../commands/types';
 import { TerminalCommandParams } from '../games/degen-gambit/commands/degenGambit';
-import { loggingMiddleware, errorHandlingMiddleware, autoSpinMiddleware } from '../commands/middleware';
+import { loggingMiddleware, errorHandlingMiddleware } from '../commands/middleware';
 import { gameManagementCommands, GameManagementParams } from '../commands/commands/gameManagement';
 
 // Custom hooks
@@ -17,7 +17,7 @@ import { useWinEffect } from "@/contexts/WinEffectContext";
 const phrasesToType = ['Wake up', 'The Matrix', 'Prize'];
 
 
-export const useTerminal = (gameParams: any) => {
+export const useTerminal = () => {
     const { activeAccount, client, publicClient, displayName, gameContext } = useBlockchain();
     const devModeContext = useDevMode();
     const [outputQueue, setOutputQueue] = useState<{text: string, toType: boolean}[]>([]);
@@ -103,7 +103,6 @@ export const useTerminal = (gameParams: any) => {
             activeAccount,
             client,
             publicClient,
-            gameParams,
             contractAddress,
             contractABI,
             // Game management params

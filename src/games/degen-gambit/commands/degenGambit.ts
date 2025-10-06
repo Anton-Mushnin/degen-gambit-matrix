@@ -3,8 +3,6 @@ import { CommandDefinition, CommandPattern } from '../../../commands/types';
 import {
     handleGetSome,
     handleSpin,
-    handleAuto,
-    handleSet,
     handleAccept,
 } from './degenGambit.handlers';
 import { TerminalCommandParams, SpinResult, CommitRevealAcceptParams } from '../../../utils/gameHandlers';
@@ -42,24 +40,15 @@ export const degenGambitCommands: CommandDefinition<TerminalCommandParams>[] = [
         },
         handler: handleSpin
     },
-    {
-        pattern: {
-            pattern: /^auto$/,
-            name: 'auto',
-            description: 'Toggle auto spin',
-            usage: 'auto'
-        },
-        handler: handleAuto
-    },
-    {
-        pattern: {
-            pattern: /^set \d+ \d+$/,
-            name: 'set',
-            description: 'Set a number at a specific index',
-            usage: 'set <index> <number>'
-        },
-        handler: handleSet
-    },
+    // {
+    //     pattern: {
+    //         pattern: /^set \d+ \d+$/,
+    //         name: 'set',
+    //         description: 'Set a number at a specific index',
+    //         usage: 'set <index> <number>'
+    //     },
+    //     handler: handleSet
+    // },
     {
         pattern: {
             pattern: /^accept$/,

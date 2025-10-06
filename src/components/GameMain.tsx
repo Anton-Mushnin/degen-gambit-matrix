@@ -34,14 +34,11 @@ export interface GameDisplayComponents {
 }
 
 export interface GameMainProps {
-  useGameContext: () => GenericGameContext;
   displayComponents?: GameDisplayComponents;
 }
 
-const GameMain: React.FC<GameMainProps> = ({ useGameContext, displayComponents }) => {
-  const [gameState] = useGameContext();
-  const { gameStatus, gameParams } = gameState;
-  const { handleInput: terminalHandleInput, outputQueue: terminalQueue, isBusy, isProcessing, outcome, handleBreak } = useTerminal(gameParams);
+const GameMain: React.FC<GameMainProps> = ({ displayComponents }) => {
+  const { handleInput: terminalHandleInput, outputQueue: terminalQueue, isBusy, isProcessing, outcome, handleBreak } = useTerminal();
 
   // Determine what component to render based on game state
   const renderDisplayComponent = () => {
@@ -56,11 +53,6 @@ const GameMain: React.FC<GameMainProps> = ({ useGameContext, displayComponents }
     if (isProcessing && displayComponents.processingComponent) {
       const ProcessingComponent = displayComponents.processingComponent;
       return <ProcessingComponent isProcessing={isProcessing} />;
-    }
-
-    if (gameStatus && displayComponents.statusComponent) {
-      const StatusComponent = displayComponents.statusComponent;
-      return <StatusComponent gameStatus={gameStatus} />;
     }
 
     return null;

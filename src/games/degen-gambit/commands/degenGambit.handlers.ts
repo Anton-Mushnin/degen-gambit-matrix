@@ -43,58 +43,50 @@ export async function handleGetSome({ params }: { params: TerminalCommandParams 
 
 // Primary spin handler for DegenGambit - uses the generalized commit-reveal-accept logic
 export async function handleSpin({ input, params }: { input: string; params: TerminalCommandParams }) {
-    const { gameParams } = params;
-    const { setIsWin } = gameParams;
 
-    return handleCommitRevealAccept({
+    const result = await handleCommitRevealAccept({
         input,
         params,
         config: {
             spinFunction: spin,
-            onWinState: setIsWin,
             onAccept: accept,
             winDelay: 8000,
             acceptDelay: 18000
         }
     });
+    return {...result, outcome: result.outcome ? result.outcome.map(item => item.toString()) : undefined};
 }
 
-export async function handleAuto({ params }: { params: TerminalCommandParams }) {
-    const { onAutoSpinToggle, autoSpin } = params.gameParams;
-    const output = [`Auto spin: ${!autoSpin}`];
-    onAutoSpinToggle?.();
-    return { output };
-}
 
-export async function handleSet({ input, params }: { input: string; params: TerminalCommandParams }) {
-    const { onSetNumbers, getCurrentNumbers } = params.gameParams;
-    const [, indexStr, numberStr] = input.split(' ');
-    const index = parseInt(indexStr);
-    const number = parseInt(numberStr);
+// export async function handleSet({ input, params }: { input: string; params: TerminalCommandParams }) {
+//     const { onSetNumbers, getCurrentNumbers } = params.gameParams;
+//     const [, indexStr, numberStr] = input.split(' ');
+//     const index = parseInt(indexStr);
+//     const number = parseInt(numberStr);
 
-    const currentNumbers = getCurrentNumbers();
+//     const currentNumbers = getCurrentNumbers();
 
-    if (index < 0 || index >= currentNumbers.length) {
-        return { 
-            output: [`Invalid index. Must be between 0 and ${currentNumbers.length - 1}`] 
-        };
-    }
+//     if (index < 0 || index >= currentNumbers.length) {
+//         return { 
+//             output: [`Invalid index. Must be between 0 and ${currentNumbers.length - 1}`] 
+//         };
+//     }
 
-    const newNumbers = [...currentNumbers];
-    newNumbers[index] = number;
+//     const newNumbers = [...currentNumbers];
+//     newNumbers[index] = number;
     
-    // Notify component of new numbers
-    onSetNumbers?.(newNumbers);
+//     // Notify component of new numbers
+//     onSetNumbers?.(newNumbers);
     
-    return {
-        output: [
-            "Minor symbols:", 
-            newNumbers.slice(1, 16).join(', '), 
-            "Major symbols:", 
-            newNumbers.slice(-3).join(', ')
-        ]
-    };
-}
+//     return {
+//         output: [
+//             "Minor symbols:", 
+//             newNumbers.slice(1, 16).join(', '), 
+//             "Major symbols:", 
+//             newNumbers.slice(-3).join(', ')
+//         ]
+//     };
+// }
 
 export async function handleAccept({ params }: { params: TerminalCommandParams }) {
     const { activeAccount, client, publicClient, contractAddress } = params;

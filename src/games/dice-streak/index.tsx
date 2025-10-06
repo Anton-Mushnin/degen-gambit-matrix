@@ -32,9 +32,6 @@ const createDiceStreakDataItems = ({ publicClient, activeAccount, contractAddres
   return { contractData, playerData };
 };
 
-// Import hooks and context
-import { DiceStreakProvider } from './contexts/DiceStreakContext';
-import { useDiceStreakContext } from './contexts/DiceStreakContext';
 
 // Import components
 import { DiceStreakProcessingComponent, DiceStreakOutcomeComponent } from './components';
@@ -49,7 +46,7 @@ export const diceStreakGame: Game = {
     version: '1.0.0',
     commands: diceStreakCommands as CommandDefinition<unknown>[],
     components: {
-        main: { useGameContext: useDiceStreakContext, 
+        main: {  
                 displayComponents: { 
                     processingComponent: DiceStreakProcessingComponent,
                     outcomeComponent: DiceStreakOutcomeComponent
@@ -66,7 +63,6 @@ export const diceStreakGame: Game = {
     },
     hooks: {
     },
-    context: DiceStreakProvider,
     config: {
         contractAddress: '0x2E1C39c9475C62f17493ABaFaFf90eD01640ce51', // Legacy fallback
         gameContractConfig: diceStreakConfig, // New dev mode aware config
@@ -77,7 +73,7 @@ export const diceStreakGame: Game = {
 };
 
 // Create wrapper components for backward compatibility
-const DiceStreakWrapper: React.FC = () => React.createElement(GameMain, { useGameContext: useDiceStreakContext, displayComponents: { processingComponent: DiceStreakProcessingComponent, outcomeComponent: DiceStreakOutcomeComponent } });
+const DiceStreakWrapper: React.FC = () => React.createElement(GameMain, { displayComponents: { processingComponent: DiceStreakProcessingComponent, outcomeComponent: DiceStreakOutcomeComponent } });
 const ContractInfoWrapper: React.FC = () => React.createElement(GameContractInfo, {
   createDataItems: createDiceStreakDataItems
 });
@@ -88,7 +84,6 @@ export { DiceStreakWrapper as DiceStreak };
 export { ContractInfoWrapper as ContractInfo };
 // Stream export removed - use Home.tsx dev mode aware rendering instead
 
-export { useDiceStreakContext, DiceStreakProvider } from './contexts/DiceStreakContext';
 export { useAccountToUse } from '../../hooks';
 
 export { diceStreakCommands } from './commands/diceStreak';

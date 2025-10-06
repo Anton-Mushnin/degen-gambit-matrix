@@ -31,7 +31,6 @@ export type TerminalCommandParams = {
     activeAccount: Account | undefined;
     client: ThirdwebClient;
     publicClient: PublicClient | null;
-    gameParams: any; // Game-specific parameters
     contractAddress: string;
     contractABI?: any; // Contract ABI based on dev mode
 };
@@ -103,6 +102,6 @@ export async function handleCommitRevealAccept({
     return {
         output: [spinResult.description],
         outcome: spinResult.outcome ? [...spinResult.outcome.slice(0, 3)] : undefined,
-        isPrize: isWin
+        isPrize: isWin ? true : false,
     };
 }

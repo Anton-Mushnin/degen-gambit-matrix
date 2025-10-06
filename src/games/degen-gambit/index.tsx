@@ -115,7 +115,6 @@ const ContractInfoWrapper: React.FC = () => React.createElement(GameContractInfo
 
 // Export individual components and hooks for backward compatibility
 const DegenGambitMainWrapper: React.FC = () => React.createElement(GameMain, {
-  useGameContext: useDegenGambitContext,
   displayComponents: {
     processingComponent: DegenGambitProcessingComponent,
     outcomeComponent: DegenGambitOutcomeComponent,

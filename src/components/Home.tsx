@@ -51,7 +51,7 @@ const Home = () => {
       } else {
         // Generic GameMainConfig
         const mainConfig = components.main as any;
-        MainComponent = () => <GameMain useGameContext={mainConfig.useGameContext} displayComponents={mainConfig.displayComponents} />;
+        MainComponent = () => <GameMain displayComponents={mainConfig.displayComponents} />;
       }
     }
     const RulesComponent = components.rules;
