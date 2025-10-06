@@ -43,6 +43,16 @@ export const createContractData = ({
         animation: false
     },
     {
+        type: 'static',
+        label: '',
+        data: {
+            formatted: diceStreakGame.network.name,
+            value: BigInt(0),
+            decimals: 0
+        },
+        animation: false
+    },
+    {
         type: 'query',
         label: 'Bank Balance: ',
         queryKey: ['bankBalance', address],

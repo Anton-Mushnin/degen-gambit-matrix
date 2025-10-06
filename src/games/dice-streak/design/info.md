@@ -2,6 +2,7 @@
 
 ## Contract Constants
 - Game name
+- Network name
 - Contract address
 - Fixed bet amount: n WEI
 - Payout: m WEI
