@@ -16,7 +16,7 @@ export const WinEffectProvider: React.FC<WinEffectProviderProps> = ({ children }
   const [outcome, setOutcome] = useState<any>(null);
 
   const triggerWinEffect = (outcome?: any) => {
-    setOutcome(outcome || [1, 1, 1]);
+    setOutcome(outcome || []);
     setIsWin(true);
   };
 
