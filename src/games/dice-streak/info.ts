@@ -10,9 +10,8 @@ import {
     getBestCombo,
     getPlayerStreak,
     getPlayerTotalWinnings,
-    getGameStatus,
-    getLastBetResult,
-    getAllStatistics
+    getAllStatistics,
+    getPrizeToClaim
 } from './contractFunctions/read';
 import { getComboPossibilityData } from './comboUtils';
 import { DataItem } from '../types';
@@ -33,6 +32,16 @@ export const createContractData = ({
 }): DataItem[] => {
     const address: string = contractAddress || (diceStreakGame.config.contractAddress as string);
     return [
+    {
+        type: 'static',
+        label: '',
+        data: {
+            formatted: diceStreakGame.name,
+            value: BigInt(0),
+            decimals: 0
+        },
+        animation: false
+    },
     {
         type: 'query',
         label: 'Bank Balance: ',
@@ -163,29 +172,12 @@ export const createPlayerData = ({
     },
     {
         type: 'query',
-        label: 'Game Status: ',
-        queryKey: ['gameStatus', address, playerAddress],
+        label: 'Prize to claim: ',
+        queryKey: ['prizeToClaim', address, playerAddress],
         queryFn: async () => {
-            const status = await getGameStatus(address, playerAddress, publicClient);
-            return {
-                value: BigInt(Number(status.value)),
-                formatted: status.formatted,
-                decimals: 0
-            };
-        },
-        onDataUpdate
-    },
-    {
-        type: 'query',
-        label: 'Last Bet Result: ',
-        queryKey: ['lastBetResult', address, playerAddress],
-        queryFn: async () => {
-            const result = await getLastBetResult(address, playerAddress, publicClient);
-            return {
-                value: BigInt(Number(result.value)),
-                formatted: result.formatted,
-                decimals: 0
-            };
+            const prize = await getPrizeToClaim(address, playerAddress, publicClient);
+            console.log('prize', prize);
+            return prize;
         },
         onDataUpdate
     }

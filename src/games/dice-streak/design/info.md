@@ -1,6 +1,7 @@
 # Dice Streak Game - Data Display List
 
 ## Contract Constants
+- Game name
 - Contract address
 - Fixed bet amount: n WEI
 - Payout: m WEI
@@ -19,5 +20,4 @@
 - Total winnings
 
 ## Current Game Status
-- Rolling/waiting for claim/claiming
-- Last bet, win/loss
+- Prize to claim if there is any

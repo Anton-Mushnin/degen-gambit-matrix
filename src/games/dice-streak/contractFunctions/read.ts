@@ -1,79 +1,9 @@
 import { PublicClient } from 'viem';
 import { formatEtherOrWei } from '@/utils/formatting';
+import { diceStreakABI } from '../../../ABIs/DiceStreak.abi';
 
-// Define DiceStreak ABI (inline for now)
-const diceStreakABI = [
-  {
-    "inputs": [],
-    "name": "getBetAmount",
-    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getPayoutMultiplier",
-    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getBankBalance",
-    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getBestCombo",
-    "outputs": [
-      {"internalType": "uint8[]", "name": "streakFaces", "type": "uint8[]"},
-      {"internalType": "address", "name": "player", "type": "address"}
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [{"internalType": "address", "name": "player", "type": "address"}],
-    "name": "getPlayerStreak",
-    "outputs": [{"internalType": "uint8[]", "name": "", "type": "uint8[]"}],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [{"internalType": "address", "name": "player", "type": "address"}],
-    "name": "getPlayerTotalWinnings",
-    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [{"internalType": "address", "name": "player", "type": "address"}],
-    "name": "getGameStatus",
-    "outputs": [{"internalType": "enum DiceStreak.GameStatus", "name": "", "type": "uint8"}],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [{"internalType": "address", "name": "player", "type": "address"}],
-    "name": "getLastBetResult",
-    "outputs": [{"internalType": "enum DiceStreak.BetResult", "name": "", "type": "uint8"}],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [{"internalType": "uint8", "name": "number", "type": "uint8"}],
-    "name": "getStatistics",
-    "outputs": [
-      {"internalType": "uint256", "name": "occurrences", "type": "uint256"},
-      {"internalType": "uint256", "name": "bets", "type": "uint256"},
-      {"internalType": "uint256", "name": "wins", "type": "uint256"}
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  }
-] as const;
+
+
 
 // Read functions for DiceStreak contract
 
@@ -263,5 +193,26 @@ export const getAllStatistics = async (contractAddress: string, publicClient: Pu
     return stats;
   } catch (error) {
     throw new Error(`Failed to get all statistics: ${error}`);
+  }
+};
+
+export const getPrizeToClaim = async (contractAddress: string, playerAddress: string, publicClient: PublicClient) => {
+  try {
+    const prizeValue = await publicClient.readContract({
+      address: contractAddress as `0x${string}`,
+      abi: diceStreakABI,
+      functionName: 'inspectOutcome',
+      args: [playerAddress],
+    }) as [bigint, any];
+
+    const prizeAmount = prizeValue[0];
+
+    return {
+      value: prizeAmount,
+      formatted: prizeAmount > 0 ? `${formatEtherOrWei(prizeAmount).formatted}` : 'No prize to claim',
+      decimals: prizeAmount > 0 ? 18 : 0
+    };
+  } catch (error) {
+    throw new Error(`Failed to get prize to claim: ${error}`);
   }
 };
