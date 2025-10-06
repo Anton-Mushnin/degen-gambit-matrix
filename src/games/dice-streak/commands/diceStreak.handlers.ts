@@ -136,3 +136,21 @@ export async function handleSetDice({ input, params }: { input: string; params: 
         return { output: [`Failed to set predetermined result: ${errorMessage}`] };
     }
 }
+
+export async function handleUnsetDice({ params }: { params: TerminalCommandParams }) {
+    const { activeAccount, client, publicClient, contractAddress } = params;
+
+    if (!client || !publicClient) {
+        return { output: ["No account selected or public client not available"] };
+    }
+
+    try {
+        const receipt = await setPredeterminedResult(contractAddress, 0, activeAccount, client, publicClient);
+        return {
+            output: [`Cleared predetermined dice result`, `Transaction: ${receipt}`]
+        };
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        return { output: [`Failed to clear predetermined result: ${errorMessage}`] };
+    }
+}

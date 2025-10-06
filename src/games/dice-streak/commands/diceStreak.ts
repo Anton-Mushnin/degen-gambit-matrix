@@ -4,6 +4,7 @@ import {
     handlePlay,
     handleAccept,
     handleSetDice,
+    handleUnsetDice,
 } from './diceStreak.handlers';
 import { TerminalCommandParams } from '../../../utils/gameHandlers';
 
@@ -47,6 +48,17 @@ export const diceStreakCommands: CommandDefinition<TerminalCommandParams>[] = [
             usage: 'setDice<number> or setDice <number> (1-6)'
         },
         handler: handleSetDice,
+        isDevCommand: true,
+        queriesToInvalidate: []
+    },
+    {
+        pattern: {
+            pattern: /^unsetDice$/,
+            name: 'unsetDice',
+            description: 'Clear predetermined dice outcome for dev mode',
+            usage: 'unsetDice'
+        },
+        handler: handleUnsetDice,
         isDevCommand: true,
         queriesToInvalidate: []
     },
