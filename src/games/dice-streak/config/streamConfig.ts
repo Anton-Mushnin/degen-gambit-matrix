@@ -71,7 +71,7 @@ export const diceStreakStreamConfig: EventConfig[] = [
   },
   {
     eventName: 'Spin',
-    invalidateQueries: (logs: any[], activeAccount: string | undefined) => {
+    invalidateQueries: (_logs: any[], _activeAccount: string | undefined) => {
       const queries: string[][] = [['bankBalance'], ['allStatistics']];
 
       // if (logs.some((log: any) => log.args.player === activeAccount)) {
