@@ -41,7 +41,7 @@ export interface GameMainProps {
 const GameMain: React.FC<GameMainProps> = ({ useGameContext, displayComponents }) => {
   const [gameState] = useGameContext();
   const { gameStatus, gameParams } = gameState;
-  const { handleInput: terminalHandleInput, outputQueue: terminalQueue, isBusy, isProcessing, outcome } = useTerminal(gameParams);
+  const { handleInput: terminalHandleInput, outputQueue: terminalQueue, isBusy, isProcessing, outcome, handleBreak } = useTerminal(gameParams);
 
   // Determine what component to render based on game state
   const renderDisplayComponent = () => {
@@ -72,6 +72,7 @@ const GameMain: React.FC<GameMainProps> = ({ useGameContext, displayComponents }
         queue={terminalQueue}
         onSubmit={terminalHandleInput}
         isInputDisabled={isBusy || Boolean(outcome && outcome.length > 0)}
+        onBreak={handleBreak}
       >
         {renderDisplayComponent()}
       </Terminal>
