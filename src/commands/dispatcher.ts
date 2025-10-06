@@ -74,7 +74,10 @@ export class CommandDispatcher<T = any> {
     ): Promise<CommandResult> {
         const execute = async (index: number): Promise<CommandResult> => {
             if (index === middleware.length) {
-                return handler(context);
+                const result = await handler(context);
+
+                const {isAutoCommand, input} = context;
+                return {...result, autoCommand: isAutoCommand ? input : undefined};
             }
 
             return middleware[index](context, () => execute(index + 1));
@@ -125,12 +128,12 @@ export class CommandDispatcher<T = any> {
                         ...this.globalMiddleware,
                         ...(command.middleware || [])
                     ];
-
-                    return this.executeMiddleware(
-                        context,
+                    const result = await this.executeMiddleware(
+                        {...context, isAutoCommand: command.isAutoCommand},
                         allMiddleware,
                         command.handler
                     );
+                    return result;
                 }
             }
 

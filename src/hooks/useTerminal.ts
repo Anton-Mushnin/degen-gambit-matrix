@@ -1,11 +1,11 @@
 // React and core imports
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 // Local imports
 import { CommandDispatcher } from '../commands/dispatcher';
 import { CommandDefinition } from '../commands/types';
 import { TerminalCommandParams } from '../games/degen-gambit/commands/degenGambit';
-import { loggingMiddleware, errorHandlingMiddleware } from '../commands/middleware';
+import { loggingMiddleware, errorHandlingMiddleware, autoSpinMiddleware } from '../commands/middleware';
 import { gameManagementCommands, GameManagementParams } from '../commands/commands/gameManagement';
 
 // Custom hooks
@@ -26,6 +26,7 @@ export const useTerminal = (gameParams: any) => {
     const [isProcessing, setIsProcessing] = useState(false);
     const [isBusy, setIsBusy] = useState(false);
     const [outcome, setOutcome] = useState<string[]>([]);
+    const autoSpinRef = useRef(false);
 
     // Create and configure command dispatcher
     const dispatcher = useMemo(() => {
@@ -72,6 +73,12 @@ export const useTerminal = (gameParams: any) => {
     }, [welcomeShown, displayName, gameContext.activeGame]);
 
     const handleInput = async (input: string) => {
+        if (input === 'auto') {
+            const oldAutoSpin = autoSpinRef.current;
+            autoSpinRef.current = !oldAutoSpin;
+            setOutputQueue(prev => [...prev, {text: `Auto spin: ${!oldAutoSpin}`, toType: false}]);
+            return;
+        }
         // Get contract configuration based on dev mode
         setIsProcessing(true);
         setIsBusy(true);
@@ -111,37 +118,49 @@ export const useTerminal = (gameParams: any) => {
             devModeContext
         };
         try {
-        const result = await dispatcher.dispatch(input, combinedParams);
-        if (result?.output && !result.outcome) {
-            const outputText = result.output.join('\n');
-            if (outputText) {
-                setOutputQueue(prev => [...prev, {text: outputText, toType: false}]);
-            }
-            return result;
-        } else if (result?.outcome) {
-            setOutcome(result.output || []);
-            if (result.isPrize) {
-                setTimeout(() => {
-                        triggerWinEffect(result.outcome);
-                    }, 1000);
-            }
-            setTimeout(() => {
-                if (result.output) {
-                    setOutputQueue(prev => [...prev, {text: result.output?.join(' ') || '', toType: false}]);
+            const result = await dispatcher.dispatch(input, combinedParams);
+            if (result?.output && !result.outcome) {
+                const outputText = result.output.join('\n');
+                if (outputText) {
+                    setOutputQueue(prev => [...prev, {text: outputText, toType: false}]);
                 }
-                setOutputQueue(prev => [...prev, {
-                    text: result.outcome?.join('\n') || '', 
-                    toType: phrasesToType.some(str => (result.outcome?.join('\n') || '').startsWith(str))}]);
-                setIsBusy(false);
-                setOutcome([]);
-            }, result.isPrize ? 8000 : 3000);
-        }
+                return result;
+            } else if (result?.outcome) {
+                setOutcome(result.output || []);
+                if (result.isPrize) {
+                    setTimeout(() => {
+                            triggerWinEffect(result.outcome);
+                        }, 1000);
+                }
+                setTimeout(() => {
+                    if (result.output) {
+                        setOutputQueue(prev => [...prev, {text: result.output?.join(' ') || '', toType: false}]);
+                    }
+                    setOutputQueue(prev => [...prev, {
+                        text: result.outcome?.join('\n') || '', 
+                        toType: phrasesToType.some(str => (result.outcome?.join('\n') || '').startsWith(str))}]);
+                    setIsBusy(false);
+                    setOutcome([]);
+                    setTimeout(() => {
+                    if (autoSpinRef.current && result.autoCommand) {
+                        setOutputQueue(prev => [...prev, {text: `Auto spin: ${result.autoCommand}`, toType: false}]);
+                        handleInput(result.autoCommand);
+                    }
+                    }, 3000);
+                }, result.isPrize ? 8000 : 3000);
+            }
         } catch (error) {
             console.error('UseTerminal input error:', error);
             setOutputQueue(prev => [...prev, {text: 'Error processing command', toType: false}]);
         } finally {
             setIsProcessing(false);
+            setIsBusy(false);
         }
+    }
+
+    const handleBreak = () => {
+        setOutputQueue(prev => [...prev, {text: '^C', toType: false}, {text: 'Auto spin disabled', toType: false}]);
+        autoSpinRef.current = false;
     }
 
     return {
@@ -152,5 +171,6 @@ export const useTerminal = (gameParams: any) => {
         isProcessing,
         isBusy,
         outcome,
+        handleBreak,
     };
 }; 

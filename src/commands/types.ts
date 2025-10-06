@@ -2,11 +2,13 @@ export type CommandResult = {
     output?: string[]; // Output text to display in the terminal
     outcome?: string[]; //Outcome text to display in the terminal
     isPrize?: boolean; //If the outcome is a prize
+    autoCommand?: string; //If the command is auto, the input command
 };
 
 export type CommandContext<T = any> = {
     input: string;
     params: T;
+    isAutoCommand?: boolean;
 };
 
 export type CommandHandler<T = any> = (
@@ -25,6 +27,7 @@ export type CommandDefinition<T = any> = {
     handler: CommandHandler<T>;
     middleware?: CommandMiddleware[];
     isDefault?: boolean;
+    isAutoCommand?: boolean;
 };
 
 export type CommandMiddleware = (

@@ -25,7 +25,8 @@ export const diceStreakCommands: CommandDefinition<TerminalCommandParams>[] = [
             description: 'Guess a number 1-6 and place a bet',
             usage: 'play <number> (1-6)'
         },
-        handler: handlePlay
+        handler: handlePlay,
+        isAutoCommand: true
     },
     {
         pattern: {
