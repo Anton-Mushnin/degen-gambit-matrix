@@ -13,7 +13,7 @@ import {
     getAllStatistics,
     getPrizeToClaim
 } from '../contractFunctions/read';
-import { getComboPossibilityData } from '../comboUtils';
+import { getComboPossibilityData } from '../utils/comboUtils';
 import { DataItem } from '../../types';
 import { diceStreakGame } from '..';
 
