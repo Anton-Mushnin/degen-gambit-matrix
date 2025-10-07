@@ -1,3 +1,27 @@
+/**
+ * COMMAND MODULE PATTERN
+ * 
+ * This module defines game commands using a three-file pattern:
+ * 
+ * 1. diceStreak.ts (this file) - Command definitions
+ *    - Exports array of CommandDefinition objects
+ *    - Each command has: pattern (regex, name, description, usage), handler, flags, cache invalidation
+ *    - Flags: isAutoCommand (auto-triggers after execution), isDevCommand (dev mode only)
+ *    - queriesToInvalidate: cache keys to refresh after command execution
+ * 
+ * 2. diceStreak.handlers.ts - Handler implementations
+ *    - Receives { input, params } where params contains: contractAddress, contractABI, publicClient, activeAccount, client
+ *    - Returns { output, outcome?, isPrize? } - output for terminal, outcome for notifications
+ *    - Handles all blockchain interactions, error handling
+ * 
+ * 3. diceStreak.helpers.ts - Pure utility functions
+ *    - Input parsing and validation
+ *    - Result decoding from contract responses
+ *    - Output formatting
+ * 
+ * Flow: User input → pattern match → handler → helpers → blockchain → response formatting → terminal output
+ */
+
 // Local imports
 import { CommandDefinition, CommandPattern } from '../../../commands/types';
 import {
