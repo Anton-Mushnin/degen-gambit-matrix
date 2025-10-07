@@ -4,7 +4,7 @@ import { commitRevealAccept } from "../../../utils/commitRevealAccept";
 import { decodeAbiParameters } from "viem";
 import { wagmiConfig } from "../../../config";
 import { diceStreakGame } from "..";
-import { formatEtherOrWei } from "../utils";
+import { formatEtherOrWei } from "@/utils/formatting";
 
 
 declare global {
