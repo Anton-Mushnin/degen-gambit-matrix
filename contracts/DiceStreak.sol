@@ -133,7 +133,7 @@ contract DiceStreak is CommitRevealRandomness {
     }
     
     // Accept the game result after inspecting with inspectOutcome()
-    function accept() public {
+    function accept() public virtual {
         require(players[msg.sender].gameStatus == GameStatus.Rolling, "Not in rolling phase");
 
         // Get random number using parent's reveal function with empty data (simple mode)

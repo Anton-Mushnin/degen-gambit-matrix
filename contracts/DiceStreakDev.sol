@@ -30,6 +30,17 @@ contract DiceStreakDev is DiceStreak {
         return predeterminedResults[player];
     }
     
+    /// @notice Override accept to use predetermined results when available
+    function accept() public override {
+        require(players[msg.sender].gameStatus == GameStatus.Rolling, "Not in rolling phase");
+
+        // Always get random number using parent's reveal function
+        uint256 randomNumber = super.reveal("");
+
+        // Process the game result (will check for predetermined value inside)
+        _processGameResult(msg.sender, randomNumber);
+    }
+
     /// @notice Override the game result processing to use predetermined results when available
     function _processGameResult(address player, uint256 randomNumber) internal override {
         uint8 result;
@@ -67,14 +78,14 @@ contract DiceStreakDev is DiceStreak {
     /// @return prizeValue The prize amount that would be won (0 for loss)
     /// @return additionalData Encoded dice result: abi.encode(uint32 result)
     function inspectOutcome(address player) external view override returns (uint256 prizeValue, bytes memory additionalData) {
-        uint8 result;
+        // Always use parent's previewReveal function to get the random number (exercises commit/reveal flow)
+        uint256 randomNumber = super.previewReveal("", player);
         
+        uint8 result;
         // Check if there's a predetermined result for this player
         if (predeterminedResults[player] != 0) {
             result = predeterminedResults[player];
         } else {
-            // Use parent's previewReveal function to get the random number
-            uint256 randomNumber = super.previewReveal("", player);
             result = uint8((randomNumber % 6) + 1);
         }
 
