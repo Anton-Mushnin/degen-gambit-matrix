@@ -2,7 +2,7 @@ import { getBalance } from '@wagmi/core';
 import { privateKeyToAccount } from 'viem/accounts';
 import { PublicClient } from 'viem';
 
-import { wagmiConfig } from '../../config';
+import { wagmiConfig } from '../../../config';
 import {
     getBetAmount,
     getPayoutMultiplier,
@@ -12,10 +12,10 @@ import {
     getPlayerTotalWinnings,
     getAllStatistics,
     getPrizeToClaim
-} from './contractFunctions/read';
-import { getComboPossibilityData } from './comboUtils';
-import { DataItem } from '../types';
-import { diceStreakGame } from '.';
+} from '../contractFunctions/read';
+import { getComboPossibilityData } from '../comboUtils';
+import { DataItem } from '../../types';
+import { diceStreakGame } from '..';
 
 export const privateKey = import.meta.env.VITE_PRIVATE_KEY;
 export const privateKeyAddress = privateKey ? privateKeyToAccount(privateKey).address : undefined;

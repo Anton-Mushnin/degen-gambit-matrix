@@ -9,7 +9,7 @@ import GameMain from '../../components/GameMain';
 import GameContractInfo from '../../components/GameContractInfo';
 
 // Import configurations and functions
-import { createContractData, createPlayerData, privateKeyAddress } from './info';
+import { createContractData, createPlayerData, privateKeyAddress } from './info/info';
 import { diceStreakStreamConfig } from './config/streamConfig';
 import { diceStreakConfig } from './config/gameConfig';
 
