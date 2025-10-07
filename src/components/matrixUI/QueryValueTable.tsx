@@ -61,7 +61,7 @@ const QueryValueTable = ({
 
   const [displayData, setDisplayData] = useState<string[][]>([]);
   const [isUpdated, setIsUpdated] = useState(false);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (data && Array.isArray(data)) {
@@ -75,7 +75,7 @@ const QueryValueTable = ({
         }
         timeoutRef.current = setTimeout(() => {
           setIsUpdated(false);
-        }, 1500);
+        }, 1500) as unknown as number;
       }
       
       setDisplayData(data);
