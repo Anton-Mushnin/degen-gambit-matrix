@@ -1,36 +1,5 @@
 import { formatEtherOrWei } from '@/utils/formatting';
 
-// Combo detection and calculation logic (mirroring contract logic)
-export const detectCombo = (numbers: number[]): { isCombo: boolean; comboType: string } => {
-    if (numbers.length < 3) {
-        return { isCombo: false, comboType: '' };
-    }
-
-    // Check all equal
-    const allEqual = numbers.every(num => num === numbers[0]);
-    if (allEqual) {
-        return { isCombo: true, comboType: 'All Equal' };
-    }
-
-    // Check increasing sequence
-    const increasing = numbers.every((num, index) =>
-        index === 0 || num === numbers[index - 1] + 1
-    );
-    if (increasing) {
-        return { isCombo: true, comboType: 'Increasing' };
-    }
-
-    // Check decreasing sequence
-    const decreasing = numbers.every((num, index) =>
-        index === 0 || num === numbers[index - 1] - 1
-    );
-    if (decreasing) {
-        return { isCombo: true, comboType: 'Decreasing' };
-    }
-
-    return { isCombo: false, comboType: '' };
-};
-
 export const getBankShare = (streakLength: number): number => {
     if (streakLength === 3) return 200; // 2%
     if (streakLength === 4) return 500; // 5%
