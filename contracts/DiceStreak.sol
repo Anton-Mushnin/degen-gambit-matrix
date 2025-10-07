@@ -235,6 +235,12 @@ contract DiceStreak is CommitRevealRandomness {
         // Add to player's streak
         players[player].streak.push(result);
         
+        // Update best combo if current streak is longer
+        if (players[player].streak.length > bestCombo.streakFaces.length) {
+            bestCombo.streakFaces = players[player].streak;
+            bestCombo.player = player;
+        }
+        
         // Check for streak combo
         (bool hasCombo, uint256 bonusPayout) = _checkStreakCombo(player);
         

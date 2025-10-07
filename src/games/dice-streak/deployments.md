@@ -10,10 +10,10 @@
 
 ### Contract Details
 - **Contract Name:** DiceStreak
-- **Contract Address:** 0x23066eB3Bb3c32aa6E1592F4c38ABb3D9f29f7b6
+- **Contract Address:** 0xEf3501Dd76C1F1F15058fb248E980fD3f70C1F2f
 - **Deployer:** 0x4eD919172bD08D74831f2914aAAe8edA690d08Ab
 - **Deployment Block:** Confirmed deployed
-- **Deployment Time:** 2025-10-06 (Latest deployment - with virtual accept function)
+- **Deployment Time:** 2025-10-06 (Latest deployment - with bestCombo tracking)
 
 ### Contract Parameters
 - **Bet Amount:** 10 WEI
@@ -59,12 +59,12 @@
 
 ### Contract Details
 - **Contract Name:** DiceStreakDev
-- **Contract Address:** 0x90bB634068fbB74aeA633982B9C747342A5D270E
+- **Contract Address:** 0xf7bc92C61D12A7Fa51C8609EB57dF0ae244d19Cc
 - **Deployer:** 0x4eD919172bD08D74831f2914aAAe8edA690d08Ab
 - **Network:** XAI Testnet v2
 - **Chain ID:** 37714555429
 - **Deployment Block:** Confirmed deployed
-- **Deployment Time:** 2025-10-06 (Latest deployment - all functions use reveal/previewReveal flow, predetermined applied after)
+- **Deployment Time:** 2025-10-06 (Latest deployment - all functions use reveal/previewReveal flow, predetermined applied after, with bestCombo tracking)
 
 ### Contract Parameters
 - **Bet Amount:** 10 WEI
