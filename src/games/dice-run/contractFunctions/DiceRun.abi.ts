@@ -229,5 +229,71 @@ export const diceRunABI = [
         ],
         "stateMutability": "view",
         "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "guess",
+                "type": "uint256"
+            }
+        ],
+        "name": "play",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "diceResult",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "payout",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "streakLength",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "payable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "fund",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "netInvestment",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "sharesReceived",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "payable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "amount",
+                "type": "uint256"
+            }
+        ],
+        "name": "withdraw",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "withdrawnAmount",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
     }
 ] as const;

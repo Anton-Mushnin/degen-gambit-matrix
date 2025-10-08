@@ -11,25 +11,22 @@
 ## Step 3 - Commands
 - Created commands.md with player commands: play, fund, withdraw
 
-## Step 4 - Info
-- Created info.md with game data items
-
-## Step 5 - Stream
-- Created stream.md with event definitions
-
-## Step 6 - Randomness
-- Assessed randomness requirements
-
-## Step 7 - Info Implementation
-- Created info.ts with contract and player data queries
-
-## Step 8 - Commands Implementation
-- Created commands.ts with command definitions and cache invalidation
-
-## Step 9 - Stream Implementation
-- Created stream.ts with event configurations for all game events
-
 ## Step 10 - Contract Read Functions
-- Created contractFunctions/read.ts with all read functions imported in info.ts
+- Created DiceRun.abi.ts with TypeScript ABI definitions
+- Created read.ts with all contract read functions
+- All functions use one contract call each
+- Formatting uses formatEtherOrWei with 10,000,000 WEI threshold
+- Functions comply exactly with info.md requirements
+- Updated for payout rule changes: removed bankContribution from payout calculation
+- Removed unused getBankContribution from ABI
+- Optimized share change calculation: added getPlayerShareChange to contract ABI for single-call efficiency
+
+## Step 11 - Command Handlers
+- Created diceRun.helpers.ts with input parsing and result formatting functions
+- Created write.ts with play, fund, and withdraw contract functions
+- Updated DiceRun.abi.ts to include write function signatures (play, fund, withdraw)
+- Created handlers.ts with handlePlay, handleFund, handleWithdraw functions
+- Dice-run uses direct contract calls (no commit-reveal-accept pattern)
+- All handlers can have errors as specified
 
 
