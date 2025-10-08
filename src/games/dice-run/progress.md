@@ -12,13 +12,21 @@
 - Created commands.md with player commands: play, fund, withdraw
 
 ## Step 4 - Info
-- Created info.md with game and player information display list
+- Created info.md with game data items
 
 ## Step 5 - Stream
-- Created stream.md with events for global game feed
+- Created stream.md with event definitions
 
 ## Step 6 - Randomness
-- Using CommitRevealRandomness (future block hashes)
-- Secure randomness with commit-reveal pattern
-- Requires waiting between commit and reveal
+- Assessed randomness requirements
+
+## Step 7 - Info Implementation
+- Created info.ts with contract and player data queries
+
+## Step 8 - Commands Implementation
+- Created commands.ts with command definitions and cache invalidation
+
+## Step 9 - Stream Implementation
+- Created stream.ts with event configurations for all game events
+
 
