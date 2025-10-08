@@ -147,23 +147,23 @@ export const getDiceStatistics = async (contractAddress: string, publicClient: P
     }
 };
 
-export const getAmountInvested = async (contractAddress: string, playerAddress: string, publicClient: PublicClient) => {
+export const getCurrentShareValue = async (contractAddress: string, playerAddress: string, publicClient: PublicClient) => {
     try {
-        const [amountInvested] = await publicClient.readContract({
+        const currentShareValue = await publicClient.readContract({
             address: contractAddress as `0x${string}`,
             abi: diceRunABI,
-            functionName: 'getPlayerBankInfo',
+            functionName: 'getCurrentShareValue',
             args: [playerAddress as `0x${string}`],
         });
 
-        const formatted = formatEtherOrWei(amountInvested as bigint, 0.00001);
+        const formatted = formatEtherOrWei(currentShareValue as bigint, 0.00001);
         return {
-            value: amountInvested as bigint,
+            value: currentShareValue as bigint,
             formatted: formatted.formatted,
             decimals: formatted.decimals
         };
     } catch (error) {
-        throw new Error(`Failed to get amount invested: ${error}`);
+        throw new Error(`Failed to get current share value: ${error}`);
     }
 };
 

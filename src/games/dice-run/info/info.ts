@@ -11,7 +11,7 @@ import {
     getBankBalance,
     getBestStreak,
     getDiceStatistics,
-    getAmountInvested,
+    getCurrentShareValue,
     getSharePercentage,
     getShareChange,
     getPlayerTotalWinnings,
@@ -173,9 +173,9 @@ export const createPlayerData = ({
         },
         {
             type: 'query',
-            label: 'Amount Invested: ',
-            queryKey: ['amountInvested', address, playerAddress],
-            queryFn: () => getAmountInvested(address, playerAddress, publicClient),
+            label: 'Current value of player\'s share: ',
+            queryKey: ['currentShareValue', address, playerAddress],
+            queryFn: () => getCurrentShareValue(address, playerAddress, publicClient),
             onDataUpdate
         },
         {

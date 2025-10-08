@@ -16,7 +16,7 @@
 - Best streak achieved (length, player address)
 
 ## Player Bank Share (if owned)
-- Amount invested
+- Current value of player's share
 - Share percentage
 - Change (current value minus investment cost)
 

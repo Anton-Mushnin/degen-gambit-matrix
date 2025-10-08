@@ -64,7 +64,7 @@ export const diceRunCommands: CommandDefinition<TerminalCommandParams>[] = [
         queriesToInvalidate: [
             'playerBalance',
             'bankBalance',
-            'amountInvested',
+            'currentShareValue',
             'sharePercentage',
             'shareChange'
         ]
@@ -80,7 +80,7 @@ export const diceRunCommands: CommandDefinition<TerminalCommandParams>[] = [
         queriesToInvalidate: [
             'playerBalance',
             'bankBalance',
-            'amountInvested',
+            'currentShareValue',
             'sharePercentage',
             'shareChange'
         ]

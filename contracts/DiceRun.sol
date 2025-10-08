@@ -99,6 +99,41 @@ contract DiceRun is CommitRevealRandomness {
         return (investor.amountInvested, investor.sharePercentage);
     }
 
+    function getCurrentShareValue(address player) external view returns (uint256) {
+        // If player has pending bet, preview the outcome for share value calculation
+        if (players[player].hasPendingBet) {
+            uint256 randomNumber = super.previewReveal("", player);
+            uint256 diceResult = (randomNumber % 6) + 1;
+
+            if (diceResult == players[player].pendingGuess) {
+                // Would win - check if streak bonus would affect shares
+                uint256 newStreakLength = players[player].currentStreak + 1;
+                if (newStreakLength >= 3) {
+                    uint256 bonusAmount = 0;
+                    if (newStreakLength == 3) bonusAmount = (address(this).balance * streakBankShare3) / 10000;
+                    else if (newStreakLength == 4) bonusAmount = (address(this).balance * streakBankShare4) / 10000;
+                    else if (newStreakLength == 5) bonusAmount = (address(this).balance * streakBankShare5) / 10000;
+                    else if (newStreakLength == 6) bonusAmount = (address(this).balance * streakBankShare6) / 10000;
+                    if (bonusAmount > 0) {
+                        // Calculate share value after potential bonus payout
+                        uint256 currentShares = investors[player].sharePercentage;
+                        uint256 totalShares = totalBankShares;
+                        if (totalShares > 0) {
+                            uint256 currentBalance = address(this).balance;
+                            uint256 shareValue = (currentBalance * currentShares) / 10000;
+                            uint256 shareReduction = (bonusAmount * currentShares) / totalInvested;
+                            return shareValue - shareReduction;
+                        }
+                    }
+                }
+            }
+        }
+        // Calculate current share value: (bankBalance * sharePercentage) / 10000
+        uint256 currentBalance = address(this).balance;
+        uint256 sharePercentage = investors[player].sharePercentage;
+        return (currentBalance * sharePercentage) / 10000;
+    }
+
     function getPlayerShareChange(address player) external view returns (int256) {
         // If player has pending bet, preview the outcome
         if (players[player].hasPendingBet) {
