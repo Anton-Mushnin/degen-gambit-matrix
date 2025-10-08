@@ -29,4 +29,13 @@
 - Dice-run uses direct contract calls (no commit-reveal-accept pattern)
 - All handlers can have errors as specified
 
+## Step 12 - Stream Events
+- Read stream.ts to identify required events
+- Added 5 events to DiceRun.abi.ts:
+  - BetPlaced: player, numberChosen, betAmount
+  - PlayerWin: player, diceRolled, payoutAmount
+  - PlayerWinWithStreak: player, streakLength, bonusAmount
+  - Investment: player, investmentAmount, newSharePercentage
+  - NewBestStreak: player, newStreakLength
+
 
