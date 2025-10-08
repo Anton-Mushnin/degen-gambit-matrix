@@ -8,7 +8,7 @@ export const diceRunConfig: GameContractConfig = {
     abi: diceRunABI
   },
   dev: {
-    contractAddress: "0x6F69eDa03a207bfbBb14bAB1569034C7a2Cb3eC7", // Same as production for now
+    contractAddress: "0x5FbDB2315678afecb367f032d93F642f64180aa3", // Local deployment with fixed payout multiplier
     name: "DiceRun",
     abi: diceRunABI
   },

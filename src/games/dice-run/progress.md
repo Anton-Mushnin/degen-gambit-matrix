@@ -96,7 +96,7 @@
   - investmentFeePercent: 100 (1%)
 - Redeployed locally with corrected payout multiplier (57500 basis points = 5.75x)
 - Local deployment address: 0x5FbDB2315678afecb367f032d93F642f64180aa3
-- Created gameConfig.ts with production/dev configurations and network details
+- Updated gameConfig.ts dev configuration to use new contract address
 
 ## Step 15 - Components
 - Copied dice-streak components to dice-run/components/
