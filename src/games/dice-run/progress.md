@@ -117,3 +117,46 @@
 - Added dice-run to register.ts and set as default game
 - Build completed successfully
 - Application running in development mode
+
+## Step 18 - Info.md Update: Amount Invested → Current Share Value
+- Updated info.md to change "Amount invested" to "Current value of player's share"
+- Added getCurrentShareValue function to DiceRun.sol contract that calculates (bankBalance * sharePercentage) / 10000
+- Updated DiceRun.abi.ts with new function signature
+- Modified read.ts to implement getCurrentShareValue instead of getAmountInvested
+- Updated info.ts to use new label and function with queryKey 'currentShareValue'
+- Updated commands.ts to invalidate 'currentShareValue' instead of 'amountInvested'
+- Re-deployed contract to XAI testnet at address: 0x2Ec468cC828E34dB4e401E8249c09752E7a4c66a
+- Updated gameConfig.ts with new contract address for both production and dev environments
+
+## Step 19 - Bug Fix: Share Values Not Updating After Spin
+- Fixed issue where "Current value of player's share", "Share Percentage", and "Share Change" weren't updating after spin commands
+- Added missing query invalidations to both 'play' and 'accept' commands in commands.ts:
+  - 'currentShareValue'
+  - 'sharePercentage'
+  - 'shareChange'
+  - 'nextNeededDiceNumber' (was already there for play, added to accept)
+  - 'potentialBonusAmount' (was already there for play, added to accept)
+- This ensures share values update immediately after each spin and result reveal
+- Build completed successfully after changes
+
+## Step 20 - Player Bank Share Update: Replace Share Change with Total Withdrawals and Total Earnings
+- Updated info.md to change Player Bank Share section from:
+  - Current value of player's share
+  - Share percentage
+  - Change (current value minus investment cost)
+- To new specification:
+  - Share percentage
+  - Current value of player's share
+  - Total withdrawals
+  - Total earnings
+- Updated DiceRun.sol contract:
+  - Added totalWithdrawals and totalEarnings fields to InvestorData struct
+  - Added getTotalWithdrawals() and getTotalEarnings() view functions
+  - Modified withdraw() function to track totalWithdrawals
+  - Total earnings currently returns 0 (no dividend distribution mechanism implemented yet)
+- Updated DiceRun.abi.ts with new function signatures
+- Updated read.ts with getTotalWithdrawals and getTotalEarnings functions
+- Updated info.ts to match new field order and remove shareChange
+- Updated commands.ts query invalidation keys to include totalWithdrawals and totalEarnings
+- Re-deployed contract to XAI testnet at address: 0x60ac77EaCe9595927a9D75F3D3a24E417142c8D2
+- Updated gameConfig.ts with new contract address for both production and dev environments

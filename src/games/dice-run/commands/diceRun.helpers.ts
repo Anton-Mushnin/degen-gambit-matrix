@@ -95,7 +95,7 @@ export function formatPlayOutcome(
             outcome.push(`Streak bonus activated! Current streak: ${streakLength}`);
         }
     } else {
-        outcome.push(`The Matrix has you... You rolled ${diceResult}. Streak reset.`);
+        outcome.push(`The Matrix has you...`);
     }
 
     return { output, outcome };

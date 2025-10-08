@@ -16,9 +16,10 @@
 - Best streak achieved (length, player address)
 
 ## Player Bank Share (if owned)
-- Current value of player's share
 - Share percentage
-- Change (current value minus investment cost)
+- Current value of player's share
+- Total withdrawals
+- Total earnings
 
 ## Player Stats
 - Player address

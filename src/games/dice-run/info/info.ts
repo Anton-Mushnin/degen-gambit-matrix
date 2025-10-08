@@ -11,9 +11,10 @@ import {
     getBankBalance,
     getBestStreak,
     getDiceStatistics,
-    getCurrentShareValue,
     getSharePercentage,
-    getShareChange,
+    getCurrentShareValue,
+    getTotalWithdrawals,
+    getTotalEarnings,
     getPlayerTotalWinnings,
     getPlayerCurrentStreak,
     getNextNeededDiceNumber,
@@ -173,13 +174,6 @@ export const createPlayerData = ({
         },
         {
             type: 'query',
-            label: 'Current value of player\'s share: ',
-            queryKey: ['currentShareValue', address, playerAddress],
-            queryFn: () => getCurrentShareValue(address, playerAddress, publicClient),
-            onDataUpdate
-        },
-        {
-            type: 'query',
             label: 'Share Percentage: ',
             queryKey: ['sharePercentage', address, playerAddress],
             queryFn: () => getSharePercentage(address, playerAddress, publicClient),
@@ -188,9 +182,23 @@ export const createPlayerData = ({
         },
         {
             type: 'query',
-            label: 'Share Change: ',
-            queryKey: ['shareChange', address, playerAddress],
-            queryFn: () => getShareChange(address, playerAddress, publicClient),
+            label: 'Current value of player\'s share: ',
+            queryKey: ['currentShareValue', address, playerAddress],
+            queryFn: () => getCurrentShareValue(address, playerAddress, publicClient),
+            onDataUpdate
+        },
+        {
+            type: 'query',
+            label: 'Total withdrawals: ',
+            queryKey: ['totalWithdrawals', address, playerAddress],
+            queryFn: () => getTotalWithdrawals(address, playerAddress, publicClient),
+            onDataUpdate
+        },
+        {
+            type: 'query',
+            label: 'Total earnings: ',
+            queryKey: ['totalEarnings', address, playerAddress],
+            queryFn: () => getTotalEarnings(address, playerAddress, publicClient),
             onDataUpdate
         },
         {

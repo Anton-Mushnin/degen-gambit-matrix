@@ -284,3 +284,43 @@ export const getPotentialBonusAmount = async (contractAddress: string, playerAdd
         throw new Error(`Failed to get potential bonus amount: ${error}`);
     }
 };
+
+export const getTotalWithdrawals = async (contractAddress: string, playerAddress: string, publicClient: PublicClient) => {
+    try {
+        const withdrawals = await publicClient.readContract({
+            address: contractAddress as `0x${string}`,
+            abi: diceRunABI,
+            functionName: 'getTotalWithdrawals',
+            args: [playerAddress as `0x${string}`],
+        });
+
+        const formatted = formatEtherOrWei(withdrawals as bigint, 0.00001);
+        return {
+            value: withdrawals as bigint,
+            formatted: formatted.formatted,
+            decimals: formatted.decimals
+        };
+    } catch (error) {
+        throw new Error(`Failed to get total withdrawals: ${error}`);
+    }
+};
+
+export const getTotalEarnings = async (contractAddress: string, playerAddress: string, publicClient: PublicClient) => {
+    try {
+        const earnings = await publicClient.readContract({
+            address: contractAddress as `0x${string}`,
+            abi: diceRunABI,
+            functionName: 'getTotalEarnings',
+            args: [playerAddress as `0x${string}`],
+        });
+
+        const formatted = formatEtherOrWei(earnings as bigint, 0.00001);
+        return {
+            value: earnings as bigint,
+            formatted: formatted.formatted,
+            decimals: formatted.decimals
+        };
+    } catch (error) {
+        throw new Error(`Failed to get total earnings: ${error}`);
+    }
+};

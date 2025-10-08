@@ -25,6 +25,8 @@ contract DiceRun is CommitRevealRandomness {
     struct InvestorData {
         uint256 amountInvested;     // Total net investment (after fee)
         uint256 sharePercentage;    // Current share percentage (basis points)
+        uint256 totalWithdrawals;   // Total amount withdrawn from shares
+        uint256 totalEarnings;      // Total earnings from bank share distributions
     }
 
     // Storage
@@ -97,6 +99,14 @@ contract DiceRun is CommitRevealRandomness {
     function getPlayerBankInfo(address player) external view returns (uint256 amountInvested, uint256 sharePercentage) {
         InvestorData memory investor = investors[player];
         return (investor.amountInvested, investor.sharePercentage);
+    }
+
+    function getTotalWithdrawals(address player) external view returns (uint256) {
+        return investors[player].totalWithdrawals;
+    }
+
+    function getTotalEarnings(address player) external view returns (uint256) {
+        return investors[player].totalEarnings;
     }
 
     function getCurrentShareValue(address player) external view returns (uint256) {
@@ -294,6 +304,7 @@ contract DiceRun is CommitRevealRandomness {
         // Update investor data
         investors[msg.sender].amountInvested -= withdrawnAmount;
         investors[msg.sender].sharePercentage -= sharesToRemove;
+        investors[msg.sender].totalWithdrawals += withdrawnAmount;
 
         // Update global totals
         totalInvested -= withdrawnAmount;

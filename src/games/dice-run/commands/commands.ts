@@ -47,6 +47,10 @@ export const diceRunCommands: CommandDefinition<TerminalCommandParams>[] = [
             'playerTotalWinnings',
             'playerCurrentStreak',
             'bankBalance',
+            'currentShareValue',
+            'sharePercentage',
+            'totalWithdrawals',
+            'totalEarnings',
             'nextNeededDiceNumber',
             'potentialBonusAmount',
             'bestStreak',
@@ -66,7 +70,8 @@ export const diceRunCommands: CommandDefinition<TerminalCommandParams>[] = [
             'bankBalance',
             'currentShareValue',
             'sharePercentage',
-            'shareChange'
+            'totalWithdrawals',
+            'totalEarnings'
         ]
     },
     {
@@ -82,7 +87,8 @@ export const diceRunCommands: CommandDefinition<TerminalCommandParams>[] = [
             'bankBalance',
             'currentShareValue',
             'sharePercentage',
-            'shareChange'
+            'totalWithdrawals',
+            'totalEarnings'
         ]
     },
     {
@@ -99,6 +105,12 @@ export const diceRunCommands: CommandDefinition<TerminalCommandParams>[] = [
             'playerTotalWinnings',
             'playerCurrentStreak',
             'bankBalance',
+            'currentShareValue',
+            'sharePercentage',
+            'totalWithdrawals',
+            'totalEarnings',
+            'nextNeededDiceNumber',
+            'potentialBonusAmount',
             'bestStreak',
             'diceStatistics'
         ]
