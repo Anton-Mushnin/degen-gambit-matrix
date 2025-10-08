@@ -17,33 +17,33 @@ export function parsePlayInput(input: string): number {
 }
 
 export function parseFundInput(input: string): bigint {
-    const match = input.match(/^fund (\d+(?:\.\d+)?|\.\d+)$/);
+    const match = input.match(/^fund (\d+)$/);
     if (!match) {
-        throw new Error("Invalid format. Use: fund <amount> (ETH)");
+        throw new Error("Invalid format. Use: fund <amount> (WEI)");
     }
 
-    const amount = parseFloat(match[1]);
+    const amount = parseInt(match[1]);
     if (amount <= 0) {
         throw new Error("Amount must be greater than 0");
     }
 
-    // Convert to wei (assuming 18 decimals)
-    return BigInt(Math.floor(amount * 1e18));
+    // Amount is already in wei
+    return BigInt(amount);
 }
 
 export function parseWithdrawInput(input: string): bigint {
-    const match = input.match(/^withdraw (\d+(?:\.\d+)?|\.\d+)$/);
+    const match = input.match(/^withdraw (\d+)$/);
     if (!match) {
-        throw new Error("Invalid format. Use: withdraw <amount> (ETH)");
+        throw new Error("Invalid format. Use: withdraw <amount> (WEI)");
     }
 
-    const amount = parseFloat(match[1]);
+    const amount = parseInt(match[1]);
     if (amount <= 0) {
         throw new Error("Amount must be greater than 0");
     }
 
-    // Convert to wei (assuming 18 decimals)
-    return BigInt(Math.floor(amount * 1e18));
+    // Amount is already in wei
+    return BigInt(amount);
 }
 
 export function decodePlayResult(rollOutcome: readonly [bigint, `0x${string}`]): {

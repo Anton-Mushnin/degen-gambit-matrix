@@ -103,7 +103,13 @@
 - Components include: DiceNumbers, DiceStreakProcessingComponent, DiceStreakOutcomeComponent
 - All components are presented and ready for use
 
-## Step 16 - Game Module Integration
+## Step 16 - User Input Format Update
+- Updated fund and withdraw commands to accept WEI input directly for user-friendliness
+- Changed parseFundInput and parseWithdrawInput to expect integer WEI amounts
+- Updated error messages and commands.md documentation
+- formatEtherOrWei handles display formatting automatically (shows WEI for small amounts, ETH for larger)
+
+## Step 17 - Game Module Integration
 - Created index.tsx following dice-streak pattern
 - Imported all necessary modules: commands, components, info, stream, config
 - Added privateKeyAddress export to info.ts
