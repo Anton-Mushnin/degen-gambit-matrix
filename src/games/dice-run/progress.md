@@ -153,10 +153,11 @@
   - Added totalWithdrawals and totalEarnings fields to InvestorData struct
   - Added getTotalWithdrawals() and getTotalEarnings() view functions
   - Modified withdraw() function to track totalWithdrawals
-  - Total earnings currently returns 0 (no dividend distribution mechanism implemented yet)
-- Updated DiceRun.abi.ts with new function signatures
-- Updated read.ts with getTotalWithdrawals and getTotalEarnings functions
+  - Implemented getTotalEarnings() to calculate: currentShareValue + totalWithdrawals - amountInvested
+  - Returns int256 to handle negative earnings (losses) with +/- formatting
+- Updated DiceRun.abi.ts with new function signatures (getTotalEarnings returns int256)
+- Updated read.ts with getTotalWithdrawals and getTotalEarnings functions with proper negative value handling
 - Updated info.ts to match new field order and remove shareChange
 - Updated commands.ts query invalidation keys to include totalWithdrawals and totalEarnings
-- Re-deployed contract to XAI testnet at address: 0x60ac77EaCe9595927a9D75F3D3a24E417142c8D2
+- Re-deployed contract to XAI testnet at address: 0xd9003e6a1358670d97800881486e0d63afAcF533
 - Updated gameConfig.ts with new contract address for both production and dev environments

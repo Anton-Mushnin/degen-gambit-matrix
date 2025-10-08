@@ -105,8 +105,47 @@ contract DiceRun is CommitRevealRandomness {
         return investors[player].totalWithdrawals;
     }
 
-    function getTotalEarnings(address player) external view returns (uint256) {
-        return investors[player].totalEarnings;
+    function getTotalEarnings(address player) external view returns (int256) {
+        // Calculate current share value: (bankBalance * sharePercentage) / 10000
+        // If player has pending bet, preview the outcome for share value calculation
+        uint256 currentBalance = address(this).balance;
+        uint256 sharePercentage = investors[player].sharePercentage;
+
+        if (players[player].hasPendingBet) {
+            uint256 randomNumber = super.previewReveal("", player);
+            uint256 diceResult = (randomNumber % 6) + 1;
+
+            if (diceResult == players[player].pendingGuess) {
+                // Would win - check if streak bonus would affect shares
+                uint256 newStreakLength = players[player].currentStreak + 1;
+                if (newStreakLength >= 3) {
+                    uint256 bonusAmount = 0;
+                    if (newStreakLength == 3) bonusAmount = (currentBalance * streakBankShare3) / 10000;
+                    else if (newStreakLength == 4) bonusAmount = (currentBalance * streakBankShare4) / 10000;
+                    else if (newStreakLength == 5) bonusAmount = (currentBalance * streakBankShare5) / 10000;
+                    else if (newStreakLength == 6) bonusAmount = (currentBalance * streakBankShare6) / 10000;
+                    if (bonusAmount > 0) {
+                        // Calculate share value after potential bonus payout
+                        uint256 currentShares = investors[player].sharePercentage;
+                        uint256 totalShares = totalBankShares;
+                        if (totalShares > 0) {
+                            currentBalance = currentBalance + bonusAmount;
+                        }
+                    }
+                }
+            } else {
+                // Would lose - no change to share value calculation
+            }
+        }
+
+        uint256 currentShareValue = (currentBalance * sharePercentage) / 10000;
+        uint256 totalWithdrawals = investors[player].totalWithdrawals;
+        uint256 amountInvested = investors[player].amountInvested;
+
+        // Calculate: currentShareValue + totalWithdrawals - amountInvested
+        // Using int256 to handle negative results (losses)
+        int256 earnings = int256(currentShareValue) + int256(totalWithdrawals) - int256(amountInvested);
+        return earnings;
     }
 
     function getCurrentShareValue(address player) external view returns (uint256) {

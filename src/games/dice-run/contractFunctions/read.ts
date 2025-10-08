@@ -314,10 +314,11 @@ export const getTotalEarnings = async (contractAddress: string, playerAddress: s
             args: [playerAddress as `0x${string}`],
         });
 
-        const formatted = formatEtherOrWei(earnings as bigint, 0.00001);
+        const earningsValue = earnings as bigint;
+        const formatted = formatEtherOrWei(earningsValue < 0 ? -earningsValue : earningsValue, 0.00001);
         return {
-            value: earnings as bigint,
-            formatted: formatted.formatted,
+            value: earningsValue,
+            formatted: (earningsValue >= 0 ? '+' : '-') + formatted.formatted,
             decimals: formatted.decimals
         };
     } catch (error) {

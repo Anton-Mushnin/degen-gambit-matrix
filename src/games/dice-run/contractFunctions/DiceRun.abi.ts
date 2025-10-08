@@ -471,9 +471,9 @@ export const diceRunABI = [
         "name": "getTotalEarnings",
         "outputs": [
             {
-                "internalType": "uint256",
+                "internalType": "int256",
                 "name": "",
-                "type": "uint256"
+                "type": "int256"
             }
         ],
         "stateMutability": "view",
