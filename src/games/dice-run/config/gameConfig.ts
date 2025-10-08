@@ -3,12 +3,12 @@ import { diceRunABI } from '../../../ABIs/DiceRun.abi';
 
 export const diceRunConfig: GameContractConfig = {
   production: {
-    contractAddress: "0x6F69eDa03a207bfbBb14bAB1569034C7a2Cb3eC7",
+    contractAddress: "0x68Eb405387D5D30cfeadEaA954859Be836157f88", // XAI testnet deployment with fixed payout multiplier
     name: "DiceRun",
     abi: diceRunABI
   },
   dev: {
-    contractAddress: "0x5FbDB2315678afecb367f032d93F642f64180aa3", // Local deployment with fixed payout multiplier
+    contractAddress: "0x68Eb405387D5D30cfeadEaA954859Be836157f88", // Same as production for now
     name: "DiceRun",
     abi: diceRunABI
   },
