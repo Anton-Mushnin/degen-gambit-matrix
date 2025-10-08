@@ -1,4 +1,4 @@
-import { WalletClient, PublicClient, Abi } from 'viem';
+import { PublicClient, Abi } from 'viem';
 import { ThirdwebClient } from 'thirdweb';
 import { Account } from 'thirdweb/wallets';
 import { viemAdapter } from 'thirdweb/adapters/viem';
@@ -65,7 +65,7 @@ export const play = async (
         account,
     });
 
-    const receipt = await waitForReceipt(transactionResult);
+    await waitForReceipt(transactionResult);
 
     // Read the result from the transaction logs or return values
     // For now, we'll assume the contract emits events or we need to decode return values
@@ -75,7 +75,7 @@ export const play = async (
         address: contractAddress as `0x${string}`,
         abi: diceRunABI,
         functionName: 'play',
-        args: [guess],
+        args: [BigInt(guess)],
         value: betAmount.value,
         account: account.address,
     });
@@ -127,7 +127,7 @@ export const fund = async (
         account,
     });
 
-    const receipt = await waitForReceipt(transactionResult);
+    await waitForReceipt(transactionResult);
 
     // Simulate to get return values
     const result = await publicClient.simulateContract({
@@ -185,7 +185,7 @@ export const withdraw = async (
         account,
     });
 
-    const receipt = await waitForReceipt(transactionResult);
+    await waitForReceipt(transactionResult);
 
     // Simulate to get return values
     const result = await publicClient.simulateContract({
@@ -196,7 +196,7 @@ export const withdraw = async (
         account: account.address,
     });
 
-    return result.result as DiceRunWithdrawResult;
+    return [result.result] as DiceRunWithdrawResult;
 };
 
 /**

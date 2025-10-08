@@ -116,3 +116,12 @@ Step 14.
 - in <game>/scripts create deploy script
 - ask what network deploy on
 - deploy the contract, create config file as dice-streak/config/gameConfig
+
+step 15.
+- look at dice-streak/components. Understand what are they. Ask user if they are ok for the game. If yes, copy them. If not, discuss with user and create your own components. All components should be presented
+
+step 16.
+- look at dice-streak/index.tsx. Understand how it works. Create such file for the game
+- add the game to the registry. Make it default.
+- fix build errors
+- run

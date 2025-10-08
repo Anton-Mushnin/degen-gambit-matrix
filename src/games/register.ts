@@ -1,6 +1,7 @@
 import { gameRegistry } from './registry';
 import { degenGambitGame } from './degen-gambit';
 import { diceStreakGame } from './dice-streak';
+import { diceRunGame } from './dice-run';
 
 // Register all games
 export function registerGames() {
@@ -10,8 +11,11 @@ export function registerGames() {
     // Register dice-streak
     gameRegistry.registerGame(diceStreakGame);
 
-    // Set dice-streak as the default game
-    gameRegistry.setDefaultGame('dice-streak');
+    // Register dice-run
+    gameRegistry.registerGame(diceRunGame);
+
+    // Set dice-run as the default game
+    gameRegistry.setDefaultGame('dice-run');
 
     // Initialize the registry
     gameRegistry.initialize({ autoLoad: true });
@@ -20,4 +24,4 @@ export function registerGames() {
 }
 
 // Export for easy access
-export { degenGambitGame, diceStreakGame }; 
+export { degenGambitGame, diceStreakGame, diceRunGame }; 

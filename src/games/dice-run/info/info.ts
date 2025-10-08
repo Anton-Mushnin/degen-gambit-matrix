@@ -1,4 +1,5 @@
 import { getBalance } from '@wagmi/core';
+import { privateKeyToAccount } from 'viem/accounts';
 import { PublicClient } from 'viem';
 
 import { wagmiConfig } from '../../../config';
@@ -20,6 +21,9 @@ import {
 } from '../contractFunctions/read';
 import { DataItem } from '../../types';
 import { diceRunGame } from '..';
+
+export const privateKey = import.meta.env.VITE_PRIVATE_KEY;
+export const privateKeyAddress = privateKey ? privateKeyToAccount(privateKey).address : undefined;
 
 export const createContractData = ({
     publicClient,

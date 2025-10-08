@@ -88,7 +88,7 @@
 ## Step 14 - Deployment and Configuration
 - Created deploy-dice-run.cjs script with contract parameters:
   - betAmount: 100 WEI
-  - basicPayoutMultiplier: 5750 (5.75x)
+  - basicPayoutMultiplier: 57500 (5.75x)
   - streakBankShare3: 300 (3%)
   - streakBankShare4: 700 (7%)
   - streakBankShare5: 1500 (15%)
@@ -96,3 +96,17 @@
   - investmentFeePercent: 100 (1%)
 - Successfully deployed to XAI testnet at address: 0x6F69eDa03a207bfbBb14bAB1569034C7a2Cb3eC7
 - Created gameConfig.ts with production/dev configurations and network details
+
+## Step 15 - Components
+- Copied dice-streak components to dice-run/components/
+- Components include: DiceNumbers, DiceStreakProcessingComponent, DiceStreakOutcomeComponent
+- All components are presented and ready for use
+
+## Step 16 - Game Module Integration
+- Created index.tsx following dice-streak pattern
+- Imported all necessary modules: commands, components, info, stream, config
+- Added privateKeyAddress export to info.ts
+- Fixed build errors in write.ts (removed unused imports, fixed type issues)
+- Added dice-run to register.ts and set as default game
+- Build completed successfully
+- Application running in development mode

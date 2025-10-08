@@ -31,7 +31,7 @@ async function main() {
 
   // Contract parameters
   const betAmount = ethers.BigNumber.from("100"); // 100 WEI
-  const basicPayoutMultiplier = 5750; // 5.75x (5750 basis points)
+  const basicPayoutMultiplier = 57500; // 5.75x (57500 basis points)
   const streakBankShare3 = 300; // 3% for streak of 3 (300 basis points)
   const streakBankShare4 = 700; // 7% for streak of 4 (700 basis points)
   const streakBankShare5 = 1500; // 15% for streak of 5 (1500 basis points)
