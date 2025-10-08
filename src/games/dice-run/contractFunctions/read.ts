@@ -1,22 +1,18 @@
 import { PublicClient } from 'viem';
 import { formatEtherOrWei } from '../../../utils/formatting';
-// TODO: Import actual ABI when contract is implemented
-// import { diceRunABI } from '../../../ABIs/DiceRun.abi';
-
-// Placeholder ABI - will be replaced with actual contract ABI
-const diceRunABI = [] as const;
+import { diceRunABI } from './DiceRun.abi';
 
 // Read functions for DiceRun contract
 
 export const getBetAmount = async (contractAddress: string, publicClient: PublicClient) => {
   try {
     const betAmount = await publicClient.readContract({
-      address: contractAddress as `0x${string}`,
+      address: contractAddress,
       abi: diceRunABI,
-      functionName: 'betAmount',
+      functionName: 'getBetAmount',
     });
 
-    const formatted = formatEtherOrWei(betAmount as bigint);
+    const formatted = formatEtherOrWei(betAmount, 0.00001);
     return {
       value: betAmount,
       formatted: formatted.formatted,
@@ -29,17 +25,19 @@ export const getBetAmount = async (contractAddress: string, publicClient: Public
 
 export const getPayoutCalculation = async (contractAddress: string, publicClient: PublicClient) => {
   try {
-    const [basicPayoutMultiplier, bankContribution] = await publicClient.readContract({
-      address: contractAddress as `0x${string}`,
+    const [basicPayout, bankContribution] = await publicClient.readContract({
+      address: contractAddress,
       abi: diceRunABI,
-      functionName: 'getPayoutParameters',
+      functionName: 'getPayoutCalculation',
     });
 
-    const payout = (Number(basicPayoutMultiplier) / 100) - (Number(bankContribution) / 100);
+    const totalPayout = basicPayout - bankContribution;
+    const formatted = formatEtherOrWei(totalPayout, 0.00001);
+
     return {
-      value: BigInt(Math.floor(payout * 100)),
-      formatted: `${payout}x`,
-      decimals: 0
+      value: totalPayout,
+      formatted: `${formatted.formatted} (basic: ${formatEtherOrWei(basicPayout, 0.00001).formatted}, bank contrib: ${formatEtherOrWei(bankContribution, 0.00001).formatted})`,
+      decimals: formatted.decimals
     };
   } catch (error) {
     throw new Error(`Failed to get payout calculation: ${error}`);
@@ -48,18 +46,16 @@ export const getPayoutCalculation = async (contractAddress: string, publicClient
 
 export const getStreakBankSharePercentages = async (contractAddress: string, publicClient: PublicClient) => {
   try {
-    const shares = await publicClient.readContract({
-      address: contractAddress as `0x${string}`,
+    const percentages = await publicClient.readContract({
+      address: contractAddress,
       abi: diceRunABI,
-      functionName: 'getStreakBankShares',
+      functionName: 'getStreakBankSharePercentages',
     });
 
-    const data = (shares as bigint[]).map((share, index) => [
+    return percentages.map((percentage, index) => [
       String(index + 3), // streak length (3, 4, 5, 6)
-      `${Number(share) / 100}%`
+      `${Number(percentage) / 100}%` // convert to percentage
     ]);
-
-    return data;
   } catch (error) {
     throw new Error(`Failed to get streak bank share percentages: ${error}`);
   }
@@ -68,9 +64,9 @@ export const getStreakBankSharePercentages = async (contractAddress: string, pub
 export const getInvestmentFeePercent = async (contractAddress: string, publicClient: PublicClient) => {
   try {
     const feePercent = await publicClient.readContract({
-      address: contractAddress as `0x${string}`,
+      address: contractAddress,
       abi: diceRunABI,
-      functionName: 'investmentFeePercent',
+      functionName: 'getInvestmentFeePercent',
     });
 
     return {
@@ -86,12 +82,12 @@ export const getInvestmentFeePercent = async (contractAddress: string, publicCli
 export const getBankBalance = async (contractAddress: string, publicClient: PublicClient) => {
   try {
     const balance = await publicClient.readContract({
-      address: contractAddress as `0x${string}`,
+      address: contractAddress,
       abi: diceRunABI,
       functionName: 'getBankBalance',
     });
 
-    const formatted = formatEtherOrWei(balance as bigint);
+    const formatted = formatEtherOrWei(balance, 0.00001);
     return {
       value: balance,
       formatted: formatted.formatted,
@@ -104,15 +100,15 @@ export const getBankBalance = async (contractAddress: string, publicClient: Publ
 
 export const getBestStreak = async (contractAddress: string, publicClient: PublicClient) => {
   try {
-    const [length, player] = await publicClient.readContract({
-      address: contractAddress as `0x${string}`,
+    const bestStreak = await publicClient.readContract({
+      address: contractAddress,
       abi: diceRunABI,
       functionName: 'getBestStreak',
     });
 
     return {
-      value: length,
-      formatted: `${length} (${player.slice(0, 6)}...${player.slice(-4)})`,
+      value: bestStreak,
+      formatted: String(bestStreak),
       decimals: 0
     };
   } catch (error) {
@@ -123,12 +119,12 @@ export const getBestStreak = async (contractAddress: string, publicClient: Publi
 export const getDiceStatistics = async (contractAddress: string, publicClient: PublicClient) => {
   try {
     const stats = await Promise.all([
-      getDiceStatsForNumber(contractAddress, 1, publicClient),
-      getDiceStatsForNumber(contractAddress, 2, publicClient),
-      getDiceStatsForNumber(contractAddress, 3, publicClient),
-      getDiceStatsForNumber(contractAddress, 4, publicClient),
-      getDiceStatsForNumber(contractAddress, 5, publicClient),
-      getDiceStatsForNumber(contractAddress, 6, publicClient),
+      getStatisticsForDice(contractAddress, 1, publicClient),
+      getStatisticsForDice(contractAddress, 2, publicClient),
+      getStatisticsForDice(contractAddress, 3, publicClient),
+      getStatisticsForDice(contractAddress, 4, publicClient),
+      getStatisticsForDice(contractAddress, 5, publicClient),
+      getStatisticsForDice(contractAddress, 6, publicClient),
     ]);
 
     return stats;
@@ -137,33 +133,33 @@ export const getDiceStatistics = async (contractAddress: string, publicClient: P
   }
 };
 
-const getDiceStatsForNumber = async (contractAddress: string, number: number, publicClient: PublicClient) => {
+const getStatisticsForDice = async (contractAddress: string, diceNumber: number, publicClient: PublicClient) => {
   try {
     const [occurrences, bets, wins] = await publicClient.readContract({
-      address: contractAddress as `0x${string}`,
+      address: contractAddress,
       abi: diceRunABI,
-      functionName: 'getDiceStats',
-      args: [number],
+      functionName: 'getDiceStatistics',
+      args: [diceNumber],
     });
 
-    return [String(number), String(occurrences), String(bets), String(wins)];
+    return [String(diceNumber), String(occurrences), String(bets), String(wins)];
   } catch (error) {
-    throw new Error(`Failed to get dice stats for number ${number}: ${error}`);
+    throw new Error(`Failed to get statistics for dice ${diceNumber}: ${error}`);
   }
 };
 
 export const getAmountInvested = async (contractAddress: string, playerAddress: string, publicClient: PublicClient) => {
   try {
-    const amount = await publicClient.readContract({
-      address: contractAddress as `0x${string}`,
+    const amountInvested = await publicClient.readContract({
+      address: contractAddress,
       abi: diceRunABI,
       functionName: 'getAmountInvested',
       args: [playerAddress],
     });
 
-    const formatted = formatEtherOrWei(amount as bigint);
+    const formatted = formatEtherOrWei(amountInvested, 0.00001);
     return {
-      value: amount,
+      value: amountInvested,
       formatted: formatted.formatted,
       decimals: formatted.decimals
     };
@@ -174,16 +170,16 @@ export const getAmountInvested = async (contractAddress: string, playerAddress: 
 
 export const getSharePercentage = async (contractAddress: string, playerAddress: string, publicClient: PublicClient) => {
   try {
-    const percentage = await publicClient.readContract({
-      address: contractAddress as `0x${string}`,
+    const sharePercentage = await publicClient.readContract({
+      address: contractAddress,
       abi: diceRunABI,
       functionName: 'getSharePercentage',
       args: [playerAddress],
     });
 
     return {
-      value: percentage,
-      formatted: `${Number(percentage) / 100}%`,
+      value: sharePercentage,
+      formatted: `${Number(sharePercentage) / 100}%`,
       decimals: 0
     };
   } catch (error) {
@@ -193,18 +189,21 @@ export const getSharePercentage = async (contractAddress: string, playerAddress:
 
 export const getShareChange = async (contractAddress: string, playerAddress: string, publicClient: PublicClient) => {
   try {
-    const change = await publicClient.readContract({
-      address: contractAddress as `0x${string}`,
+    const shareChange = await publicClient.readContract({
+      address: contractAddress,
       abi: diceRunABI,
       functionName: 'getShareChange',
       args: [playerAddress],
     });
 
-    const formatted = formatEtherOrWei(change as bigint);
+    const changeValue = Number(shareChange);
+    const sign = changeValue >= 0 ? '+' : '';
+    const formatted = `${sign}${changeValue / 100}%`;
+
     return {
-      value: change,
-      formatted: formatted.formatted,
-      decimals: formatted.decimals
+      value: shareChange,
+      formatted: formatted,
+      decimals: 0
     };
   } catch (error) {
     throw new Error(`Failed to get share change: ${error}`);
@@ -213,16 +212,16 @@ export const getShareChange = async (contractAddress: string, playerAddress: str
 
 export const getPlayerTotalWinnings = async (contractAddress: string, playerAddress: string, publicClient: PublicClient) => {
   try {
-    const winnings = await publicClient.readContract({
-      address: contractAddress as `0x${string}`,
+    const totalWinnings = await publicClient.readContract({
+      address: contractAddress,
       abi: diceRunABI,
       functionName: 'getPlayerTotalWinnings',
       args: [playerAddress],
     });
 
-    const formatted = formatEtherOrWei(winnings as bigint);
+    const formatted = formatEtherOrWei(totalWinnings, 0.00001);
     return {
-      value: winnings,
+      value: totalWinnings,
       formatted: formatted.formatted,
       decimals: formatted.decimals
     };
@@ -233,16 +232,16 @@ export const getPlayerTotalWinnings = async (contractAddress: string, playerAddr
 
 export const getPlayerCurrentStreak = async (contractAddress: string, playerAddress: string, publicClient: PublicClient) => {
   try {
-    const streak = await publicClient.readContract({
-      address: contractAddress as `0x${string}`,
+    const currentStreak = await publicClient.readContract({
+      address: contractAddress,
       abi: diceRunABI,
       functionName: 'getPlayerCurrentStreak',
       args: [playerAddress],
     });
 
     return {
-      value: streak,
-      formatted: String(streak),
+      value: currentStreak,
+      formatted: String(currentStreak),
       decimals: 0
     };
   } catch (error) {
@@ -253,7 +252,7 @@ export const getPlayerCurrentStreak = async (contractAddress: string, playerAddr
 export const getNextNeededDiceNumber = async (contractAddress: string, playerAddress: string, publicClient: PublicClient) => {
   try {
     const nextNumber = await publicClient.readContract({
-      address: contractAddress as `0x${string}`,
+      address: contractAddress,
       abi: diceRunABI,
       functionName: 'getNextNeededDiceNumber',
       args: [playerAddress],
@@ -261,7 +260,7 @@ export const getNextNeededDiceNumber = async (contractAddress: string, playerAdd
 
     return {
       value: nextNumber,
-      formatted: String(nextNumber),
+      formatted: nextNumber > 0 ? String(nextNumber) : 'None',
       decimals: 0
     };
   } catch (error) {
@@ -271,18 +270,18 @@ export const getNextNeededDiceNumber = async (contractAddress: string, playerAdd
 
 export const getPotentialBonusAmount = async (contractAddress: string, playerAddress: string, publicClient: PublicClient) => {
   try {
-    const bonus = await publicClient.readContract({
-      address: contractAddress as `0x${string}`,
+    const bonusAmount = await publicClient.readContract({
+      address: contractAddress,
       abi: diceRunABI,
       functionName: 'getPotentialBonusAmount',
       args: [playerAddress],
     });
 
-    const formatted = formatEtherOrWei(bonus as bigint);
+    const formatted = formatEtherOrWei(bonusAmount, 0.00001);
     return {
-      value: bonus,
-      formatted: formatted.formatted,
-      decimals: formatted.decimals
+      value: bonusAmount,
+      formatted: bonusAmount > 0 ? formatted.formatted : 'No bonus available',
+      decimals: bonusAmount > 0 ? formatted.decimals : 0
     };
   } catch (error) {
     throw new Error(`Failed to get potential bonus amount: ${error}`);
