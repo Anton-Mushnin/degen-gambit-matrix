@@ -7,10 +7,16 @@ import { waitForReceipt } from 'thirdweb/transaction';
 import { getViemChainById } from '../../../config/networks';
 import { getBetAmount } from './read';
 import { diceRunABI } from './DiceRun.abi';
+import { commitRevealSpin } from '../../../utils/commitRevealSpin';
 
 export type DiceRunPlayResult = readonly [bigint, bigint, bigint]; // diceResult, payout, streakLength
 export type DiceRunFundResult = readonly [bigint, bigint]; // netInvestment, sharesReceived
 export type DiceRunWithdrawResult = readonly [bigint]; // withdrawnAmount
+export type DiceRunAcceptResult = {
+  output: string[];
+  outcome?: string;
+  isPrize?: boolean;
+};
 
 // Write functions for DiceRun contract
 
@@ -191,4 +197,47 @@ export const withdraw = async (
     });
 
     return result.result as DiceRunWithdrawResult;
+};
+
+/**
+ * Accept function for DiceRun - reveals and processes results
+ * Uses commitRevealSpin to properly handle the reveal phase
+ */
+export const accept = async (
+    contractAddress: string,
+    account: Account | undefined,
+    client: ThirdwebClient,
+    publicClient: PublicClient
+): Promise<DiceRunAcceptResult> => {
+    if (!account) {
+        throw new Error("No account provided");
+    }
+
+    try {
+        const chainId = await publicClient.getChainId();
+
+        // Use commitRevealSpin for the accept function (reveal phase)
+        const result = await commitRevealSpin({
+            contractAddress,
+            contractABI: diceRunABI as Abi,
+            spinFunctionName: 'accept',
+            spinArgs: [],
+            value: BigInt(0), // accept doesn't require payment
+            account,
+            client,
+            publicClient,
+            chainId,
+        });
+
+        return {
+            output: [result.description],
+            outcome: result.prize,
+            isPrize: result.prizeType === 1, // Assuming 1 means win
+        };
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        return {
+            output: [`Failed to accept results: ${errorMessage}`],
+        };
+    }
 };

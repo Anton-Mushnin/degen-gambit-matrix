@@ -25,13 +25,11 @@
 - Net investment = investment - fee (fee stays in contract as profit)
 - Investor receives ownership share = netInvestment / totalBankShares
 - Can withdraw at any time: (playerShares / totalShares) * currentBank
-- Bank grows from basic win contributions
 - Bank shrinks from streak bonus payouts and investor withdrawals
 
 ## Constructor Parameters
 - betAmount: fixed bet for all players
 - basicPayoutMultiplier: multiplier for basic win
-- bankContribution: amount taken from basic win payout to bank
 - streakBankShare[3,4,5,6]: percentage of bank for each streak length
 - investmentFeePercent: percentage fee charged on bank investments
 

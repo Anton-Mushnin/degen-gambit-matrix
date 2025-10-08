@@ -414,5 +414,36 @@ export const diceRunABI = [
         ],
         "stateMutability": "nonpayable",
         "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "accept",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "player",
+                "type": "address"
+            }
+        ],
+        "name": "inspectOutcome",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "prizeValue",
+                "type": "uint256"
+            },
+            {
+                "internalType": "bytes",
+                "name": "additionalData",
+                "type": "bytes"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
     }
 ] as const;

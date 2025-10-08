@@ -1,9 +1,12 @@
 import { TerminalCommandParams } from '../../../utils/gameHandlers';
-import { play, fund, withdraw } from '../contractFunctions/write';
+import { fund, withdraw, accept } from '../contractFunctions/write';
+import { commitRevealAccept } from '../../../utils/commitRevealAccept';
 import { parsePlayInput, parseFundInput, parseWithdrawInput, decodePlayResult, formatPlayOutcome, formatFundOutcome, formatWithdrawOutcome } from './diceRun.helpers';
+import { getBetAmount } from '../contractFunctions/read';
+import { diceRunABI } from '../contractFunctions/DiceRun.abi';
 
 export async function handlePlay({ input, params }: { input: string; params: TerminalCommandParams }) {
-    const { contractAddress, activeAccount, client, publicClient } = params;
+    const { contractAddress, contractABI, publicClient, activeAccount, client } = params;
 
     try {
         const guess = parsePlayInput(input);
@@ -12,13 +15,23 @@ export async function handlePlay({ input, params }: { input: string; params: Ter
             throw new Error("Public client not available");
         }
 
-        if (!activeAccount) {
-            throw new Error("No account selected");
-        }
-
-        const result = await play(contractAddress, guess, activeAccount, client, publicClient);
-        const { diceResult, won, payout, streakLength } = decodePlayResult(result);
+        const betAmount = await getBetAmount(contractAddress as `0x${string}`, publicClient);
         const chainId = await publicClient.getChainId();
+
+        const result = await commitRevealAccept({
+            contractAddress,
+            contractABI: contractABI || diceRunABI,
+            commitFunctionName: 'play',
+            commitArgs: [guess],
+            value: betAmount.value,
+            account: activeAccount,
+            client,
+            publicClient,
+            chainId,
+        });
+
+        const rollOutcome = result.outcome as readonly [bigint, `0x${string}`];
+        const { diceResult, won, payout, streakLength } = decodePlayResult(rollOutcome);
         const formatted = formatPlayOutcome(diceResult, won, payout, streakLength, chainId);
 
         return {
@@ -86,5 +99,25 @@ export async function handleWithdraw({ input, params }: { input: string; params:
     } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         return { output: [`Failed to withdraw from bank: ${errorMessage}`] };
+    }
+}
+
+export async function handleAccept({ params }: { params: TerminalCommandParams }) {
+    const { activeAccount, client, publicClient, contractAddress } = params;
+
+    if (!client || !publicClient) {
+        return { output: ["No account selected or public client not available"] };
+    }
+
+    try {
+        const result = await accept(contractAddress, activeAccount, client, publicClient);
+        return {
+            output: result.output,
+            outcome: result.outcome,
+            isPrize: result.isPrize
+        };
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        return { output: [`Failed to accept results: ${errorMessage}`] };
     }
 }

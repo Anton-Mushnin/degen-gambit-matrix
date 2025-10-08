@@ -1,5 +1,6 @@
 import { formatEtherOrWei } from '../../../utils/formatting';
 import { wagmiConfig } from '../../../config';
+import { decodeAbiParameters } from 'viem';
 
 export function parsePlayInput(input: string): number {
     const match = input.match(/^play (\d)$/);
@@ -45,20 +46,32 @@ export function parseWithdrawInput(input: string): bigint {
     return BigInt(Math.floor(amount * 1e18));
 }
 
-export function decodePlayResult(result: readonly [bigint, bigint, bigint]): {
+export function decodePlayResult(rollOutcome: readonly [bigint, `0x${string}`]): {
     diceResult: number;
     won: boolean;
     payout: bigint;
     streakLength: number;
 } {
-    const [diceResult, payout, streakLength] = result;
+    const payout = rollOutcome[0];
     const won = payout > 0;
+    const additionalData = rollOutcome[1];
+
+    // Decode the additionalData - assuming it contains [diceResult, streakLength] encoded
+    // For now, let's assume the format matches what we'll implement in the contract
+    // We'll need to adjust this based on the actual contract implementation
+    const decodedData = decodeAbiParameters(
+        [{ type: 'uint8' }, { type: 'uint8' }],
+        additionalData
+    );
+
+    const diceResult = Number(decodedData[0]);
+    const streakLength = Number(decodedData[1]);
 
     return {
-        diceResult: Number(diceResult),
+        diceResult,
         won,
         payout,
-        streakLength: Number(streakLength)
+        streakLength
     };
 }
 

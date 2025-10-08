@@ -28,6 +28,7 @@ import {
     handlePlay,
     handleFund,
     handleWithdraw,
+    handleAccept,
 } from './diceRun.handlers';
 import { TerminalCommandParams } from '../../../utils/gameHandlers';
 
@@ -82,6 +83,24 @@ export const diceRunCommands: CommandDefinition<TerminalCommandParams>[] = [
             'amountInvested',
             'sharePercentage',
             'shareChange'
+        ]
+    },
+    {
+        pattern: {
+            pattern: /^accept$/,
+            name: 'accept',
+            description: 'Accept and reveal the results of your committed bet',
+            usage: 'accept'
+        },
+        handler: handleAccept,
+        isAutoCommand: true,
+        queriesToInvalidate: [
+            'playerBalance',
+            'playerTotalWinnings',
+            'playerCurrentStreak',
+            'bankBalance',
+            'bestStreak',
+            'diceStatistics'
         ]
     },
     {
