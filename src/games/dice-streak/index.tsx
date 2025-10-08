@@ -2,7 +2,7 @@ import React from 'react';
 import { Game } from '../types';
 import { CommandDefinition } from '../../commands/types';
 import { NETWORKS } from '../../config/networks';
-import { diceStreakCommands } from './commands/diceStreak';
+import { diceStreakCommands } from './commands/commands';
 
 // Import generic components
 import GameMain from '../../components/GameMain';
@@ -10,7 +10,7 @@ import GameContractInfo from '../../components/GameContractInfo';
 
 // Import configurations and functions
 import { createContractData, createPlayerData, privateKeyAddress } from './info/info';
-import { diceStreakStreamConfig } from './config/streamConfig';
+import { diceStreakStreamConfig } from './stream/stream';
 import { diceStreakConfig } from './config/gameConfig';
 
 // Create data items wrapper for generic component
@@ -86,7 +86,7 @@ export { ContractInfoWrapper as ContractInfo };
 
 export { useAccountToUse } from '../../hooks';
 
-export { diceStreakCommands } from './commands/diceStreak';
+export { diceStreakCommands } from './commands/commands';
 export * from './commands/diceStreak.handlers';
 
 // Export TerminalOutput from matrixUI
