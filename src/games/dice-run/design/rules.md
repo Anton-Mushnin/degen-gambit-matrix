@@ -3,11 +3,10 @@
 ## Basic Game
 - Bet amount is fixed (constructor parameter)
 - Player selects number (1-6) and commits bet
-- Contract generates random number (1-6) using commit-reveal
+- Contract generates random number (1-6)
 - If prediction matches:
-  - Player wins: (basicPayoutMultiplier * bet) - bankContribution
-  - bankContribution goes to bank
-  - basicPayoutMultiplier and bankContribution are constructor parameters
+  - Player wins: (basicPayoutMultiplier * bet)
+  - basicPayoutMultiplier 
 - If prediction fails: player loses bet, streak resets
 
 ## Streak System
