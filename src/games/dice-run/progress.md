@@ -17,3 +17,8 @@
 ## Step 5 - Stream
 - Created stream.md with events for global game feed
 
+## Step 6 - Randomness
+- Using CommitRevealRandomness (future block hashes)
+- Secure randomness with commit-reveal pattern
+- Requires waiting between commit and reveal
+
