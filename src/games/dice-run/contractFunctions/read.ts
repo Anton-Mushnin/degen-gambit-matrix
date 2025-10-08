@@ -36,7 +36,7 @@ export const getPayoutCalculation = async (contractAddress: string, publicClient
 
     return {
       value: totalPayout,
-      formatted: `${formatted.formatted} (basic: ${formatEtherOrWei(basicPayout, 0.00001).formatted}, bank contrib: ${formatEtherOrWei(bankContribution, 0.00001).formatted})`,
+      formatted: formatted.formatted,
       decimals: formatted.decimals
     };
   } catch (error) {
