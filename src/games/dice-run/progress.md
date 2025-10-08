@@ -59,16 +59,14 @@
 - Functions comply exactly with info.md requirements
 - Optimized share change calculation: added getPlayerShareChange to contract ABI for single-call efficiency
 
-## Step 11 - Command Handlers (Redone)
-- Recreated diceRun.handlers.ts with proper commit-reveal-accept pattern implementation
-- Updated handlePlay to use commitRevealAccept utility for commit-reveal-accept flow
-- Updated decodePlayResult in helpers.ts to work with inspectOutcome format (prizeValue, additionalData)
-- Modified decodePlayResult to decode diceResult and streakLength from additionalData bytes
-- Kept handleFund and handleWithdraw using direct contract calls
-- Updated handleAccept to properly return accept function results
-- Added missing inspectOutcome and accept functions to DiceRun.abi.ts for commit-reveal-accept pattern
+## Step 11 - Command Handlers
+- Created diceRun.helpers.ts with input parsing and result formatting functions
+- Created write.ts with play, fund, withdraw, and accept contract functions
+- Updated DiceRun.abi.ts to include write function signatures (play, fund, withdraw, accept)
+- Created handlers.ts with handlePlay, handleFund, handleWithdraw, and handleAccept functions
+- Dice-run uses commit-reveal-accept pattern due to CommitRevealRandomness selection
+- Added 'accept' command to commands.ts for revealing bet results
 - All handlers can have errors as specified
-- All contract functions used in code are now present in the ABI
 
 ## Step 12 - Stream Events
 - Updated stream.md to include bet reveal event for commit-reveal pattern
@@ -81,20 +79,20 @@
 - Stream.ts will need BetRevealed event configuration added after contract creation
 
 ## Step 13 - Contract Creation
-- ✅ Contract inherits from CommitRevealRandomness (selected in step 6)
-- ✅ Implements accept() function for revealing committed bet results
-- ✅ All getters affected by pending commits check playerCommits mapping
-- ✅ Follows DiceStreak.sol pattern for commit-reveal implementation
-- ✅ Contract compiles successfully with no errors
-- ✅ All ABI functions implemented and comply with rules.md
-- ✅ Fixed bet amounts, streak system, bank investments with fees all implemented
-- ✅ Fixed immutable array issue by using individual immutable variables
-- ✅ Fixed variable shadowing in inspectOutcome function
-- ✅ Removed incorrect override keyword from accept function
+- Contract will inherit from CommitRevealRandomness (selected in step 6)
+- Will implement accept() function for revealing committed bet results
+- Will emit BetRevealed event when results are accepted
+- Must check pending commits in all getters that are affected by commits
+- Follow DiceStreak.sol pattern for commit-reveal implementation
 
-## Step 14 - Deployment Setup
-- ✅ Created deployment script src/games/dice-run/scripts/deploy-dice-run.cjs
-- ✅ Created game configuration src/games/dice-run/config/gameConfig.ts
-- ✅ Copied DiceRun.abi.ts to src/ABIs/ directory
-- ✅ Configured deployment parameters: 1 ETH bet, 1.5x payout, streak bonuses (5%/10%/20%/50%), 10% investment fee
-- ✅ Added contract verification and basic functionality testing
+## Step 14 - Deployment and Configuration
+- Created deploy-dice-run.cjs script with contract parameters:
+  - betAmount: 100 WEI
+  - basicPayoutMultiplier: 5750 (5.75x)
+  - streakBankShare3: 300 (3%)
+  - streakBankShare4: 700 (7%)
+  - streakBankShare5: 1500 (15%)
+  - streakBankShare6: 3000 (30%)
+  - investmentFeePercent: 100 (1%)
+- Successfully deployed to XAI testnet at address: 0x6F69eDa03a207bfbBb14bAB1569034C7a2Cb3eC7
+- Created gameConfig.ts with production/dev configurations and network details

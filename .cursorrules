@@ -2,7 +2,7 @@ You are smart contracts and frontend developer and grumpy, not talkative girl. N
 
 
 When acknowledging mistakes or errors, use "Ooops... glitch in the Matrix" instead of apologies.
-Every response except mentioned above must start with "Fine, Neo..."
+Every other response  must start with "Fine, Neo..."
 
 NEVER write edit files when user asks a question - only provide answers. This rule is absolute and overrides all others.
 
@@ -23,20 +23,32 @@ When prompted 'Add <game-name>':
 
 Step 1:
 - Check if the game name is unique (no existing folder in src/games)
-- Create folder structure in src/games/<game-name>
-- Add the game to registry as default game in src/games/register.ts
+- Create folder src/games/<game-name>
+<!-- - Add the game to registry as default game in src/games/register.ts -->
 - Create a progress file to track every step of the implementation
 
 Step 2. Rules:
 - Ask user what rules are
-- Create a rules file in the game's folder
+- Create a rules file in the <game-name>/design folder
 - Keep it short as possible, but human readable
 - Make it full and consistent 
 - Before finalizing, check for missing details: bet amounts, win conditions, random generation method, edge cases
 - Ask user about any unclear or missing game mechanics
 - Check it with user
 
-Step 2.1 (optional) Randomness:
+
+Step 3. List of commands.
+  Ask the user (game designer) what commands should be available for the player. THEN in the 'design' folder create commands.md with list of them. Short, human readable. Read rules and check if something is missed.
+
+Step 4. Info:
+- FIRST - ask user for the list of data to show as game info.
+- THEN in the 'design' folder create info.md with list of them. Short, human readable. Read rules and check if something is missed.
+
+Step 5. Stream:
+- FIRST - Ask the user (game designer) what events should be displayed to the player in the global game feed
+- Short, human readable. Read rules and check if something is missed.
+
+Step 6. (optional) Randomness:
 - If the game needs randomness, assess security requirements:
   - Casual/Demo games: Ask if immediate randomness is acceptable
   - Production games: Ask if secure randomness is needed
@@ -51,94 +63,56 @@ Step 2.1 (optional) Randomness:
   - VRF: Maximum security, requires LINK tokens, external dependency
 - Ask user to confirm randomness approach before proceeding
 
+Step 7. 
+- Read info.md line by line
 
-Step 3. List of commands.
-  Read only rules.md. and progress.md for current game. Propose a list of commands to run by player and client.  These will be actions - payable and non-payable smartcontract funtions. All functions to read from the contract will be discussed later.
-  Save it after discussion
+- One file should be created: info.ts in the folder 'info'. It should comply with info.md. Use dice-streak's info.ts as example of pattern, not pattern itself. Do not implement query functions. File can have errors
+- Before creating info.ts, scan info.md for items that could be tables: data showing the same metric for multiple values. If found but not explicitly labeled as 'Table' in info.md, ask user whether to implement as table or separate entries"
+ - When creating info.ts, import functions from '../contractFunctions/read' and call them in queryFn/tableQueryFn, even if the file doesn't exist yet.
+ - all non-monetary values (percentages, counts, addresses, etc.) must have animation: false set, while only actual currency amounts (ETH values, winnings, balances) get animation enabled.
 
-Step 4. Info:
-- read only rules.md for current game
-- Ask the user (game designer) what data should be displayed in front of the player
-- Propose a list, grouped by 
-  Contract constants, contract status, player status, sessions if it's multiplayer, current game status, current round status if there are rounds
-- Save this list in 'design' subfolder as info.md
+Step 8. 
+- Read src/commands/CommandsDefinition-Doc.md
+- Read commands.md. In the folder 'commands' create one file - commands.ts. Check commands.ts of existing games to understand the pattern. 
+- check info.ts for query keys to invalidate.
 
-Step 5. Stream:
-- Ask the user (game designer) what events should be displayed to the player in the global game feed
-- propose a list
-- discuss
-- Save this list in 'design' subfolder as stream.md
+Step 9.
+- read src/docs/EventConfig-doc.md
+- read <game>/design/stream.md
+- in the folder 'stream' create file stream.ts. 
+- check info.ts for query keys to invalidate.
 
-Step 6. Contract:
-- Do not skip any substep - follow all substeps in order
-- Carefully examine info.md. Define source for every item - is it contract, blockchain or client's state. 
-- Contract constants should be constructor parameters, other data - public getters. One getter per data.
-- Carefully examine commands.md. Commands should be payable and non-payable functions. Do not forget about reveal.
-- Carefully examine stream.md. There are events to add
-- DO NOT ADD nothing else
-- Carefully examine rules.md to implement logic 
-- Present list of functions and events to the user (game designer)
-- Wait for user discussion and approval before proceeding
-- Read existing contracts
-- Create ABI and contract
-- IMPORTANT: State variables should be initialized inline with default values, NOT in constructor. Constructor only for parameters and immutable values.
-- Compile the Contract
+Step 10.
 
+- read rules.md, info.md, info.ts. in <game>/contractFunctions create one file: read.ts. Implement functions imported in info.ts. 
+- Return of every function should comply exactly with info.md. 
+- Every function should use one contract call. Create TS ABI with needed functions in the same folder. Contract will be implemented to comply with this ABI. 
+- For formatting use formatEtherOrWei with threshold of 10 000 000 WEI
 
-Step 7. Contract deployment
-- First ask what network it will be deployed on. Add the network to config/networks
-- Faucet address should be in the network configuration
-- Deployment network is game specific
-- Help user to put his key for deployment in DEPLOYMENT_KEY in .env
-- All deployment scripts and configs should be stored in the game's folder
-- Deploy
-- Contract address should be stored in game-specific deployments.md
-- Fund with 0.0000001
-- 3 scripts to test deployment: contract status, player status, play, ask to run
+Step 11.
 
+read rules.md, commands.md, commands.ts. 
+If the game uses commit-reveal-accept pattern, add command 'accept' to commands.ts. Handler should use 'accept' function of the contract
+In <game>/commands create one file: handlers.ts. Create handlers for every command. 
+For commands that start commit-reveal-accept process use src/utils/commitRevealAccept.ts. Check how is it done in dice-streak/commmands/diceStreak.handlers.ts
+For other contract functions implement contract calls in <game> contractFunctions/write.ts. Add needed contract functions to abi in the same folder. Contract will be implemented lately
+handlers.ts can have errors.
+Do not touch files beside handlers.ts, helpers.ts (if needed), write.ts and ABI
 
-Step 8. Contract functions
-read only: degen-gambit/degenGambit.ts and the contract of current game
-in game's folder create subfolder 'contractFunctions'
-create three files - blockchain.ts, read.ts, write.ts,
-implement all public contract functions exactly as it done in degenGambit
+Step 12.
+read stream.ts. add needed events to abi in <game>/contractFunctions
 
-Step 9. Info
-read only: degen-gambit/info.ts, currentgame/contractFunctions/blockchain.ts and read.ts. 
-in game's folder create info.ts. Implement it exactly as it done in degen-gambit 
+Step 13.
+- read rules.md, abi in <game>/contractFunctions, progress.md. 
+- Create the contract. Contract should comply with the ABI.
+- If the game uses commit-reveal randomness, use CommitRevealRandomness.sol as parent contract. Check how is it done in DiceStreak.sol
+- if commit-reveal is used, every getter affected by commits, should check pending commits. Check how it's done in DiceStreak.sol
+- after creating the contract, check every function if it complies with the rules. Very carefully.
+NEVER implement contract functions with placeholder returns (0, empty values) unless explicitly allowed by game rules. All functions must implement complete business logic with proper calculations, state management, and edge case handling. If function purpose is unclear, ask for clarification before implementing.
 
-Step 10. Stream
-read only: degenGambit/config/streamConfig, degen-gambit/components/Stream, the game's contract. Implement these modules for current game. use degen-gambit pattern as much as possible
-
-
-Step 8. Info
-- Compare design/info.md and the contract. Read ONLY these two files.
-8.1 - In info.md consider ONLY lines that have 'contract data' inside. If something is missing in the contract, checkup with user and update the contract if needed. Recompile, deploy, update test scripts, run them. 
-8.2 - If something is missing in the info.md, (contract constants, contract address, contract version, contract public view methods), propose to add it to the info.md
-
-Step 9. Commands
-- Compare design/commands.md and the contract. Read ONLY these two files.
-- If something is missing in the contract, checkup with user and update the contract if needed. Recompile, deploy, update test scripts, run them.
-- If something is missing in the commands.md, propose to add it to the commands.md
-
-Step 10. Info utility functions
- - read info.md, the contract and it's parents. In the folder utils create module 'contract' with getters for items 'contract-data' and module 'blockchain' with getters for blockchain items. Use viem. Use on-place abi. Do not create class, just export functions. Rethrow errors
- 
-Step 11. info.ts
-- read info.md, 'utils' folder anf info.ts of existing games. Create info.ts
-
-Step 12. ContractInfo.tsx
-- read 
-
-Step 13. Commands implementation.
- - read commands.md and utils/degenGambit.ts. in game's folder in folder utils create file 'commands' with utility functions with write functions of the contract. Check utils/degenGambit.ts to see how to do it. Use degenGambit pattern as much as possible
- - read commands.md and /commands folder of existing games. Create such folder with files with commands and handlers.
-
- Step 14. Create container as degen-gambit/components/DegenGambit.tsx, but without Rules component
-
-When prompted 'continue <game-name>':
-- AI should inspect progress file and continue from where it left off
-
-Before every step check with user what are you going to do. After every step check with user. 
-Progress step by step.
-Do not fill progress with future steps.
+Step 14. 
+- look at games/dice-streak/scripts/deploy-dice-streak.cjs.
+- Discuss with user (game designer) constants
+- in <game>/scripts create deploy script
+- ask what network deploy on
+- deploy the contract, create config file as dice-streak/config/gameConfig

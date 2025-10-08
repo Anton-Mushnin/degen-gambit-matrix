@@ -37,7 +37,8 @@ export function useAccountToUse(): UseAccountToUseResult {
         }
         
         // Default to shortened address format
-        let resolvedName = addressToUse.slice(0, 6) + '...' + addressToUse.slice(-4);
+        // let resolvedName = addressToUse.slice(0, 6) + '...' + addressToUse.slice(-4);
+        let resolvedName = addressToUse;
         
         try {
           // Try to resolve ENS name

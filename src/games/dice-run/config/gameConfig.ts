@@ -1,17 +1,16 @@
 import { GameContractConfig } from '../../../utils/gameConfig';
 import { diceRunABI } from '../../../ABIs/DiceRun.abi';
 
-// DiceRun contract configuration - single source of truth
 export const diceRunConfig: GameContractConfig = {
   production: {
-    contractAddress: "0x0000000000000000000000000000000000000000", // TODO: Update after deployment
+    contractAddress: "0x6F69eDa03a207bfbBb14bAB1569034C7a2Cb3eC7",
     name: "DiceRun",
     abi: diceRunABI
   },
   dev: {
-    contractAddress: "0x0000000000000000000000000000000000000000", // TODO: Update after deployment
-    name: "DiceRunDev",
-    abi: diceRunABI // Same ABI for dev version
+    contractAddress: "0x6F69eDa03a207bfbBb14bAB1569034C7a2Cb3eC7", // Same as production for now
+    name: "DiceRun",
+    abi: diceRunABI
   },
   network: {
     name: "XAI Testnet",
