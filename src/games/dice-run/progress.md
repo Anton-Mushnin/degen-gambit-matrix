@@ -11,3 +11,6 @@
 ## Step 3 - Commands
 - Created commands.md with player commands: play, fund, withdraw
 
+## Step 4 - Info
+- Created info.md with game and player information display list
+
