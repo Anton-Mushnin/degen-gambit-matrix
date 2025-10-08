@@ -3,7 +3,7 @@
  * 
  * This module defines game commands using a three-file pattern:
  * 
- * 1. diceStreak.ts (this file) - Command definitions
+ * 1. commands.ts (this file) - Command definitions
  *    - Exports array of CommandDefinition objects
  *    - Each command has: pattern (regex, name, description, usage), handler, flags, cache invalidation
  *    - Flags: isAutoCommand (auto-triggers after execution), isDevCommand (dev mode only)
