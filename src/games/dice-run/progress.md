@@ -91,3 +91,10 @@
 - ✅ Fixed immutable array issue by using individual immutable variables
 - ✅ Fixed variable shadowing in inspectOutcome function
 - ✅ Removed incorrect override keyword from accept function
+
+## Step 14 - Deployment Setup
+- ✅ Created deployment script src/games/dice-run/scripts/deploy-dice-run.cjs
+- ✅ Created game configuration src/games/dice-run/config/gameConfig.ts
+- ✅ Copied DiceRun.abi.ts to src/ABIs/ directory
+- ✅ Configured deployment parameters: 1 ETH bet, 1.5x payout, streak bonuses (5%/10%/20%/50%), 10% investment fee
+- ✅ Added contract verification and basic functionality testing
