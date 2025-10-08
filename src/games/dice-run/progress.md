@@ -29,4 +29,7 @@
 ## Step 9 - Stream Implementation
 - Created stream.ts with event configurations for all game events
 
+## Step 10 - Contract Read Functions
+- Created contractFunctions/read.ts with all read functions imported in info.ts
+
 
