@@ -81,9 +81,9 @@ async function main() {
   console.log("\n🧪 Testing basic functionality...");
 
   try {
-    // Test getPlayerStreak for deployer
-    const streak = await diceRun.getPlayerStreak(deployer.address);
-    console.log("✅ getPlayerStreak works:", streak);
+    // Test getPlayerCurrentStreak for deployer
+    const streak = await diceRun.getPlayerCurrentStreak(deployer.address);
+    console.log("✅ getPlayerCurrentStreak works:", streak);
 
     // Test getPlayerTotalWinnings for deployer
     const winnings = await diceRun.getPlayerTotalWinnings(deployer.address);
@@ -97,13 +97,13 @@ async function main() {
     const bankBalance = await diceRun.getBankBalance();
     console.log("✅ getBankBalance works:", bankBalance.toString());
 
-    // Test getBestCombo
-    const [bestStreak, bestPlayer] = await diceRun.getBestCombo();
-    console.log("✅ getBestCombo works:", bestStreak, bestPlayer);
+    // Test getBestStreak
+    const [bestStreakLength, bestStreakPlayer] = await diceRun.getBestStreak();
+    console.log("✅ getBestStreak works:", bestStreakLength, bestStreakPlayer);
 
-    // Test getStatistics for number 1
-    const [occurrences, bets, wins] = await diceRun.getStatistics(1);
-    console.log("✅ getStatistics works:", occurrences.toString(), bets.toString(), wins.toString());
+    // Test getDiceStats for number 1
+    const [occurrences, bets, wins] = await diceRun.getDiceStats(1);
+    console.log("✅ getDiceStats works:", occurrences.toString(), bets.toString(), wins.toString());
 
     // Test hasCommit (inherited from CommitRevealRandomness)
     const hasCommit = await diceRun.hasCommit(deployer.address);

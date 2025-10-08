@@ -94,7 +94,8 @@
   - streakBankShare5: 1500 (15%)
   - streakBankShare6: 3000 (30%)
   - investmentFeePercent: 100 (1%)
-- Successfully deployed to XAI testnet at address: 0x6F69eDa03a207bfbBb14bAB1569034C7a2Cb3eC7
+- Redeployed locally with corrected payout multiplier (57500 basis points = 5.75x)
+- Local deployment address: 0x5FbDB2315678afecb367f032d93F642f64180aa3
 - Created gameConfig.ts with production/dev configurations and network details
 
 ## Step 15 - Components
