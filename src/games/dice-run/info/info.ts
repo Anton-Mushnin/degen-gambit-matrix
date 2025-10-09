@@ -38,68 +38,6 @@ export const createContractData = ({
     const address: string = contractAddress || (diceRunGame.config.contractAddress as string);
     return [
         {
-            type: 'static',
-            label: '',
-            data: {
-                formatted: diceRunGame.name,
-                value: BigInt(0),
-                decimals: 0
-            },
-            animation: false
-        },
-        {
-            type: 'static',
-            label: '',
-            data: {
-                formatted: diceRunGame.network.name,
-                value: BigInt(0),
-                decimals: 0
-            },
-            animation: false
-        },
-        {
-            type: 'static',
-            label: 'Contract Address: ',
-            data: {
-                formatted: address.slice(0, 6) + '...' + address.slice(-4),
-                value: BigInt(0),
-                decimals: 0
-            },
-            animation: false
-        },
-        {
-            type: 'query',
-            label: 'Bet Amount: ',
-            queryKey: ['betAmount', address],
-            queryFn: () => getBetAmount(address, publicClient),
-            onDataUpdate
-        },
-        {
-            type: 'query',
-            label: 'Return on Winning Bet: ',
-            queryKey: ['payoutCalculation', address],
-            queryFn: () => getPayoutCalculation(address, publicClient),
-            onDataUpdate
-        },
-        {
-            type: 'query',
-            label: 'Streak Bank Share Percentages: ',
-            animation: false,
-            headers: ['Streak Length', 'Share Percentage'],
-            isTable: true,
-            queryKey: ['streakBankSharePercentages', address],
-            tableQueryFn: () => getStreakBankSharePercentages(address, publicClient),
-            onDataUpdate
-        },
-        {
-            type: 'query',
-            label: 'Investment Fee Percent: ',
-            queryKey: ['investmentFeePercent', address],
-            queryFn: () => getInvestmentFeePercent(address, publicClient),
-            animation: false,
-            onDataUpdate
-        },
-        {
             type: 'query',
             label: 'Current Bank Balance: ',
             queryKey: ['bankBalance', address],
@@ -215,6 +153,82 @@ export const createPlayerData = ({
             queryKey: ['potentialBonusAmount', address, playerAddress],
             queryFn: () => getPotentialBonusAmount(address, playerAddress, publicClient),
             onDataUpdate
+        }
+    ];
+};
+
+export const createContractConstantsData = ({
+    publicClient,
+    contractAddress,
+}: {
+    publicClient?: PublicClient;
+    contractAddress?: string;
+}): DataItem[] => {
+    if (!publicClient || !contractAddress) {
+        return [];
+    }
+
+    const address: string = contractAddress || (diceRunGame.config.contractAddress as string);
+    return [
+        {
+            type: 'static',
+            label: '',
+            data: {
+                formatted: diceRunGame.name,
+                value: BigInt(0),
+                decimals: 0
+            },
+            animation: false
+        },
+        {
+            type: 'static',
+            label: '',
+            data: {
+                formatted: diceRunGame.network.name,
+                value: BigInt(0),
+                decimals: 0
+            },
+            animation: false
+        },
+        {
+            type: 'static',
+            label: 'Contract Address: ',
+            data: {
+                formatted: address.slice(0, 6) + '...' + address.slice(-4),
+                value: BigInt(0),
+                decimals: 0
+            },
+            animation: false
+        },
+        {
+            type: 'query',
+            label: 'Fixed Bet Amount: ',
+            queryKey: ['betAmount', address],
+            queryFn: () => getBetAmount(address, publicClient),
+            animation: false
+        },
+        {
+            type: 'query',
+            label: 'Basic Payout Multiplier: ',
+            queryKey: ['payoutCalculation', address],
+            queryFn: () => getPayoutCalculation(address, publicClient),
+            animation: false
+        },
+        {
+            type: 'query',
+            label: 'Streak Bank Shares: ',
+            animation: false,
+            headers: ['Streak Length', 'Share Percentage'],
+            isTable: true,
+            queryKey: ['streakBankSharePercentages', address],
+            tableQueryFn: () => getStreakBankSharePercentages(address, publicClient)
+        },
+        {
+            type: 'query',
+            label: 'Investment Fee Percent: ',
+            queryKey: ['investmentFeePercent', address],
+            queryFn: () => getInvestmentFeePercent(address, publicClient),
+            animation: false
         }
     ];
 };

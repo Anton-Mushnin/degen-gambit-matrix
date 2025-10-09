@@ -3,6 +3,7 @@ import { useDevMode } from "../contexts/DevModeContext";
 import { getGameConfig, GameContractConfig } from "../utils/gameConfig";
 import GameMain from "./GameMain";
 import GameContractInfo from "./GameContractInfo";
+import GameContractConstants from "./GameContractConstants";
 import GameStream from "./GameStream";
 import styles from "./Home.module.css";
 
@@ -59,7 +60,7 @@ const Home = () => {
         // Resolve contract address and ABI based on dev mode (same pattern as GameStream)
         let contractAddress = '';
         let contractABI = null;
-        
+
         if (components.contractInfo!.gameContractConfig) {
             const gameConfig = getGameConfig(
                 components.contractInfo!.gameContractConfig as GameContractConfig,
@@ -72,6 +73,31 @@ const Home = () => {
         return (
             <GameContractInfo
                 createDataItems={(params) => components.contractInfo!.createDataItems({
+                    ...params,
+                    contractAddress,
+                    contractABI
+                })}
+            />
+        );
+    } : null;
+
+    const ContractConstantsComponent = components.contractConstants ? () => {
+        // Resolve contract address and ABI based on dev mode
+        let contractAddress = '';
+        let contractABI = null;
+
+        if (components.contractConstants!.gameContractConfig) {
+            const gameConfig = getGameConfig(
+                components.contractConstants!.gameContractConfig as GameContractConfig,
+                isDevMode
+            );
+            contractAddress = gameConfig.contractAddress;
+            contractABI = gameConfig.abi;
+        }
+
+        return (
+            <GameContractConstants
+                createContractConstantsData={(params) => components.contractConstants!.createContractConstantsData({
                     ...params,
                     contractAddress,
                     contractABI
@@ -100,11 +126,20 @@ const Home = () => {
         <div className={styles.container}>
             <div className={`${styles.stack} ${styles.leftPanel}`}>
                 {ContractInfoComponent && <ContractInfoComponent />}
-                {StreamComponent && <StreamComponent />}
+                {StreamComponent && (
+                    <div className={styles.streamComponent}>
+                        <StreamComponent />
+                    </div>
+                )}
             </div>
             <div className={`${styles.stack} ${styles.rightPanel}`}>
                 {MainComponent && <MainComponent />}
                 {RulesComponent && <RulesComponent />}
+                {ContractConstantsComponent && (
+                    <div className={styles.constantsComponent}>
+                        <ContractConstantsComponent />
+                    </div>
+                )}
             </div>
         </div>
     );

@@ -16,6 +16,7 @@ export interface Game {
         main: GameMainConfig | React.ComponentType<unknown>;
         rules?: React.ComponentType<unknown>;
         contractInfo?: GameContractInfoConfig;
+        contractConstants?: GameContractConstantsConfig;
         stream?: GameStreamConfig;
     };
     hooks: {
@@ -101,6 +102,15 @@ export interface GameContractInfoConfig {
     contractAddress?: string; // Dev mode aware contract address
     contractABI?: any; // Dev mode aware contract ABI
   }) => { contractData: DataItem[]; playerData: DataItem[] };
+}
+
+export interface GameContractConstantsConfig {
+  gameContractConfig?: import('../utils/gameConfig').GameContractConfig; // New dev mode aware config
+  createContractConstantsData: (params: {
+    publicClient: any;
+    contractAddress?: string; // Dev mode aware contract address
+    contractABI?: any; // Dev mode aware contract ABI
+  }) => DataItem[];
 }
 
 export interface GameStreamConfig {

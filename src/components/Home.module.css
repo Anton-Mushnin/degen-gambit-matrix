@@ -38,3 +38,12 @@
     flex: 1;
     width: 70%;
 }
+
+.streamComponent {
+    height: 33vh;
+}
+
+.constantsComponent {
+    height: 33vh;
+    border-top: 1px solid #636363;
+}
