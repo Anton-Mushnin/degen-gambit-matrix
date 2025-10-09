@@ -81,7 +81,7 @@ const GameContractInfo: React.FC<GameContractInfoProps> = ({
           />
         )
       ))}
-      <div style={{ height: '20px' }} />
+      <div style={{ height: '8px' }} />
       {playerData.map((item, index) => (
         item.type === 'query' ? (
           item.tableQueryFn ? (

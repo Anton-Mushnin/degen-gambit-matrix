@@ -11,6 +11,9 @@
     text-shadow: 0 0 10px #0dda9f;
     font-family: 'NimbusMono', 'Courier New', Courier, monospace;
     font-size: 16px;
+    line-height: 1.2;
+    margin: 0;
+    padding: 0;
 }
 
 .blink {
