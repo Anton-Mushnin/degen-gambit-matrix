@@ -47,6 +47,18 @@ const Matrix: React.FC<{outcome: number[], onClose: () => void}> = ({outcome, on
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    const handleAnimationEnd = () => {
+      onClose();
+    };
+
+    canvas.addEventListener('animationend', handleAnimationEnd);
+    return () => canvas.removeEventListener('animationend', handleAnimationEnd);
+  }, [onClose]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
