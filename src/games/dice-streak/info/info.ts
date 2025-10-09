@@ -33,54 +33,10 @@ export const createContractData = ({
     const address: string = contractAddress || (diceStreakGame.config.contractAddress as string);
     return [
     {
-        type: 'static',
-        label: '',
-        data: {
-            formatted: diceStreakGame.name,
-            value: BigInt(0),
-            decimals: 0
-        },
-        animation: false
-    },
-    {
-        type: 'static',
-        label: '',
-        data: {
-            formatted: diceStreakGame.network.name,
-            value: BigInt(0),
-            decimals: 0
-        },
-        animation: false
-    },
-    {
         type: 'query',
         label: 'Bank Balance: ',
         queryKey: ['bankBalance', address],
         queryFn: () => getBankBalance(address, publicClient),
-        onDataUpdate
-    },
-    {
-        type: 'static',
-        label: 'Contract Address: ',
-        data: {
-            formatted: address.slice(0, 6) + '...' + address.slice(-4),
-            value: BigInt(0),
-            decimals: 0
-        },
-        animation: false
-    },
-    {
-        type: 'query',
-        label: 'Bet Amount: ',
-        queryKey: ['betAmount', address],
-        queryFn: () => getBetAmount(address, publicClient),
-        onDataUpdate
-    },
-    {
-        type: 'query',
-        label: 'Payout Multiplier: ',
-        queryKey: ['payoutMultiplier', address],
-        queryFn: () => getPayoutMultiplier(address, publicClient),
         onDataUpdate
     },
     {
@@ -110,6 +66,66 @@ export const createContractData = ({
         onDataUpdate
     }
 ];
+};
+
+export const createContractConstantsData = ({
+    publicClient,
+    contractAddress,
+}: {
+    publicClient?: PublicClient;
+    contractAddress?: string;
+}): DataItem[] => {
+    if (!publicClient || !contractAddress) {
+        return [];
+    }
+
+    const address: string = contractAddress || (diceStreakGame.config.contractAddress as string);
+    return [
+        {
+            type: 'static',
+            label: '',
+            data: {
+                formatted: diceStreakGame.name,
+                value: BigInt(0),
+                decimals: 0
+            },
+            animation: false
+        },
+        {
+            type: 'static',
+            label: '',
+            data: {
+                formatted: diceStreakGame.network.name,
+                value: BigInt(0),
+                decimals: 0
+            },
+            animation: false
+        },
+        {
+            type: 'static',
+            label: 'Contract Address: ',
+            data: {
+                formatted: address.slice(0, 6) + '...' + address.slice(-4),
+                value: BigInt(0),
+                decimals: 0
+            },
+            animation: false
+        },
+        {
+            type: 'query',
+            label: 'Fixed Bet Amount: ',
+            queryKey: ['betAmount', address],
+            queryFn: () => getBetAmount(address, publicClient),
+            animation: false
+        },
+        {
+            type: 'query',
+            label: 'Payout Multiplier: ',
+            queryKey: ['payoutMultiplier', address],
+            queryFn: () => getPayoutMultiplier(address, publicClient),
+            animation: false
+        }
+    ];
 };
 
 export const createPlayerData = ({

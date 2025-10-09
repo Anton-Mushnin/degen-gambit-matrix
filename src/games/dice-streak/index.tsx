@@ -9,7 +9,7 @@ import GameMain from '../../components/GameMain';
 import GameContractInfo from '../../components/GameContractInfo';
 
 // Import configurations and functions
-import { createContractData, createPlayerData, privateKeyAddress } from './info/info';
+import { createContractData, createPlayerData, createContractConstantsData, privateKeyAddress } from './info/info';
 import { diceStreakStreamConfig } from './stream/stream';
 import { diceStreakConfig } from './config/gameConfig';
 
@@ -55,6 +55,13 @@ export const diceStreakGame: Game = {
         contractInfo: {
             gameContractConfig: diceStreakConfig,
             createDataItems: createDiceStreakDataItems
+        },
+        contractConstants: {
+            gameContractConfig: diceStreakConfig,
+            createContractConstantsData: ({ publicClient, contractAddress }) => createContractConstantsData({
+                publicClient,
+                contractAddress
+            })
         },
         stream: {
             gameContractConfig: diceStreakConfig,
