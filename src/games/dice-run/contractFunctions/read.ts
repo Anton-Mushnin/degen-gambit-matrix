@@ -110,7 +110,7 @@ export const getBestStreak = async (contractAddress: string, publicClient: Publi
 
         return {
             value: length as bigint,
-            formatted: `${length} by ${player}`,
+            formatted: `${length} by ${player.slice(0, 6)}...${player.slice(-4)}`,
             decimals: 0
         };
     } catch (error) {

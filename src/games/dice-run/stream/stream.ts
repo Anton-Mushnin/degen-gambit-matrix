@@ -1,4 +1,4 @@
-import { formatEther } from 'viem';
+import { formatEtherOrWei } from '../../../utils/formatting';
 import { EventConfig, StreamEvent } from '../../../components/GameStream';
 
 export const diceRunStreamConfig: EventConfig[] = [
@@ -19,7 +19,7 @@ export const diceRunStreamConfig: EventConfig[] = [
       logs.forEach((log: any) => {
         if (log.args.player) {
           const { player, numberChosen, betAmount } = log.args;
-          const description = `${player.slice(0, 6)}...${player?.slice(-4)} bets ${formatEther(betAmount)} ETH on number ${numberChosen}`;
+          const description = `${player.slice(0, 6)}...${player?.slice(-4)} bets ${formatEtherOrWei(betAmount, 0.00001).formatted} on number ${numberChosen}`;
 
           events.push({
             player,
@@ -52,7 +52,7 @@ export const diceRunStreamConfig: EventConfig[] = [
       logs.forEach((log: any) => {
         if (log.args.player) {
           const { player, diceRolled, payoutAmount } = log.args;
-          const description = `${player.slice(0, 6)}...${player?.slice(-4)} wins ${formatEther(payoutAmount)} ETH! Rolled: ${diceRolled}`;
+          const description = `${player.slice(0, 6)}...${player?.slice(-4)} wins ${formatEtherOrWei(payoutAmount, 0.00001).formatted}! Rolled: ${diceRolled}`;
 
           events.push({
             player,
@@ -85,7 +85,7 @@ export const diceRunStreamConfig: EventConfig[] = [
       logs.forEach((log: any) => {
         if (log.args.player) {
           const { player, streakLength, bonusAmount } = log.args;
-          const description = `${player.slice(0, 6)}...${player?.slice(-4)} wins streak bonus of ${formatEther(bonusAmount)} ETH! Streak: ${streakLength}`;
+          const description = `${player.slice(0, 6)}...${player?.slice(-4)} wins streak bonus of ${formatEtherOrWei(bonusAmount, 0.00001).formatted}! Streak: ${streakLength}`;
 
           events.push({
             player,
@@ -118,7 +118,7 @@ export const diceRunStreamConfig: EventConfig[] = [
       logs.forEach((log: any) => {
         if (log.args.player) {
           const { player, investmentAmount, newSharePercentage } = log.args;
-          const description = `${player.slice(0, 6)}...${player?.slice(-4)} invests ${formatEther(investmentAmount)} ETH, new share: ${newSharePercentage}%`;
+          const description = `${player.slice(0, 6)}...${player?.slice(-4)} invests ${formatEtherOrWei(investmentAmount, 0.00001).formatted}, new share: ${newSharePercentage}%`;
 
           events.push({
             player,
