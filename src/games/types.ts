@@ -73,7 +73,7 @@ export interface QueryDataItem {
 }
 
 export interface StaticDataItem {
-    type: 'static';
+    type: 'static' | 'divider';
     label: string;
     data: {
         formatted: string;
