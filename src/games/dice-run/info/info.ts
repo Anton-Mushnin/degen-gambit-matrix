@@ -13,11 +13,11 @@ import {
     getDiceStatistics,
     getSharePercentage,
     getCurrentShareValue,
-    getTotalWithdrawals,
+    // getTotalWithdrawals,
     getTotalEarnings,
     getPlayerTotalWinnings,
     getPlayerCurrentStreak,
-    getNextNeededDiceNumber,
+    // getNextNeededDiceNumber,
     getPotentialBonusAmount
 } from '../contractFunctions/read';
 import { DataItem } from '../../types';
@@ -39,14 +39,14 @@ export const createContractData = ({
     return [
         {
             type: 'query',
-            label: 'Current Bank Balance: ',
+            label: 'Bank Balance: ',
             queryKey: ['bankBalance', address],
             queryFn: () => getBankBalance(address, publicClient),
             onDataUpdate
         },
         {
             type: 'query',
-            label: 'Best Streak Achieved: ',
+            label: 'Best Streak: ',
             queryKey: ['bestStreak', address],
             queryFn: () => getBestStreak(address, publicClient),
             animation: false,
@@ -54,9 +54,9 @@ export const createContractData = ({
         },
         {
             type: 'query',
-            label: 'Dice Statistics: ',
+            label: 'Stats: ',
             animation: false,
-            headers: ['Dice Number', 'Occurrences', 'Bets', 'Wins'],
+            headers: ['Face', 'Occurrences', 'Bets', 'Wins'],
             isTable: true,
             queryKey: ['diceStatistics', address],
             tableQueryFn: () => getDiceStatistics(address, publicClient),
@@ -90,29 +90,38 @@ export const createPlayerData = ({
         },
         {
             type: 'query',
-            label: 'Player Balance: ',
+            label: 'Balance: ',
             queryKey: ['playerBalance', playerAddress],
             queryFn: () => getBalance(wagmiConfig, {address: playerAddress, chainId: diceRunGame.network.id as any}),
             onDataUpdate
         },
         {
             type: 'query',
-            label: 'Player Total Winnings: ',
+            label: 'Total Winnings: ',
             queryKey: ['playerTotalWinnings', address, playerAddress],
             queryFn: () => getPlayerTotalWinnings(address, playerAddress, publicClient),
             onDataUpdate
         },
         {
             type: 'query',
-            label: 'Player\'s Current Streak: ',
+            label: 'Current Streak: ',
             queryKey: ['playerCurrentStreak', address, playerAddress],
             queryFn: () => getPlayerCurrentStreak(address, playerAddress, publicClient),
             animation: false,
             onDataUpdate
         },
+                {
+            type: 'query',
+            label: 'Potential Bonus Amount: ',
+            queryKey: ['potentialBonusAmount', address, playerAddress],
+            queryFn: () => getPotentialBonusAmount(address, playerAddress, publicClient),
+            onDataUpdate,
+            animation: false
+        },
+        { type: 'static', label: '', data: null, animation: false },
         {
             type: 'query',
-            label: 'Share Percentage: ',
+            label: 'Player\'s Share: ',
             queryKey: ['sharePercentage', address, playerAddress],
             queryFn: () => getSharePercentage(address, playerAddress, publicClient),
             animation: false,
@@ -127,33 +136,12 @@ export const createPlayerData = ({
         },
         {
             type: 'query',
-            label: 'Total withdrawals: ',
-            queryKey: ['totalWithdrawals', address, playerAddress],
-            queryFn: () => getTotalWithdrawals(address, playerAddress, publicClient),
-            onDataUpdate
-        },
-        {
-            type: 'query',
             label: 'Total earnings: ',
             queryKey: ['totalEarnings', address, playerAddress],
             queryFn: () => getTotalEarnings(address, playerAddress, publicClient),
             onDataUpdate
         },
-        {
-            type: 'query',
-            label: 'Next Needed Dice Number: ',
-            queryKey: ['nextNeededDiceNumber', address, playerAddress],
-            queryFn: () => getNextNeededDiceNumber(address, playerAddress, publicClient),
-            animation: false,
-            onDataUpdate
-        },
-        {
-            type: 'query',
-            label: 'Potential Bonus Amount: ',
-            queryKey: ['potentialBonusAmount', address, playerAddress],
-            queryFn: () => getPotentialBonusAmount(address, playerAddress, publicClient),
-            onDataUpdate
-        }
+
     ];
 };
 

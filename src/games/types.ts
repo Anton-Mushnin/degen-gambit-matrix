@@ -79,7 +79,7 @@ export interface StaticDataItem {
         formatted: string;
         value: bigint;
         decimals: number;
-    };
+    } | null;
     animation?: boolean;
 }
 
