@@ -26,6 +26,7 @@
     width: 30%;
     max-width: 30%;
     border-right: 1px solid #636363;
+    padding-bottom: 24px;
 }
 
 .rightPanel {
@@ -34,7 +35,8 @@
 }
 
 .streamComponent {
-    height: 33vh;
+    flex: 1;
+    overflow-y: hidden;
 }
 
 .constantsComponent {
