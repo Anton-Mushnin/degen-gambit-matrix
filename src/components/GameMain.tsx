@@ -59,7 +59,6 @@ const GameMain: React.FC<GameMainProps> = ({ displayComponents }) => {
   };
 
   return (
-    <div style={{ position: 'relative', width: '100%', maxHeight: '100%', height: '100%', paddingTop: '20px' }}>
       <Terminal
         queue={terminalQueue}
         onSubmit={terminalHandleInput}
@@ -68,7 +67,6 @@ const GameMain: React.FC<GameMainProps> = ({ displayComponents }) => {
       >
         {renderDisplayComponent()}
       </Terminal>
-    </div>
   );
 };
 

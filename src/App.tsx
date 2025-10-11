@@ -13,7 +13,7 @@ function App() {
   const isSmallScreen = window.innerWidth < 1000;
 
   return (
-    <div style={{paddingBottom: '0px'}}>
+    <div style={{paddingBottom: '0px', display: 'flex', flexDirection: 'column'}}>
       {(isMobile || isSmallScreen) ? (
         <div style={{paddingLeft: '20px'}}>
           <TerminalOutput text={'This version requires desktop'} setIsSystemTyping={() => {}} />
