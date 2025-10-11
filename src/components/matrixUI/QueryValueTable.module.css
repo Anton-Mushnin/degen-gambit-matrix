@@ -7,7 +7,7 @@
   color: #a1eeb5;
   text-shadow: 0 0 10px #0dda9f;
   font-family: 'NimbusMono', 'Courier New', Courier, monospace;
-  font-size: 16px;
+  font-size: 14px;
   margin-bottom: 2px;
   cursor: pointer;
 }
@@ -27,7 +27,7 @@
   color: #a1eeb5;
   text-shadow: 0 0 10px #0dda9f;
   font-family: 'NimbusMono', 'Courier New', Courier, monospace;
-  font-size: 14px;
+  font-size: 10px;
   text-align: center;
 }
 
@@ -42,7 +42,7 @@
   color: #a1eeb5;
   text-shadow: 0 0 10px #0dda9f;
   font-family: 'NimbusMono', 'Courier New', Courier, monospace;
-  font-size: 12px;
+  font-size: 10px;
   text-align: center;
 }
 
