@@ -99,13 +99,13 @@ const QueryValueTable = ({
         {label}
       </div>
       <div className={styles.table}>
-        <div className={styles.tableHeader}>
+        <div className={styles.tableHeader} style={{ gridTemplateColumns: `repeat(${headers.length}, 1fr)` }}>
           {headers.map((header, index) => (
             <div key={index} className={styles.headerCell}>{header}</div>
           ))}
         </div>
         {displayData.length > 0 && displayData.map((row, rowIndex) => (
-          <div key={rowIndex} className={styles.tableRow}>
+          <div key={rowIndex} className={styles.tableRow} style={{ gridTemplateColumns: `repeat(${headers.length}, 1fr)` }}>
             {Array.isArray(row) && row.map((cell, cellIndex) => (
               <div key={cellIndex} className={isUpdated && blinkOnUpdate ? styles.blink : styles.cell}>{cell}</div>
             ))}

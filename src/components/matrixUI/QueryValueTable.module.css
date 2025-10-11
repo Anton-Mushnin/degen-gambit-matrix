@@ -14,13 +14,14 @@
 
 .table {
   width: 100%;
+  padding: 4px;
 }
 
 .tableHeader {
   display: grid;
-  grid-template-columns: 1fr 2fr 1fr 1fr 1.5fr;
   gap: 4px;
   margin-bottom: 2px;
+  border-bottom: 1px solid #636363;
 }
 
 .headerCell {
@@ -33,7 +34,6 @@
 
 .tableRow {
   display: grid;
-  grid-template-columns: 1fr 2fr 1fr 1fr 1.5fr;
   gap: 4px;
   margin-bottom: 1px;
 }
