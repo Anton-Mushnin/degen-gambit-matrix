@@ -61,7 +61,8 @@ export const createContractData = ({
             queryKey: ['diceStatistics', address],
             tableQueryFn: () => getDiceStatistics(address, publicClient),
             onDataUpdate
-        }
+        },
+        { type: 'divider', label: '', data: null, animation: false },
     ];
 };
 
@@ -118,10 +119,11 @@ export const createPlayerData = ({
             onDataUpdate,
             animation: false
         },
-        { type: 'static', label: '', data: null, animation: false },
+        { type: 'divider', label: '', data: null, animation: false },
+        { type: 'static', label: 'Player Share Info:', data: null, animation: false },
         {
             type: 'query',
-            label: 'Player\'s Share: ',
+            label: 'Share: ',
             queryKey: ['sharePercentage', address, playerAddress],
             queryFn: () => getSharePercentage(address, playerAddress, publicClient),
             animation: false,
@@ -129,14 +131,14 @@ export const createPlayerData = ({
         },
         {
             type: 'query',
-            label: 'Current value of player\'s share: ',
+            label: 'Value: ',
             queryKey: ['currentShareValue', address, playerAddress],
             queryFn: () => getCurrentShareValue(address, playerAddress, publicClient),
             onDataUpdate
         },
         {
             type: 'query',
-            label: 'Total earnings: ',
+            label: 'Earnings: ',
             queryKey: ['totalEarnings', address, playerAddress],
             queryFn: () => getTotalEarnings(address, playerAddress, publicClient),
             onDataUpdate

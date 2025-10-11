@@ -39,6 +39,7 @@ const GameContractInfo: React.FC<GameContractInfoProps> = ({
     <div className={styles.container}>
       {isDevMode && (
         <ValueRow
+          type="static"
           label="Mode"
           data={{
             formatted: "Dev mode on",
@@ -74,6 +75,7 @@ const GameContractInfo: React.FC<GameContractInfoProps> = ({
           )
         ) : (
           <ValueRow
+            type={item.type}
             key={index}
             label={item.label}
             data={item.data}
@@ -108,6 +110,7 @@ const GameContractInfo: React.FC<GameContractInfoProps> = ({
           )
         ) : (
           <ValueRow
+            type={item.type}
             key={index}
             label={item.label}
             data={item.data}
