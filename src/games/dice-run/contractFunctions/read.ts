@@ -35,7 +35,7 @@ export const getPayoutCalculation = async (contractAddress: string, publicClient
 
         return {
             value: multiplierValue,
-            formatted: `${Number(multiplierValue) / 1000}x`,
+            formatted: `${Number(multiplierValue) / 10000}x`,
             decimals: 0
         };
     } catch (error) {
