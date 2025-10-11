@@ -54,6 +54,7 @@ const GameContractConstants: React.FC<GameContractConstantsProps> = ({
           )
         ) : (
           <ValueRow
+            type={item.type}
             key={index}
             label={item.label}
             data={item.data}
