@@ -120,7 +120,7 @@ export const createPlayerData = ({
             animation: false
         },
         { type: 'divider', label: '', data: null, animation: false },
-        { type: 'static', label: 'Player Share Info:', data: null, animation: false },
+        { type: 'static', label: 'Player Pot Share:', data: null, animation: false },
         {
             type: 'query',
             label: 'Share: ',
