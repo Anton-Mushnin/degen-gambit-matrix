@@ -29,22 +29,22 @@ async function main() {
   console.log("📝 Deploying contracts with account:", deployer.address);
   console.log("💰 Account balance:", (await deployer.getBalance()).toString());
 
-  // Contract parameters (same as production DiceRun)
+  // Contract parameters - Balanced for 100-bet bank (same as production DiceRun)
   const betAmount = ethers.BigNumber.from("100"); // 100 WEI
-  const basicPayoutMultiplier = 57500; // 5.75x (57500 basis points)
-  const streakBankShare3 = 300; // 3% for streak of 3 (300 basis points)
-  const streakBankShare4 = 700; // 7% for streak of 4 (700 basis points)
-  const streakBankShare5 = 1500; // 15% for streak of 5 (1500 basis points)
-  const streakBankShare6 = 3000; // 30% for streak of 6 (3000 basis points)
+  const basicPayoutMultiplier = 59000; // 5.9x (59000 basis points)
+  const streakBankShare3 = 500; // 5% for streak of 3 (500 basis points)
+  const streakBankShare4 = 1200; // 12% for streak of 4 (1200 basis points)
+  const streakBankShare5 = 2400; // 24% for streak of 5 (2400 basis points)
+  const streakBankShare6 = 5000; // 50% for streak of 6 (5000 basis points)
   const investmentFeePercent = 100; // 1% investment fee (100 basis points)
 
   console.log("📋 Contract parameters:");
   console.log("- Bet amount:", betAmount.toString(), "WEI");
-  console.log("- Basic payout multiplier:", basicPayoutMultiplier, "(5.75x)");
-  console.log("- Streak bank share 3:", streakBankShare3, "(3%)");
-  console.log("- Streak bank share 4:", streakBankShare4, "(7%)");
-  console.log("- Streak bank share 5:", streakBankShare5, "(15%)");
-  console.log("- Streak bank share 6:", streakBankShare6, "(30%)");
+  console.log("- Basic payout multiplier:", basicPayoutMultiplier, "(5.9x)");
+  console.log("- Streak bank share 3:", streakBankShare3, "(5%)");
+  console.log("- Streak bank share 4:", streakBankShare4, "(12%)");
+  console.log("- Streak bank share 5:", streakBankShare5, "(24%)");
+  console.log("- Streak bank share 6:", streakBankShare6, "(50%)");
   console.log("- Investment fee percent:", investmentFeePercent, "(1%)");
 
   // Deploy the DiceRunDev contract
