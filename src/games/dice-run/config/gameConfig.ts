@@ -1,6 +1,6 @@
 import { GameContractConfig } from '../../../utils/gameConfig';
-import { diceRunABI } from '../../../ABIs/DiceRun.abi';
-import { diceRunDevABI } from '../../../ABIs/DiceRunDev.abi';
+import { diceRunABI } from '../contractFunctions/DiceRun.abi';
+import { diceRunDevABI } from '../contractFunctions/DiceRunDev.abi';
 
 export const diceRunConfig: GameContractConfig = {
   production: {
