@@ -283,7 +283,7 @@ contract DiceRun is CommitRevealRandomness {
     }
 
     // Game functions
-    function play(uint256 guess) external payable returns (uint256 diceResult, uint256 payout, uint256 streakLength) {
+    function play(uint256 guess) external payable {
         require(guess >= 1 && guess <= 6, "Guess must be 1-6");
         require(msg.value == betAmount, "Incorrect bet amount");
 
@@ -299,9 +299,6 @@ contract DiceRun is CommitRevealRandomness {
 
         // Emit bet placed event
         emit BetPlaced(msg.sender, guess, msg.value);
-
-        // Return 0 values - actual results only available after accept()
-        return (0, 0, 0);
     }
 
     function fund() external payable returns (uint256 netInvestment, uint256 sharesReceived) {

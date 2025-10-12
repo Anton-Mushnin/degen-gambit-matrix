@@ -377,23 +377,7 @@ export const diceRunABI = [
             }
         ],
         "name": "play",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "diceResult",
-                "type": "uint256"
-            },
-            {
-                "internalType": "uint256",
-                "name": "payout",
-                "type": "uint256"
-            },
-            {
-                "internalType": "uint256",
-                "name": "streakLength",
-                "type": "uint256"
-            }
-        ],
+        "outputs": [],
         "stateMutability": "payable",
         "type": "function"
     },
