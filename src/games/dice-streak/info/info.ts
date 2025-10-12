@@ -44,7 +44,7 @@ export const createContractData = ({
         label: 'Best Combo: ',
         queryKey: ['bestCombo', address],
         queryFn: async () => {
-            const combo = await getBestCombo(address, publicClient);
+            const combo = await getBestCombo(address, publicClient, privateKeyAddress || '0x0000000000000000000000000000000000000000');
             return {
                 value: BigInt(combo.streakFaces.length),
                 formatted: combo.formatted,

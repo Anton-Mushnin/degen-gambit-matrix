@@ -16,26 +16,6 @@ export const diceStreakDevABI = [
     "type": "constructor"
   },
   {
-    "inputs": [],
-    "name": "AlreadyCommitted",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "AlreadyRevealed",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "InvalidReveal",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "NoCommitToReveal",
-    "type": "error"
-  },
-  {
     "anonymous": false,
     "inputs": [
       {
@@ -47,7 +27,7 @@ export const diceStreakDevABI = [
       {
         "indexed": false,
         "internalType": "bytes32",
-        "name": "committedHash",
+        "name": "dataHash",
         "type": "bytes32"
       },
       {
@@ -64,31 +44,6 @@ export const diceStreakDevABI = [
       }
     ],
     "name": "DataCommitted",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "player",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "randomNumber",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "bytes",
-        "name": "revealedData",
-        "type": "bytes"
-      }
-    ],
-    "name": "DataRevealed",
     "type": "event"
   },
   {
@@ -152,7 +107,7 @@ export const diceStreakDevABI = [
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "bonusPayout",
+        "name": "bonusAmount",
         "type": "uint256"
       },
       {
@@ -173,42 +128,28 @@ export const diceStreakDevABI = [
         "internalType": "address",
         "name": "player",
         "type": "address"
-      }
-    ],
-    "name": "Spin",
-    "type": "event"
-  },
-  {
-    "inputs": [],
-    "name": "COMMIT_REVEAL_RANDOMNESS_VERSION",
-    "outputs": [
+      },
       {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "randomNumber",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "blockNumber",
+        "type": "uint256"
       }
     ],
-    "stateMutability": "view",
-    "type": "function"
+    "name": "RandomnessRevealed",
+    "type": "event"
   },
   {
     "inputs": [],
     "name": "accept",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "bestCombo",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "player",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -225,31 +166,19 @@ export const diceStreakDevABI = [
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "getBankBalance",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getBestCombo",
-    "outputs": [
-      {
-        "internalType": "uint8[]",
-        "name": "streakFaces",
-        "type": "uint8[]"
-      },
+    "inputs": [
       {
         "internalType": "address",
         "name": "player",
         "type": "address"
+      }
+    ],
+    "name": "canReveal",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -276,16 +205,11 @@ export const diceStreakDevABI = [
         "type": "address"
       }
     ],
-    "name": "getCommitDetails",
+    "name": "getPlayerBalance",
     "outputs": [
       {
-        "internalType": "bytes32",
-        "name": "committedHash",
-        "type": "bytes32"
-      },
-      {
         "internalType": "uint256",
-        "name": "commitBlock",
+        "name": "",
         "type": "uint256"
       }
     ],
@@ -300,7 +224,7 @@ export const diceStreakDevABI = [
         "type": "address"
       }
     ],
-    "name": "getGameStatus",
+    "name": "getPlayerGameStatus",
     "outputs": [
       {
         "internalType": "enum DiceStreak.GameStatus",
@@ -319,25 +243,12 @@ export const diceStreakDevABI = [
         "type": "address"
       }
     ],
-    "name": "getLastBetResult",
+    "name": "getPlayerStreak",
     "outputs": [
       {
-        "internalType": "enum DiceStreak.BetResult",
+        "internalType": "uint8[5]",
         "name": "",
-        "type": "uint8"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getPayoutMultiplier",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
+        "type": "uint8[5]"
       }
     ],
     "stateMutability": "view",
@@ -351,12 +262,12 @@ export const diceStreakDevABI = [
         "type": "address"
       }
     ],
-    "name": "getPlayerStreak",
+    "name": "getPlayerStreakLength",
     "outputs": [
       {
-        "internalType": "uint8[]",
+        "internalType": "uint8",
         "name": "",
-        "type": "uint8[]"
+        "type": "uint8"
       }
     ],
     "stateMutability": "view",
@@ -382,67 +293,25 @@ export const diceStreakDevABI = [
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "player",
-        "type": "address"
-      }
-    ],
-    "name": "getPredeterminedResult",
-    "outputs": [
-      {
-        "internalType": "uint8",
-        "name": "",
-        "type": "uint8"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint8",
-        "name": "number",
-        "type": "uint8"
-      }
-    ],
+    "inputs": [],
     "name": "getStatistics",
     "outputs": [
       {
-        "internalType": "uint256",
-        "name": "occurrences",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "bets",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "wins",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "player",
-        "type": "address"
-      }
-    ],
-    "name": "hasCommit",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "hasCommitted",
-        "type": "bool"
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "bets",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "wins",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct DiceStreak.Statistics[6]",
+        "name": "",
+        "type": "tuple[6]"
       }
     ],
     "stateMutability": "view",
@@ -492,19 +361,6 @@ export const diceStreakDevABI = [
   },
   {
     "inputs": [],
-    "name": "owner",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "payoutMultiplier",
     "outputs": [
       {
@@ -537,74 +393,26 @@ export const diceStreakDevABI = [
         "type": "address"
       }
     ],
-    "name": "playerCommits",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "committedHash",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "commitBlock",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "revealWindow",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
     "name": "players",
     "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "balance",
+        "type": "uint256"
+      },
       {
         "internalType": "uint256",
         "name": "totalWinnings",
         "type": "uint256"
       },
       {
+        "internalType": "uint8",
+        "name": "streakLength",
+        "type": "uint8"
+      },
+      {
         "internalType": "enum DiceStreak.GameStatus",
         "name": "gameStatus",
-        "type": "uint8"
-      },
-      {
-        "internalType": "enum DiceStreak.BetResult",
-        "name": "lastBetResult",
-        "type": "uint8"
-      },
-      {
-        "internalType": "uint8",
-        "name": "pendingGuess",
-        "type": "uint8"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "predeterminedResults",
-    "outputs": [
-      {
-        "internalType": "uint8",
-        "name": "",
         "type": "uint8"
       }
     ],
@@ -628,7 +436,7 @@ export const diceStreakDevABI = [
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "randomNumber",
+        "name": "",
         "type": "uint256"
       }
     ],
@@ -647,27 +455,8 @@ export const diceStreakDevABI = [
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "randomNumber",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes",
-        "name": "data",
-        "type": "bytes"
-      }
-    ],
-    "name": "revealBool",
-    "outputs": [
-      {
-        "internalType": "bool",
         "name": "",
-        "type": "bool"
+        "type": "uint256"
       }
     ],
     "stateMutability": "nonpayable",
@@ -675,56 +464,14 @@ export const diceStreakDevABI = [
   },
   {
     "inputs": [
-      {
-        "internalType": "bytes",
-        "name": "data",
-        "type": "bytes"
-      },
-      {
-        "internalType": "uint256",
-        "name": "max",
-        "type": "uint256"
-      }
-    ],
-    "name": "revealInRange",
-    "outputs": [
       {
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint8",
-        "name": "result",
-        "type": "uint8"
-      }
-    ],
-    "name": "setPredeterminedResult",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint8",
-        "name": "",
-        "type": "uint8"
       }
     ],
     "name": "statistics",
     "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "occurrences",
-        "type": "uint256"
-      },
       {
         "internalType": "uint256",
         "name": "bets",
@@ -738,16 +485,5 @@ export const diceStreakDevABI = [
     ],
     "stateMutability": "view",
     "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "withdraw",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "stateMutability": "payable",
-    "type": "receive"
   }
 ] as const;

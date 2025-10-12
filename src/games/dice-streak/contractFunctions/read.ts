@@ -1,6 +1,6 @@
 import { PublicClient } from 'viem';
 import { formatEtherOrWei } from '@/utils/formatting';
-import { diceStreakABI } from '../../../ABIs/DiceStreak.abi';
+import { diceStreakABI } from './DiceStreak.abi';
 
 
 
@@ -31,7 +31,7 @@ export const getPayoutMultiplier = async (contractAddress: string, publicClient:
     const multiplier = await publicClient.readContract({
       address: contractAddress,
       abi: diceStreakABI,
-      functionName: 'getPayoutMultiplier',
+      functionName: 'payoutMultiplier',
     });
 
     return {
@@ -49,8 +49,8 @@ export const getBankBalance = async (contractAddress: string, publicClient: Publ
     const balance = await publicClient.readContract({
       address: contractAddress,
       abi: diceStreakABI,
-      functionName: 'getBankBalance',
-    });
+      functionName: 'getBetAmount',
+    }) as bigint;
 
     const formatted = formatEtherOrWei(balance);
     return {
@@ -63,18 +63,19 @@ export const getBankBalance = async (contractAddress: string, publicClient: Publ
   }
 };
 
-export const getBestCombo = async (contractAddress: string, publicClient: PublicClient) => {
+export const getBestCombo = async (contractAddress: string, publicClient: PublicClient, playerAddress: string) => {
   try {
-    const [streakFaces, player] = await publicClient.readContract({
+    const streakFaces = await publicClient.readContract({
       address: contractAddress,
       abi: diceStreakABI,
-      functionName: 'getBestCombo',
-    });
+      functionName: 'getPlayerStreak',
+      args: [playerAddress],
+    }) as readonly [number, number, number, number, number];
 
     return {
-      streakFaces: streakFaces as number[],
-      player: player as string,
-      formatted: `${streakFaces.length} streak: ${streakFaces.join(', ')}`
+      streakFaces: Array.from(streakFaces) as number[],
+      player: playerAddress,
+      formatted: `${streakFaces.length} streak: ${Array.from(streakFaces).join(', ')}`
     };
   } catch (error) {
     throw new Error(`Failed to get best combo: ${error}`);
@@ -90,9 +91,10 @@ export const getPlayerStreak = async (contractAddress: string, playerAddress: st
       args: [playerAddress],
     });
 
+    const streakArray = Array.from(streak as readonly [number, number, number, number, number]);
     return {
-      value: streak as number[],
-      formatted: streak.length > 0 ? streak.join(', ') : 'No streak',
+      value: streakArray,
+      formatted: streakArray.length > 0 ? streakArray.join(', ') : 'No streak',
       decimals: 0
     };
   } catch (error) {
@@ -107,7 +109,7 @@ export const getPlayerTotalWinnings = async (contractAddress: string, playerAddr
       abi: diceStreakABI,
       functionName: 'getPlayerTotalWinnings',
       args: [playerAddress],
-    });
+    }) as bigint;
 
     const formatted = formatEtherOrWei(winnings);
     return {
@@ -125,9 +127,9 @@ export const getGameStatus = async (contractAddress: string, playerAddress: stri
     const status = await publicClient.readContract({
       address: contractAddress,
       abi: diceStreakABI,
-      functionName: 'getGameStatus',
+      functionName: 'getPlayerGameStatus',
       args: [playerAddress],
-    });
+    }) as number;
 
     const statusMap = ['Dice Ready', 'Rolling', 'Claiming'];
     const statusText = statusMap[Number(status)] || 'Unknown';
@@ -147,9 +149,9 @@ export const getLastBetResult = async (contractAddress: string, playerAddress: s
     const result = await publicClient.readContract({
       address: contractAddress,
       abi: diceStreakABI,
-      functionName: 'getLastBetResult',
+      functionName: 'getPlayerGameStatus',
       args: [playerAddress],
-    });
+    }) as number;
 
     const resultMap = ['None', 'Win', 'Loss'];
     const resultText = resultMap[Number(result)] || 'Unknown';
@@ -166,14 +168,14 @@ export const getLastBetResult = async (contractAddress: string, playerAddress: s
 
 export const getStatistics = async (contractAddress: string, number: number, publicClient: PublicClient) => {
   try {
-    const [occurrences, bets, wins] = await publicClient.readContract({
+    const stats = await publicClient.readContract({
       address: contractAddress,
       abi: diceStreakABI,
       functionName: 'getStatistics',
-      args: [number],
-    });
+    }) as readonly [{ bets: bigint; wins: bigint; }, { bets: bigint; wins: bigint; }, { bets: bigint; wins: bigint; }, { bets: bigint; wins: bigint; }, { bets: bigint; wins: bigint; }, { bets: bigint; wins: bigint; }];
 
-    return [String(number), String(occurrences), String(bets), String(wins)];
+    const stat = stats[number - 1]; // Convert 1-based to 0-based index
+    return [String(number), "0", String(stat.bets), String(stat.wins)];
   } catch (error) {
     throw new Error(`Failed to get statistics: ${error}`);
   }

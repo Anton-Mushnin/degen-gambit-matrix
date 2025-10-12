@@ -1,6 +1,6 @@
 import { GameContractConfig } from '../../../utils/gameConfig';
-import { diceStreakABI } from '../../../ABIs/DiceStreak.abi';
-import { diceStreakDevABI } from '../../../ABIs/DiceStreakDev.abi';
+import { diceStreakABI } from '../contractFunctions/DiceStreak.abi';
+import { diceStreakDevABI } from '../contractFunctions/DiceStreakDev.abi';
 
 // DiceStreak contract configuration - single source of truth
 export const diceStreakConfig: GameContractConfig = {

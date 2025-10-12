@@ -7,8 +7,8 @@ import { waitForReceipt } from 'thirdweb/transaction';
 import { getViemChainById } from '../../../config/networks';
 import { getBetAmount } from './read';
 import { commitRevealSpin } from '../../../utils/commitRevealSpin';
-import { diceStreakABI } from '../../../ABIs/DiceStreak.abi';
-import { diceStreakDevABI } from '../../../ABIs/DiceStreakDev.abi';
+import { diceStreakABI } from './DiceStreak.abi';
+import { diceStreakDevABI } from './DiceStreakDev.abi';
 
 export type DiceStreakPlayResult = {
   description: string;
