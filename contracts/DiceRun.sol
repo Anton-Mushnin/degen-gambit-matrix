@@ -286,6 +286,10 @@ contract DiceRun is CommitRevealRandomness {
     function play(uint256 guess) external payable {
         require(guess >= 1 && guess <= 6, "Guess must be 1-6");
         require(msg.value == betAmount, "Incorrect bet amount");
+        
+        // Check if pot has enough funds for basic payout
+        uint256 basicPayout = (betAmount * basicPayoutMultiplier) / 10000;
+        require(address(this).balance >= basicPayout, "Insufficient pot funds for basic payout");
 
         // Auto-resolve any pending commits first
         move(bytes32(0), 256);
