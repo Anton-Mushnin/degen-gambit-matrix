@@ -148,7 +148,7 @@ contract DiceRun is CommitRevealRandomness {
         return earnings;
     }
 
-    function getCurrentShareValue(address player) external view returns (uint256) {
+    function getCurrentShareValue(address player) external view virtual returns (uint256) {
         // If player has pending bet, preview the outcome for share value calculation
         if (players[player].hasPendingBet) {
             uint256 randomNumber = super.previewReveal("", player);
@@ -183,7 +183,7 @@ contract DiceRun is CommitRevealRandomness {
         return (currentBalance * sharePercentage) / 10000;
     }
 
-    function getPlayerShareChange(address player) external view returns (int256) {
+    function getPlayerShareChange(address player) external view virtual returns (int256) {
         // If player has pending bet, preview the outcome
         if (players[player].hasPendingBet) {
             uint256 randomNumber = super.previewReveal("", player);
@@ -217,7 +217,7 @@ contract DiceRun is CommitRevealRandomness {
         return players[player].totalWinnings;
     }
 
-    function getPlayerCurrentStreak(address player) external view returns (uint256) {
+    function getPlayerCurrentStreak(address player) external view virtual returns (uint256) {
         // If player has pending bet, preview the outcome
         if (players[player].hasPendingBet) {
             uint256 randomNumber = super.previewReveal("", player);
@@ -263,7 +263,7 @@ contract DiceRun is CommitRevealRandomness {
         return lastNumber;
     }
 
-    function getPotentialBonusAmount(address player) external view returns (uint256) {
+    function getPotentialBonusAmount(address player) external view virtual returns (uint256) {
         uint256 currentStreak = players[player].currentStreak;
         if (currentStreak < 2) {
             return 0; // Need at least 2 wins for potential 3-win bonus
@@ -355,7 +355,7 @@ contract DiceRun is CommitRevealRandomness {
         return withdrawnAmount;
     }
 
-    function accept() external {
+    function accept() external virtual {
         require(players[msg.sender].hasPendingBet, "No pending bet to accept");
 
         // Get random number using parent's reveal function
@@ -365,7 +365,7 @@ contract DiceRun is CommitRevealRandomness {
         _processGameResult(msg.sender, randomNumber);
     }
 
-    function inspectOutcome(address player) external view override returns (uint256 prizeValue, bytes memory additionalData) {
+    function inspectOutcome(address player) external view virtual override returns (uint256 prizeValue, bytes memory additionalData) {
         if (!players[player].hasPendingBet) {
             return (0, "");
         }
@@ -409,7 +409,7 @@ contract DiceRun is CommitRevealRandomness {
         _processGameResult(msg.sender, randomNumber);
     }
 
-    function _processGameResult(address player, uint256 randomNumber) internal {
+    function _processGameResult(address player, uint256 randomNumber) internal virtual {
         uint256 diceResult = (randomNumber % 6) + 1;
         uint256 guess = players[player].pendingGuess;
 

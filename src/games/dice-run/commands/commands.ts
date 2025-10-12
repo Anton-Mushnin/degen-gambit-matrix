@@ -29,6 +29,8 @@ import {
     handleFund,
     handleWithdraw,
     handleAccept,
+    handleSetDice,
+    handleUnsetDice,
 } from './diceRun.handlers';
 import { TerminalCommandParams } from '../../../utils/gameHandlers';
 
@@ -114,6 +116,28 @@ export const diceRunCommands: CommandDefinition<TerminalCommandParams>[] = [
             'bestStreak',
             'diceStatistics'
         ]
+    },
+    {
+        pattern: {
+            pattern: /^setDice(\d)$|^setDice (\d)$/,
+            name: 'setDice',
+            description: 'Set predetermined dice outcome for dev mode (1-6)',
+            usage: 'setDice<number> or setDice <number> (1-6)'
+        },
+        handler: handleSetDice,
+        isDevCommand: true,
+        queriesToInvalidate: []
+    },
+    {
+        pattern: {
+            pattern: /^unsetDice$/,
+            name: 'unsetDice',
+            description: 'Clear predetermined dice outcome for dev mode',
+            usage: 'unsetDice'
+        },
+        handler: handleUnsetDice,
+        isDevCommand: true,
+        queriesToInvalidate: []
     },
     {
         isDefault: true,

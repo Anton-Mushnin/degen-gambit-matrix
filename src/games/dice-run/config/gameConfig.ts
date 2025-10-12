@@ -1,5 +1,6 @@
 import { GameContractConfig } from '../../../utils/gameConfig';
 import { diceRunABI } from '../../../ABIs/DiceRun.abi';
+import { diceRunDevABI } from '../../../ABIs/DiceRunDev.abi';
 
 export const diceRunConfig: GameContractConfig = {
   production: {
@@ -8,9 +9,9 @@ export const diceRunConfig: GameContractConfig = {
     abi: diceRunABI
   },
   dev: {
-    contractAddress: "0xd9003e6a1358670d97800881486e0d63afAcF533", // Same as production for now
-    name: "DiceRun",
-    abi: diceRunABI
+    contractAddress: "0x26a1eeE5D29C116703FCa09707B12ec25CefDE28", // DiceRunDev contract
+    name: "DiceRunDev",
+    abi: diceRunDevABI
   },
   network: {
     name: "XAI Testnet",
