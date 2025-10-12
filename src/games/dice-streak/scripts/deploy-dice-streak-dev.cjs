@@ -46,16 +46,6 @@ async function main() {
   console.log("✅ DiceStreakDev deployed to:", diceStreakDev.address);
   console.log("🔗 Contract address:", diceStreakDev.address);
 
-  // Fund the contract with some ETH for payouts
-  const fundingAmount = ethers.BigNumber.from("1000"); // 1000 WEI
-  console.log(`\n💰 Funding contract with ${fundingAmount.toString()} WEI for payouts...`);
-
-  const fundTx = await deployer.sendTransaction({
-    to: diceStreakDev.address,
-    value: fundingAmount
-  });
-  await fundTx.wait();
-  console.log("✅ Contract funded successfully");
 
   // Verify deployment
   console.log("\n📋 Contract verification:");
