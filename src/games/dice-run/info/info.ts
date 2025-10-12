@@ -192,14 +192,14 @@ export const createContractConstantsData = ({
         },
         {
             type: 'query',
-            label: 'Fixed Bet Amount: ',
+            label: 'Bet: ',
             queryKey: ['betAmount', address],
             queryFn: () => getBetAmount(address, publicClient),
             animation: false
         },
         {
             type: 'query',
-            label: 'Basic Payout Multiplier: ',
+            label: 'Basic Payout: ',
             queryKey: ['payoutCalculation', address],
             queryFn: () => getPayoutCalculation(address, publicClient),
             animation: false
