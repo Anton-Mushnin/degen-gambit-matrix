@@ -1,0 +1,77 @@
+.inputLine {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: start;
+    font-family: 'NimbusMono', 'Courier New', Courier, monospace;
+    /* margin-top: 4px; */
+}
+
+.inputText {
+    color: #a1eeb5;
+    text-shadow: 0 0 10px #0dda9f;
+    font-size: 16px;
+}
+
+.history {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    justify-content: start;
+}
+
+.pre {
+    color: #a1eeb5;
+    margin: 0 0;
+    font-family: 'NimbusMono', 'Courier New', Courier, monospace;
+    font-size: 16px;
+}
+
+.spinningContainer {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: start;
+    color: #a1eeb5;
+    text-shadow: 0 0 10px #0dda9f;
+    gap: 10px;
+}
+
+.container {
+    width: 100%;
+    font-family: 'NimbusMono', 'Courier New', Courier, monospace;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    justify-content: start;
+    max-height: calc(100vh - 400px);
+    height: calc(100vh - 400px);
+    padding: 40px;
+    gap: 0px;
+    color: #a1eeb5;
+    text-shadow: 0 0 12px #0dda9f;
+    font-size: 16px;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+}
+
+.container::-webkit-scrollbar {
+    display: none;
+}
+
+.container {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+.cursor {
+    font-size: 12px;
+    animation: blink 1s step-end infinite;
+    color: #a1eeb5;
+    text-shadow: 0 0 10px #0dda9f;
+}
+
+@keyframes blink {
+    50% { opacity: 0; }
+}

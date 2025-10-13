@@ -1,9 +1,5 @@
 .container {
     display: flex;
-    align-items: stretch;
-    justify-content: space-between;
-    height: 100vh;
-    width: 100vw;
     background-color:rgb(15, 15, 15);
     max-height: 100vh;
     color: #a1eeb5;
@@ -14,8 +10,6 @@
     display: flex;
     flex-direction: column;
     align-items: start;
-    justify-content: stretch;
-    height: 100%;
     max-height: 100vh;
 }
 
@@ -26,4 +20,25 @@
     justify-content: stretch;
     height: 100%;
     width: 100%;
+}
+
+.leftPanel {
+    width: 30%;
+    max-width: 30%;
+    border-right: 1px solid #636363;
+    padding-bottom: 24px;
+}
+
+.rightPanel {
+    flex: 1;
+    width: 70%;
+}
+
+.streamComponent {
+    flex: 1;
+    overflow-y: hidden;
+}
+
+.constantsComponent {
+    height: 33vh;
 }

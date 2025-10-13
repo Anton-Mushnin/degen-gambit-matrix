@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { TerminalOutput } from '../degen-gambit/TerminalOutput';
+import { TerminalOutput } from './TerminalOutput';
 import styles from './Terminal.module.css';
 
 interface TerminalProps {
@@ -10,9 +10,10 @@ interface TerminalProps {
     onSubmit: (input: string) => void;  
     isInputDisabled: boolean;          // Whether terminal is processing input
     children?: React.ReactNode; 
+    onBreak?: () => void;
 }
 
-export const Terminal = ({ queue, onSubmit, isInputDisabled, children }: TerminalProps) => {
+export const Terminal = ({ queue, onSubmit, onBreak, isInputDisabled, children }: TerminalProps) => {
   const [userInput, setUserInput] = useState('');
   const [history, setHistory] = useState<string[]>([]);
   const [inputHistory, setInputHistory] = useState<string[]>([]);
@@ -69,7 +70,15 @@ export const Terminal = ({ queue, onSubmit, isInputDisabled, children }: Termina
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-        e.stopPropagation();
+      e.stopPropagation();
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c') {
+        e.preventDefault();
+        if (typeof onBreak === 'function') {
+          onBreak();
+        }
+        return;
+      }
+
       if (!isSystemTyping) {
         if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
           e.preventDefault(); 

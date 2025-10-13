@@ -3,6 +3,7 @@ import { formatUnits } from 'viem';
 import styles from './ValueRow.module.css';
 
 interface ValueRowProps {
+  type: 'static' | 'divider';
   label: string
   data: {
     formatted: string
@@ -13,7 +14,7 @@ interface ValueRowProps {
   blinkOnUpdate?: boolean
 }
 
-const ValueRow = ({ label, data: _data, animation = true, blinkOnUpdate = false }: ValueRowProps) => {
+const ValueRow = ({ type, label, data: _data, animation = true, blinkOnUpdate = false }: ValueRowProps) => {
     const [data, setData] = useState<{formatted: string, value: bigint} | undefined>(undefined)
     const [isUpdated, setIsUpdated] = useState(false)
     const animationFrameRef = useRef<number | null>(null)
@@ -87,8 +88,14 @@ const ValueRow = ({ label, data: _data, animation = true, blinkOnUpdate = false 
 
     return (
         <div className={styles.container}>
-            <div className={styles.item}>{label}</div>
-            <div className={isUpdated && blinkOnUpdate ? styles.blink : styles.item}>{data?.formatted}</div>
+            {type === 'divider' ? (
+                <div className={styles.divider}>{label}</div>
+            ) : (
+                <>
+                    <div className={styles.item}>{label}</div>
+                    <div className={isUpdated && blinkOnUpdate ? styles.blink : styles.item}>{data?.formatted}</div>
+                </>
+            )}
         </div>
     );
 }

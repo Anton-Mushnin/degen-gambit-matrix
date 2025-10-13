@@ -2,28 +2,27 @@
 import { createWalletClient, createPublicClient, http } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import dotenv from 'dotenv';
+import { NETWORKS } from '../src/config/networks.js';
 
 // Load environment variables
 dotenv.config();
 
-// Define chain configuration
-const g7TestnetChain = {
-  id: 13746,
-  name: 'g7 sepolia',
-  nativeCurrency: { name: 'TG7T', symbol: 'TG7T', decimals: 18 },
-  rpcUrls: {
-    default: { http: ['https://testnet-rpc.game7.io'] },
-  },
-  blockExplorers: {
-    default: { name: 'Game7', url: 'https://testnet.game7.io' },
-  },
-  contracts: {
-    multicall3: {
-      address: '0xca11bde05977b3631167028862be2a173976ca11',
-      blockCreated: 362914,
-    },
-  },
-};
+// Helper function to get network from request
+function getNetworkFromRequest(req) {
+  const networkId = req.body?.networkId || req.query?.networkId;
+  
+  if (!networkId) {
+    throw new Error(`Network ID is required. Available networks: ${Object.keys(NETWORKS).join(', ')}`);
+  }
+  
+  const selectedNetwork = Object.values(NETWORKS).find(network => network.id === networkId);
+  
+  if (!selectedNetwork) {
+    throw new Error(`Invalid network ID: ${networkId}. Available networks: ${Object.keys(NETWORKS).join(', ')}`);
+  }
+  
+  return selectedNetwork;
+}
 
 export default async function handler(req, res) {
   // Only allow POST requests
@@ -32,6 +31,9 @@ export default async function handler(req, res) {
   }
 
   try {
+    // Get network from request
+    const selectedNetwork = getNetworkFromRequest(req);
+    
     // Get block producer private key from environment variables
     const blockProducerKey = process.env.BLOCK_PRODUCER_PRIVATE_KEY;
     
@@ -44,7 +46,7 @@ export default async function handler(req, res) {
     
     // Get the latest block info
     const publicClient = createPublicClient({
-      chain: g7TestnetChain,
+      chain: selectedNetwork,
       transport: http()
     });
     
@@ -69,7 +71,7 @@ export default async function handler(req, res) {
     const account = privateKeyToAccount(blockProducerKey);
     const walletClient = createWalletClient({
       account,
-      chain: g7TestnetChain,
+      chain: selectedNetwork,
       transport: http()
     });
     
@@ -77,7 +79,7 @@ export default async function handler(req, res) {
     const hash = await walletClient.sendTransaction({
       to: account.address,
       value: BigInt(1), // Minimal amount
-      chain: g7TestnetChain,
+      chain: selectedNetwork,
     });
     
     return res.status(200).json({

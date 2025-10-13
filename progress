@@ -1,0 +1,54 @@
+Step 1: Create Game Registry & Types
+Create src/games/types.ts with game interfaces
+Create src/games/registry.ts to manage available games
+Define common game structure (commands, components, hooks)
+Step 2: Refactor DegenGambit as a Game Module
+Move src/commands/commands/degenGambit.ts → src/games/degen-gambit/commands.ts
+Move src/commands/commands/degenGambit.handlers.ts → src/games/degen-gambit/handlers.ts
+Move src/components/degen-gambit/ → src/games/degen-gambit/components/
+Move src/hooks/degen-gambit/ → src/games/degen-gambit/hooks/
+Create src/games/degen-gambit/index.ts with game exports
+Step 3: Create Game Management System ✅
+Create src/hooks/useGame.ts for game state management ✅
+Create src/contexts/GameContext.tsx for game context ✅
+Implement game switching logic ✅
+Step 4: Update Command Dispatcher ✅
+Modify src/commands/dispatcher.ts to handle game commands ✅
+Add game name commands (e.g., degen-gambit becomes a command) ✅
+Implement command routing based on active game ✅
+Step 5: Update UI Components ✅
+Modify components to use game context ✅
+Make components game-aware (load data based on active game) ✅
+Update command patterns to be game-specific ✅
+Step 6: Update Main App Structure ✅
+Wrap app with GameContext.Provider ✅
+Update App.tsx to use game context ✅
+Ensure game switching works without page reload ✅
+Step 7: Test & Validate
+Verify DegenGambit works exactly as before
+Test game switching via terminal commands
+Ensure no breaking changes to existing functionality
+
+
+File Structure After Refactoring:
+
+src/
+├── games/
+│   ├── types.ts
+│   ├── registry.ts
+│   └── degen-gambit/
+│       ├── commands.ts
+│       ├── handlers.ts
+│       ├── components/
+│       ├── hooks/
+│       └── index.ts
+├── commands/
+│   └── dispatcher.ts (updated)
+├── contexts/
+│   └── GameContext.tsx (new)
+├── hooks/
+│   └── useGame.ts (new)
+└── App.tsx (updated)
+
+
+we finished step 6

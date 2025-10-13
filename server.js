@@ -4,9 +4,103 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { createWalletClient, createPublicClient, http } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
-
 // Load environment variables
 dotenv.config();
+
+// Network definitions
+const NETWORKS = {
+  G7_TESTNET: {
+    id: 13746,
+    name: 'g7 sepolia',
+    nativeCurrency: { name: 'TG7T', symbol: 'TG7T', decimals: 18 },
+    rpcUrls: {
+      default: { http: ['https://testnet-rpc.game7.io'] },
+    },
+    blockExplorers: {
+      default: { name: 'Game7', url: 'https://testnet.game7.io' },
+    },
+    contracts: {
+      multicall3: {
+        address: '0xca11bde05977b3631167028862be2a173976ca11',
+        blockCreated: 362914,
+      },
+    },
+  },
+  XAI_TESTNET: {
+    id: 37714555429,
+    name: 'Xai Testnet v2',
+    nativeCurrency: { name: 'sXAI', symbol: 'sXAI', decimals: 18 },
+    rpcUrls: {
+      default: { http: ['https://testnet-v2.xai-chain.net/rpc'] },
+    },
+    blockExplorers: {
+      default: { name: 'Xai Testnet v2', url: 'https://testnet-explorer-v2.xai-chain.net/' },
+    },
+    faucets: ['https://faucet.quicknode.com/xai'],
+    testnet: true,
+    contracts: {
+      multicall3: {
+        address: '0xca11bde05977b3631167028862be2a173976ca11',
+        blockCreated: 222549,
+      },
+    },
+  },
+  ARBITRUM_BLUEBERRY: {
+    id: 88153591557,
+    name: 'Arbitrum Blueberry',
+    nativeCurrency: { name: 'CGT', symbol: 'CGT', decimals: 18 },
+    rpcUrls: {
+      default: { http: ['https://rpc.arb-blueberry.gelato.digital'] },
+    },
+    blockExplorers: {
+      default: { name: 'Arbitrum Blueberry Explorer', url: 'https://arb-blueberry.gelatoscout.com' },
+    },
+    testnet: true,
+    contracts: {
+      multicall3: {
+        address: '0xEc10A32fF915D672a8A062eea9d48370232072Df',
+        blockCreated: 1,
+      },
+    },
+  },
+  XPROTOCOL_TESTNET: {
+    id: 83144,
+    name: 'XProtocol Testnet',
+    nativeCurrency: { name: 'KICK', symbol: 'KICK', decimals: 18 },
+    rpcUrls: {
+      default: { http: ['https://rpc.testnet.xprotocol.org'] },
+    },
+    blockExplorers: {
+      default: { name: 'xProtocol Explorer', url: 'https://explorer.testnet.xprotocol.org' },
+    },
+    faucets: ['https://xprotocol.org/faucets'],
+    contracts: {
+      multicall3: {
+        address: '0xca11bde05977b3631167028862be2a173976ca11',
+        blockCreated: 0,
+      },
+    },
+  },
+  JASMY_TESTNET: {
+    id: 681, 
+    name: 'Jasmy Chain Testnet',
+    nativeCurrency: { name: 'JASMY', symbol: 'JASMY', decimals: 18 },
+    rpcUrls: {
+      default: { http: ['https://jasmy-chain-testnet.alt.technology'] }, 
+    },
+    blockExplorers: {
+      default: { name: 'Jasmy Explorer', url: 'jasmy-chain-testnet-explorer.alt.technology' },
+    },
+    faucets: ['http://13.49.243.124/'],
+    testnet: true,
+    contracts: {
+      multicall3: {
+        address: '0xca11bde05977b3631167028862be2a173976ca11',
+        blockCreated: 0,
+      },
+    },
+  },
+};
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -15,28 +109,29 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// Define chain configuration directly in server.js instead of importing from client code
-const g7TestnetChain = {
-  id: 13746,
-  name: 'g7 sepolia',
-  nativeCurrency: { name: 'TG7T', symbol: 'TG7T', decimals: 18 },
-  rpcUrls: {
-    default: { http: ['https://testnet-rpc.game7.io'] },
-  },
-  blockExplorers: {
-    default: { name: 'Game7', url: 'https://testnet.game7.io' },
-  },
-  contracts: {
-    multicall3: {
-      address: '0xca11bde05977b3631167028862be2a173976ca11',
-      blockCreated: 362914,
-    },
-  },
-};
+// Helper function to get network from request
+function getNetworkFromRequest(req) {
+  const networkId = req.body?.networkId || req.query?.networkId;
+  
+  if (!networkId) {
+    throw new Error(`Network ID is required. Available networks: ${Object.keys(NETWORKS).join(', ')}`);
+  }
+  
+  const selectedNetwork = Object.values(NETWORKS).find(network => network.id === networkId);
+  
+  if (!selectedNetwork) {
+    throw new Error(`Invalid network ID: ${networkId}. Available networks: ${Object.keys(NETWORKS).join(', ')}`);
+  }
+  
+  return selectedNetwork;
+}
 
 // Block producer API endpoints
 app.get('/api/blockProducer/status', async (req, res) => {
   try {
+    // Get network from request
+    const selectedNetwork = getNetworkFromRequest(req);
+    
     // Get block producer private key from environment variables
     const blockProducerKey = process.env.BLOCK_PRODUCER_PRIVATE_KEY;
     
@@ -51,7 +146,7 @@ app.get('/api/blockProducer/status', async (req, res) => {
     const account = privateKeyToAccount(blockProducerKey);
     
     const publicClient = createPublicClient({
-      chain: g7TestnetChain,
+      chain: selectedNetwork,
       transport: http()
     });
     
@@ -60,7 +155,7 @@ app.get('/api/blockProducer/status', async (req, res) => {
     });
     
     // Minimum balance required for transactions (0.001 ETH equivalent)
-    const minBalance = BigInt(1000000000000000);
+    // const minBalance = BigInt(1000000000000000);
     
     return res.status(200).json({
       available: balance > minBalance,
@@ -80,8 +175,15 @@ app.get('/api/blockProducer/status', async (req, res) => {
 });
 
 app.post('/api/blockProducer', async (req, res) => {
-  console.log("blockProducer route called")
+  console.log("BlockProducer route called")
   try {
+
+    console.log('req.body', req.body);
+    // Get network from request
+    const selectedNetwork = getNetworkFromRequest(req);
+
+    console.log('selectedNetwork', selectedNetwork);
+    
     // Get block producer private key from environment variables
     const blockProducerKey = process.env.BLOCK_PRODUCER_PRIVATE_KEY;
     
@@ -94,7 +196,7 @@ app.post('/api/blockProducer', async (req, res) => {
     
     // Get the latest block info
     const publicClient = createPublicClient({
-      chain: g7TestnetChain,
+      chain: selectedNetwork,
       transport: http()
     });
     
@@ -119,7 +221,7 @@ app.post('/api/blockProducer', async (req, res) => {
     const account = privateKeyToAccount(blockProducerKey);
     const walletClient = createWalletClient({
       account,
-      chain: g7TestnetChain,
+      chain: selectedNetwork,
       transport: http()
     });
     
@@ -127,25 +229,15 @@ app.post('/api/blockProducer', async (req, res) => {
     const balance = await publicClient.getBalance({
       address: account.address,
     });
+    console.log('balance', balance);
+    console.log('account.address', account.address);
     
-    // Minimum balance required for transactions (0.001 ETH equivalent)
-    const minBalance = BigInt(1000000000000000);
-    if (balance <= minBalance) {
-      return res.status(200).json({
-        created: false,
-        message: `Insufficient balance for block creation: ${balance.toString()}`,
-        latestBlockTimestamp,
-        currentTime,
-        timeDiff,
-        balance: balance.toString()
-      });
-    }
     
     // Send a minimal transaction to create a new block
     const hash = await walletClient.sendTransaction({
       to: account.address,
       value: BigInt(1), // Minimal amount
-      chain: g7TestnetChain,
+      chain: selectedNetwork,
     });
     
     return res.status(200).json({
