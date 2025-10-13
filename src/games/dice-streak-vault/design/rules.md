@@ -15,14 +15,8 @@
 - Players can withdraw up to their share × currentBank at any time
 
 ## Game Parameters (Constructor)
-- Minimum and maximum bet amounts
+- Bet amount
 - Investment fee percentage for bank deposits
 - Basic win multiplier (currently 5.95x)
 - Streak bonus percentages: 7%, 18%, 40%, 60%
 
-## Random Generation
-- Uses commit-reveal randomness for fair play
-
-## Edge Cases
-- Maximum streak bonus capped at 6 consecutive wins
-- Bank withdrawals limited to player's share
