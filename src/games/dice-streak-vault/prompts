@@ -1,0 +1,51 @@
+Правила игры:
+Игрок загадывает число  и бросает кость7 Если угадывает - получает 5.95 от ставки. Если загадывает и выкидывает подряд три раза или больше одно и то же число - выигрывает 5.95 и бонус:
+3 раза - 7%
+4 - 18, 5 - 40, 6 - 60
+
+Можно также играть за банк. Игрок может внести в банк деньги и получить долю - взнос * (1- investmentFee) / взнос + текущий банк
+
+В любой момент можно забрать сумму в пределах доля * текущий банкAll amounts in wei if it less than 0.000001ETH
+
+
+
+
+
+
+Bank balance
+Best strike: <length><address>
+Stats:
+for every dice face:
+number, occurencies, bets, wins
+
+Player address
+Balance
+Total winnings
+Current streak length
+Potential bonus amount
+
+
+If player has a share in the pot:
+Share (%)
+Value
+Total earnings: total deposits - total withdrawals + Value
+
+Game Name
+Network
+Contract address
+Bet amount
+Basic payout
+Bonus:
+For every streak length - share of the bank
+Investment fee
+
+
+
+bet placed - address, guess
+win - address, prize
+streak - length, address
+new best strike record
+bank deposits/withdrawals
+
+
+commitRevealRandomness

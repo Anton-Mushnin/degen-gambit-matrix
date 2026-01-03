@@ -20,3 +20,6 @@
 - Basic win multiplier (currently 5.95x)
 - Streak bonus percentages: 7%, 18%, 40%, 60%
 
+## Random Generation
+- Uses CommitRevealRandomness contract for secure dice rolls
+
