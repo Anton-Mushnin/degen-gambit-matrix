@@ -10,4 +10,5 @@
 - [x] Step 6: Randomness - CommitRevealRandomness with auto-accept confirmed
 - [x] Step 7: info.ts created
 - [x] Step 8: commands.ts created
+- [x] Step 9: stream.ts created
 
