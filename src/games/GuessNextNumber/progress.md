@@ -14,4 +14,5 @@
 - [x] Step 10: read.ts and ABI created
 - [x] Step 11: handlers.ts and write.ts created
 - [x] Step 12: Events added to ABI
+- [x] Step 13: Contract created (GuessNextNumber.sol)
 
