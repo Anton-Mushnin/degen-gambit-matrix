@@ -2,24 +2,47 @@ import { getBalance } from '@wagmi/core';
 import { PublicClient } from 'viem';
 
 import { wagmiConfig } from '../../../config';
-import {
-    getBankBalance,
-    getBestStreak,
-    getDiceStats,
-    getPlayerBalance,
-    getPlayerTotalWinnings,
-    getPlayerStreak,
-    getPlayerBankShare,
-    getPlayerBankValue,
-    getPlayerTotalEarnings,
-    getPotentialBonus,
-    getBetAmount,
-    getBasicPayout,
-    getStreakBonuses,
-    getInvestmentFee
-} from '../contractFunctions/read';
+// TODO: Implement contractFunctions/read.ts
+// import {
+//     getBankBalance,
+//     getBestStreak,
+//     getDiceStats,
+//     getPlayerTotalWinnings,
+//     getPlayerStreak,
+//     getPlayerBankShare,
+//     getPlayerBankValue,
+//     getPlayerTotalEarnings,
+//     getPotentialBonus,
+//     getBetAmount,
+//     getBasicPayout,
+//     getStreakBonuses,
+//     getInvestmentFee
+// } from '../contractFunctions/read';
+
+// Placeholder functions until implemented
+const getBankBalance = async (_a: string, _p: any) => ({ value: BigInt(0), formatted: '0', decimals: 0 });
+const getBestStreak = async (_a: string, _p: any) => ({ value: BigInt(0), formatted: '0', decimals: 0 });
+const getDiceStats = async (_a: string, _p: any) => [['1', '0', '0', '0']];
+const getPlayerTotalWinnings = async (_a: string, _pa: string, _p: any) => ({ value: BigInt(0), formatted: '0', decimals: 0 });
+const getPlayerStreak = async (_a: string, _pa: string, _p: any) => ({ length: 0, formatted: '0' });
+const getPlayerBankShare = async (_a: string, _pa: string, _p: any) => ({ value: BigInt(0), formatted: '0' });
+const getPlayerBankValue = async (_a: string, _pa: string, _p: any) => ({ value: BigInt(0), formatted: '0', decimals: 0 });
+const getPlayerTotalEarnings = async (_a: string, _pa: string, _p: any) => ({ value: BigInt(0), formatted: '0', decimals: 0 });
+const getPotentialBonus = async (_a: string, _pa: string, _p: any) => ({ value: BigInt(0), formatted: '0', decimals: 0 });
+const getBetAmount = async (_a: string, _p: any) => ({ value: BigInt(0), formatted: '0', decimals: 0 });
+const getBasicPayout = async (_a: string, _p: any) => ({ value: BigInt(0), formatted: '0', decimals: 0 });
+const getStreakBonuses = async (_a: string, _p: any) => ({ formatted: '0' });
+const getInvestmentFee = async (_a: string, _p: any) => ({ value: BigInt(0), formatted: '0', decimals: 0 });
 import { DataItem } from '../../types';
-import { diceStreakVaultGame } from '..';
+// TODO: Create index.tsx for diceStreakVaultGame
+// import { diceStreakVaultGame } from '..';
+
+// Placeholder until implemented
+const diceStreakVaultGame = {
+    name: 'Dice Streak Vault',
+    network: { id: 1, name: 'Testnet' },
+    config: { contractAddress: '0x0' }
+};
 
 export const createContractData = ({
     publicClient,

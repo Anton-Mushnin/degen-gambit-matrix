@@ -3,7 +3,6 @@ import { PublicClient } from 'viem';
 
 import { wagmiConfig } from '../../../config';
 import {
-    getContractAddress,
     getCostOfPlay,
     getPayoutMultiplier,
     getDepositFee,

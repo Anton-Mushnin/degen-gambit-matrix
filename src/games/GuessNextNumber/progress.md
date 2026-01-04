@@ -17,4 +17,5 @@
 - [x] Step 13: Contract created (GuessNextNumber.sol)
 - [x] Step 14: Deployed to XAI Testnet (0xC4B3b40d3F458Ff8E62a686bA2ee5ee38Ef63A7F)
 - [x] Step 15: Components created (GuessNumbers, OutcomeComponent, ProcessingComponent)
+- [x] Step 16: index.tsx created, added to registry as default, build fixed, running on localhost:3000
 

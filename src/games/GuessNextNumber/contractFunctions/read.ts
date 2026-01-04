@@ -1,4 +1,4 @@
-import { PublicClient, formatUnits } from 'viem';
+import { PublicClient } from 'viem';
 import { formatEtherOrWei } from '@/utils/formatting';
 import { guessNextNumberABI } from './GuessNextNumber.abi';
 
