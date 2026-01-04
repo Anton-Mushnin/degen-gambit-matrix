@@ -11,4 +11,5 @@
 - [x] Step 7: info.ts created
 - [x] Step 8: commands.ts created
 - [x] Step 9: stream.ts created
+- [x] Step 10: read.ts and ABI created
 
