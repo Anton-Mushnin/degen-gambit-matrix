@@ -6,4 +6,5 @@
 - [x] Step 2: Rules defined - rules.md created
 - [x] Step 3: Commands defined - commands.md created
 - [x] Step 4: Info defined - info.md created
+- [x] Step 5: Stream events defined - stream.md created
 
