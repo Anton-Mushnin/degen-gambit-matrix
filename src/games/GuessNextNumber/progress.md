@@ -8,4 +8,5 @@
 - [x] Step 4: Info defined - info.md created
 - [x] Step 5: Stream events defined - stream.md created
 - [x] Step 6: Randomness - CommitRevealRandomness with auto-accept confirmed
+- [x] Step 7: info.ts created
 
