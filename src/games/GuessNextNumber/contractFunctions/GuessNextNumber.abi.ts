@@ -149,6 +149,56 @@ export const guessNextNumberABI = [
         outputs: [{ type: 'int256', name: '' }],
         stateMutability: 'view',
         type: 'function'
+    },
+    // Events
+    {
+        anonymous: false,
+        inputs: [
+            { indexed: true, type: 'address', name: 'player' },
+            { indexed: false, type: 'uint8', name: 'guess' }
+        ],
+        name: 'GuessCommitted',
+        type: 'event'
+    },
+    {
+        anonymous: false,
+        inputs: [
+            { indexed: true, type: 'address', name: 'player' },
+            { indexed: false, type: 'uint8', name: 'guess' },
+            { indexed: false, type: 'uint8', name: 'result' },
+            { indexed: false, type: 'uint256', name: 'payout' }
+        ],
+        name: 'PlayerWin',
+        type: 'event'
+    },
+    {
+        anonymous: false,
+        inputs: [
+            { indexed: true, type: 'address', name: 'player' },
+            { indexed: false, type: 'uint8', name: 'streakLength' },
+            { indexed: false, type: 'uint256', name: 'bonusAmount' }
+        ],
+        name: 'StreakBonus',
+        type: 'event'
+    },
+    {
+        anonymous: false,
+        inputs: [
+            { indexed: true, type: 'address', name: 'player' },
+            { indexed: false, type: 'uint256', name: 'amount' },
+            { indexed: false, type: 'uint256', name: 'newSharePercent' }
+        ],
+        name: 'BankDeposit',
+        type: 'event'
+    },
+    {
+        anonymous: false,
+        inputs: [
+            { indexed: true, type: 'address', name: 'player' },
+            { indexed: false, type: 'uint256', name: 'amount' }
+        ],
+        name: 'BankWithdrawal',
+        type: 'event'
     }
 ] as const;
 
