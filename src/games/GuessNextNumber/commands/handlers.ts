@@ -54,7 +54,7 @@ export async function handleGuess({ input, params }: { input: string; params: Te
             };
         } else {
             return {
-                output: [`Guess: ${guess}, Result: ${actualNumber}`, `Better luck next time!`],
+                output: [`Guess: ${guess}, Result: ${actualNumber}`, `The Matrix has you...`],
                 isPrize: false
             };
         }

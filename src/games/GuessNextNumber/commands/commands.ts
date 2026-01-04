@@ -50,8 +50,8 @@ export const guessNextNumberCommands: CommandDefinition<TerminalCommandParams>[]
         pattern: {
             pattern: /^deposit (.+)$/,
             name: 'deposit',
-            description: 'Deposit ETH to the bank',
-            usage: 'deposit <amount>'
+            description: 'Deposit ETH to the bank (1% fee)',
+            usage: 'deposit <amount in ETH>'
         },
         handler: handleDeposit,
         queriesToInvalidate: [
@@ -70,8 +70,8 @@ export const guessNextNumberCommands: CommandDefinition<TerminalCommandParams>[]
         pattern: {
             pattern: /^withdraw (.+)$/,
             name: 'withdraw',
-            description: 'Withdraw ETH from the bank',
-            usage: 'withdraw <amount>'
+            description: 'Withdraw ETH from the bank (free)',
+            usage: 'withdraw <amount in ETH>'
         },
         handler: handleWithdraw,
         queriesToInvalidate: [
