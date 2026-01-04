@@ -1,4 +1,43 @@
 export const guessNextNumberABI = [
+    // Write functions
+    {
+        inputs: [{ type: 'uint8', name: 'guessedNumber' }],
+        name: 'guess',
+        outputs: [],
+        stateMutability: 'payable',
+        type: 'function'
+    },
+    {
+        inputs: [],
+        name: 'accept',
+        outputs: [],
+        stateMutability: 'nonpayable',
+        type: 'function'
+    },
+    {
+        inputs: [],
+        name: 'deposit',
+        outputs: [],
+        stateMutability: 'payable',
+        type: 'function'
+    },
+    {
+        inputs: [{ type: 'uint256', name: 'amount' }],
+        name: 'withdraw',
+        outputs: [],
+        stateMutability: 'nonpayable',
+        type: 'function'
+    },
+    {
+        inputs: [{ type: 'address', name: 'player' }],
+        name: 'inspectOutcome',
+        outputs: [
+            { type: 'uint256', name: 'payout' },
+            { type: 'bytes32', name: 'resultData' }
+        ],
+        stateMutability: 'view',
+        type: 'function'
+    },
     // Constants
     {
         inputs: [],
