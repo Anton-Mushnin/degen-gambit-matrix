@@ -15,4 +15,5 @@
 - [x] Step 11: handlers.ts and write.ts created
 - [x] Step 12: Events added to ABI
 - [x] Step 13: Contract created (GuessNextNumber.sol)
+- [x] Step 14: Deployed to XAI Testnet (0xC4B3b40d3F458Ff8E62a686bA2ee5ee38Ef63A7F)
 
