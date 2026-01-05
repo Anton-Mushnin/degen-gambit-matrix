@@ -1,4 +1,4 @@
-import { parseEther, formatEther } from 'viem';
+import { parseEther, formatEther, decodeAbiParameters } from 'viem';
 import { TerminalCommandParams } from "../../../utils/gameHandlers";
 import { commitRevealAccept } from "../../../utils/commitRevealAccept";
 import { getCostOfPlay } from "../contractFunctions/read";
@@ -42,8 +42,10 @@ export async function handleGuess({ input, params }: { input: string; params: Te
         const rollOutcome = result.outcome as readonly [bigint, `0x${string}`];
         const [payout, resultBytes] = rollOutcome;
         
-        // Extract actual number from result bytes (first byte)
-        const actualNumber = parseInt(resultBytes.slice(2, 4), 16) || 0;
+        // Decode the uint32 result from dynamic bytes
+        // The bytes contain abi.encode(uint32) which is 32 bytes padded
+        const [decodedResult] = decodeAbiParameters([{ type: 'uint32' }], resultBytes as `0x${string}`);
+        const actualNumber = Number(decodedResult);
         const isWin = payout > 0n;
 
         if (isWin) {
@@ -54,7 +56,8 @@ export async function handleGuess({ input, params }: { input: string; params: Te
             };
         } else {
             return {
-                output: [`Guess: ${guess}, Result: ${actualNumber}`, `The Matrix has you...`],
+                output: [`Guess: ${guess}, Result: ${actualNumber}`],
+                outcome: [`The Matrix has you...`],
                 isPrize: false
             };
         }

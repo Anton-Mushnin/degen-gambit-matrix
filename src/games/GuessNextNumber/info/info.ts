@@ -90,10 +90,12 @@ export const createContractConstantsData = ({
 export const createContractData = ({
     publicClient,
     contractAddress,
+    queryClient,
     onDataUpdate,
 }: {
     publicClient: PublicClient;
     contractAddress?: string;
+    queryClient?: any;
     onDataUpdate?: () => void;
 }): DataItem[] => {
     const address: string = contractAddress || (guessNextNumberGame.config.contractAddress as string);
@@ -103,7 +105,14 @@ export const createContractData = ({
             label: 'Bank Balance: ',
             queryKey: ['bankBalance', address],
             queryFn: () => getBankBalance(address, publicClient),
-            onDataUpdate
+            refetchInterval: 5000,
+            onDataUpdate: () => {
+                if (queryClient) {
+                    queryClient.invalidateQueries({ queryKey: ['playerShareValue'] });
+                    queryClient.invalidateQueries({ queryKey: ['playerTotalEarnings'] });
+                }
+                onDataUpdate?.();
+            }
         },
         {
             type: 'query',

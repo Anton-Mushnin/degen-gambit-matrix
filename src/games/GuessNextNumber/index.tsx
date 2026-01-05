@@ -17,10 +17,11 @@ import { guessNextNumberConfig } from './config/gameConfig';
 import { GuessNextNumberProcessingComponent, GuessNextNumberOutcomeComponent } from './components';
 
 // Create data items wrapper for generic component
-const createGuessNextNumberDataItems = ({ publicClient, activeAccount, contractAddress }: any) => {
+const createGuessNextNumberDataItems = ({ publicClient, activeAccount, contractAddress, queryClient }: any) => {
   const contractData = createContractData({
     publicClient,
     contractAddress: contractAddress || guessNextNumberConfig.production.contractAddress,
+    queryClient,
     onDataUpdate: () => console.log('Contract data updated')
   });
 
