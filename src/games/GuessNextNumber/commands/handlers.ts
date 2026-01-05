@@ -4,6 +4,23 @@ import { commitRevealAccept } from "../../../utils/commitRevealAccept";
 import { getCostOfPlay } from "../contractFunctions/read";
 import { deposit, withdraw } from '../contractFunctions/write';
 
+function parseAmountWithUnit(amountStr: string): { amount: bigint; unit: string } | null {
+    const match = amountStr.match(/^(\d+\.?\d*)(ETH|WEI)$/i);
+    if (!match) return null;
+    
+    const [, value, unit] = match;
+    const unitUpper = unit.toUpperCase();
+    
+    try {
+        const amount = unitUpper === 'ETH' 
+            ? parseEther(value) 
+            : BigInt(value);
+        return { amount, unit: unitUpper };
+    } catch {
+        return null;
+    }
+}
+
 export async function handleGuess({ input, params }: { input: string; params: TerminalCommandParams }) {
     const { contractAddress, contractABI, publicClient, activeAccount, client } = params;
 
@@ -75,30 +92,28 @@ export async function handleDeposit({ input, params }: { input: string; params: 
     }
 
     try {
-        // Parse amount from input (format: "deposit 0.1")
         const match = input.match(/^deposit (.+)$/);
         if (!match) {
-            return { output: ["Invalid format. Use: deposit <amount>"] };
+            return { output: ["Invalid format. Use: deposit <amount><unit> (e.g. 0.1ETH or 1000WEI)"] };
         }
 
-        const amountStr = match[1].trim();
-        let amount: bigint;
-        
-        try {
-            amount = parseEther(amountStr);
-        } catch {
-            return { output: [`Invalid amount: ${amountStr}`] };
+        const parsed = parseAmountWithUnit(match[1].trim());
+        if (!parsed) {
+            return { output: ["Invalid format. Use: deposit <amount><unit> (e.g. 0.1ETH or 1000WEI)"] };
         }
+
+        const { amount, unit } = parsed;
 
         if (amount <= 0n) {
             return { output: ["Amount must be greater than 0"] };
         }
 
         const result = await deposit(contractAddress, amount, activeAccount, client, publicClient);
+        const displayAmount = unit === 'WEI' ? `${amount} WEI` : `${formatEther(amount)} ETH`;
         
         return {
             output: [
-                `Deposited ${amountStr} ETH to bank`,
+                `Deposited ${displayAmount} to bank`,
                 `Your share: ${result.sharePercent}%`,
                 `Transaction: ${result.receipt}`
             ]
@@ -117,30 +132,28 @@ export async function handleWithdraw({ input, params }: { input: string; params:
     }
 
     try {
-        // Parse amount from input (format: "withdraw 0.1")
         const match = input.match(/^withdraw (.+)$/);
         if (!match) {
-            return { output: ["Invalid format. Use: withdraw <amount>"] };
+            return { output: ["Invalid format. Use: withdraw <amount><unit> (e.g. 0.1ETH or 1000WEI)"] };
         }
 
-        const amountStr = match[1].trim();
-        let amount: bigint;
-        
-        try {
-            amount = parseEther(amountStr);
-        } catch {
-            return { output: [`Invalid amount: ${amountStr}`] };
+        const parsed = parseAmountWithUnit(match[1].trim());
+        if (!parsed) {
+            return { output: ["Invalid format. Use: withdraw <amount><unit> (e.g. 0.1ETH or 1000WEI)"] };
         }
+
+        const { amount, unit } = parsed;
 
         if (amount <= 0n) {
             return { output: ["Amount must be greater than 0"] };
         }
 
         const result = await withdraw(contractAddress, amount, activeAccount, client, publicClient);
+        const displayAmount = unit === 'WEI' ? `${amount} WEI` : `${formatEther(amount)} ETH`;
         
         return {
             output: [
-                `Withdrew ${amountStr} ETH from bank`,
+                `Withdrew ${displayAmount} from bank`,
                 `Transaction: ${result.receipt}`
             ]
         };
