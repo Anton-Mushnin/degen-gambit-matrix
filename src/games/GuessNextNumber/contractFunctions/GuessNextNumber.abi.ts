@@ -33,7 +33,7 @@ export const guessNextNumberABI = [
         name: 'inspectOutcome',
         outputs: [
             { type: 'uint256', name: 'payout' },
-            { type: 'bytes32', name: 'resultData' }
+            { type: 'bytes', name: 'resultData' }
         ],
         stateMutability: 'view',
         type: 'function'
