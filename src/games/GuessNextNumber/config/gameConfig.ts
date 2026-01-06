@@ -4,12 +4,12 @@ import { guessNextNumberABI } from '../contractFunctions/GuessNextNumber.abi';
 // GuessNextNumber contract configuration
 export const guessNextNumberConfig: GameContractConfig = {
   production: {
-    contractAddress: "0xC4B3b40d3F458Ff8E62a686bA2ee5ee38Ef63A7F",
+    contractAddress: "0x9C6250335B3f3ec592fE988D4EFD61BEB733d428",
     name: "GuessNextNumber",
     abi: guessNextNumberABI
   },
   dev: {
-    contractAddress: "0xC4B3b40d3F458Ff8E62a686bA2ee5ee38Ef63A7F",
+    contractAddress: "0x9C6250335B3f3ec592fE988D4EFD61BEB733d428",
     name: "GuessNextNumber",
     abi: guessNextNumberABI
   },
