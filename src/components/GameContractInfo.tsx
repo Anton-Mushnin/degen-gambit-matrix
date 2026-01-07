@@ -83,7 +83,7 @@ const GameContractInfo: React.FC<GameContractInfoProps> = ({
           />
         )
       ))}
-      <div style={{ height: '8px' }} />
+      <div className={styles.separator} />
       {playerData.map((item, index) => (
         item.type === 'query' ? (
           item.tableQueryFn ? (
