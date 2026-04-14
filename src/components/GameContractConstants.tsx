@@ -50,6 +50,7 @@ const GameContractConstants: React.FC<GameContractConstantsProps> = ({
               refetchInterval={item.refetchInterval}
               animation={item.animation}
               onDataUpdate={item.onDataUpdate}
+              copyValue={item.copyValue}
             />
           )
         ) : (
@@ -59,6 +60,7 @@ const GameContractConstants: React.FC<GameContractConstantsProps> = ({
             label={item.label}
             data={item.data}
             animation={item.animation}
+            copyValue={item.copyValue}
           />
         )
       ))}

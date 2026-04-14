@@ -13,14 +13,16 @@ interface QueryValueRowProps {
     formatted: string
     value: bigint
     decimals: number
+    copyValue?: string
   } | null>
   refetchInterval?: number
   animation?: boolean
   onDataUpdate?: (data: any) => void
   blinkOnUpdate?: boolean
+  copyValue?: string
 }
 
-const QueryValueRow = ({ queryKey, label, queryFn, refetchInterval, animation = true, onDataUpdate, blinkOnUpdate = false }: QueryValueRowProps) => {
+const QueryValueRow = ({ queryKey, label, queryFn, refetchInterval, animation = true, onDataUpdate, blinkOnUpdate = false, copyValue: staticCopyValue }: QueryValueRowProps) => {
     const {data: _data, refetch} = useQuery({
         queryKey, 
         queryFn, 
@@ -103,10 +105,29 @@ const QueryValueRow = ({ queryKey, label, queryFn, refetchInterval, animation = 
     // Cleanup on unmount
     useEffect(() => cleanupAnimations, []);
 
+    const handleCopy = async () => {
+        const valueToCopy = staticCopyValue || _data?.copyValue;
+        if (valueToCopy) {
+            try {
+                await navigator.clipboard.writeText(valueToCopy);
+            } catch (err) {
+                console.error('Failed to copy:', err);
+            }
+        }
+    };
+
+    const valueToCopy = staticCopyValue || _data?.copyValue;
+
     return (
         <div className={styles.container} style={{ opacity: _data ? 1 : 0 }}>
             <div className={styles.item} onClick={() => refetch()}>{label}</div>
-            <div className={isUpdated && blinkOnUpdate ? styles.blink : styles.item}>{data?.formatted || ''}</div>
+            <div 
+                className={isUpdated && blinkOnUpdate ? styles.blink : styles.item}
+                onClick={valueToCopy ? handleCopy : undefined}
+                style={valueToCopy ? { cursor: 'pointer' } : undefined}
+            >
+                {data?.formatted || ''}
+            </div>
         </div>
     );
 }

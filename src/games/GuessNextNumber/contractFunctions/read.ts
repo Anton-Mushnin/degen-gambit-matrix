@@ -148,7 +148,8 @@ export const getBestStreak = async (contractAddress: string, publicClient: Publi
         return {
             value: BigInt(streakLength),
             formatted: streakLength > 0 ? `${streakLength} (${shortAddress})` : 'None',
-            decimals: 0
+            decimals: 0,
+            copyValue: streakLength > 0 ? player : undefined
         };
     } catch (error) {
         throw new Error(`Failed to get best streak: ${error}`);

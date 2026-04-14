@@ -65,11 +65,12 @@ export interface QueryDataItem {
     isTable?: boolean;
     headers?: string[];
     queryKey: string[];
-    queryFn?: () => Promise<{ formatted: string; value: bigint; decimals: number; } | null>;
+    queryFn?: () => Promise<{ formatted: string; value: bigint; decimals: number; copyValue?: string; } | null>;
     tableQueryFn?: () => Promise<string[][]>;
     refetchInterval?: number;
     animation?: boolean;
     onDataUpdate?: (data: any) => void;
+    copyValue?: string; // Full value to copy (e.g., full address)
 }
 
 export interface StaticDataItem {
@@ -81,6 +82,7 @@ export interface StaticDataItem {
         decimals: number;
     } | null;
     animation?: boolean;
+    copyValue?: string; // Full value to copy (e.g., full address)
 }
 
 export type DataItem = QueryDataItem | StaticDataItem;

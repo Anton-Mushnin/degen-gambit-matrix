@@ -12,9 +12,10 @@ interface ValueRowProps {
   } | null
   animation?: boolean
   blinkOnUpdate?: boolean
+  copyValue?: string
 }
 
-const ValueRow = ({ type, label, data: _data, animation = true, blinkOnUpdate = false }: ValueRowProps) => {
+const ValueRow = ({ type, label, data: _data, animation = true, blinkOnUpdate = false, copyValue }: ValueRowProps) => {
     const [data, setData] = useState<{formatted: string, value: bigint} | undefined>(undefined)
     const [isUpdated, setIsUpdated] = useState(false)
     const animationFrameRef = useRef<number | null>(null)
@@ -86,6 +87,16 @@ const ValueRow = ({ type, label, data: _data, animation = true, blinkOnUpdate = 
     // Cleanup on unmount
     useEffect(() => cleanupAnimations, []);
 
+    const handleCopy = async () => {
+        if (copyValue) {
+            try {
+                await navigator.clipboard.writeText(copyValue);
+            } catch (err) {
+                console.error('Failed to copy:', err);
+            }
+        }
+    };
+
     return (
         <div className={styles.container}>
             {type === 'divider' ? (
@@ -93,7 +104,13 @@ const ValueRow = ({ type, label, data: _data, animation = true, blinkOnUpdate = 
             ) : (
                 <>
                     <div className={styles.item}>{label}</div>
-                    <div className={isUpdated && blinkOnUpdate ? styles.blink : styles.item}>{data?.formatted}</div>
+                    <div 
+                        className={isUpdated && blinkOnUpdate ? styles.blink : styles.item}
+                        onClick={copyValue ? handleCopy : undefined}
+                        style={copyValue ? { cursor: 'pointer' } : undefined}
+                    >
+                        {data?.formatted}
+                    </div>
                 </>
             )}
         </div>

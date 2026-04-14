@@ -61,7 +61,8 @@ export const createContractConstantsData = ({
                 value: BigInt(0),
                 decimals: 0
             },
-            animation: false
+            animation: false,
+            copyValue: address
         },
         {
             type: 'query',
@@ -158,7 +159,10 @@ export const createContractData = ({
             type: 'query',
             label: 'Best Streak: ',
             queryKey: ['bestStreak', address],
-            queryFn: () => getBestStreak(address, publicClient),
+            queryFn: async () => {
+                const result = await getBestStreak(address, publicClient);
+                return result;
+            },
             animation: false,
             onDataUpdate
         }
@@ -186,7 +190,8 @@ export const createPlayerData = ({
                 value: BigInt(0),
                 decimals: 0
             },
-            animation: false
+            animation: false,
+            copyValue: playerAddress
         },
         {
             type: 'query',

@@ -71,6 +71,7 @@ const GameContractInfo: React.FC<GameContractInfoProps> = ({
               refetchInterval={item.refetchInterval}
               animation={item.animation}
               onDataUpdate={item.onDataUpdate}
+              copyValue={item.copyValue}
             />
           )
         ) : (
@@ -80,6 +81,7 @@ const GameContractInfo: React.FC<GameContractInfoProps> = ({
             label={item.label}
             data={item.data}
             animation={item.animation}
+            copyValue={item.copyValue}
           />
         )
       ))}
@@ -106,6 +108,7 @@ const GameContractInfo: React.FC<GameContractInfoProps> = ({
               refetchInterval={item.refetchInterval}
               animation={item.animation}
               onDataUpdate={item.onDataUpdate}
+              copyValue={item.copyValue}
             />
           )
         ) : (
@@ -115,6 +118,7 @@ const GameContractInfo: React.FC<GameContractInfoProps> = ({
             label={item.label}
             data={item.data}
             animation={item.animation}
+            copyValue={item.copyValue}
           />
         )
       ))}
