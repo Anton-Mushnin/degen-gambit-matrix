@@ -2,8 +2,8 @@
 
 ## Core setup
 - The game is a baseball at-bat in bottom of the 9th, game tied, bases loaded, full count, two outs.
-- Two ERC721 NFTs (from any collections) play: one `Pitcher`, one `Batter`.
-- A player starts a session by staking one NFT as either role; another player joins with the opposite role.
+- Two wallet players play: one `Pitcher`, one `Batter`.
+- A player starts a session as either role; another player joins with the opposite role.
 - Optional gated sessions: starter can require a valid EIP-712 signature from joiners.
 
 ## Session phases
@@ -35,16 +35,16 @@
   - `Ball`: +1 ball, or walk at 4 balls.
   - `Foul`: adds strike only if current strikes < 2.
   - `Single`, `Double`, `Triple`, `HomeRun`, `InPlayOut`: end the at-bat immediately with matching final result.
-- After each non-terminal `Strike`/`Ball`/`Foul`, a new session auto-starts with same pitcher and batter NFTs.
+- After each non-terminal `Strike`/`Ball`/`Foul`, a new session auto-starts with the same pitcher and batter.
 
 ## Exit and abort rules
 - A starter can abort only while waiting for opponent join.
-- Unstake is allowed only when session is waiting, resolved, or expired.
+- Leaving is allowed only when session is waiting, resolved, or expired.
 - A player cannot commit or reveal after session expiry.
 
 ## Expiry behavior
 - If neither reveal happens before reveal timeout, session expires.
-- Expired sessions are not auto-resolved; players can unstake via expiry state.
+- Expired sessions are not auto-resolved; players can leave via expiry state.
 
 ## Known unresolved rule
 - Contract comments describe intended "default win" if one player reveals and the other fails to reveal in time, but current implementation marks that state as expired instead of awarding winner.
