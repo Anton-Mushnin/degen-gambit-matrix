@@ -2,8 +2,8 @@
 
 pragma solidity ^0.8.19;
 
-import { EIP712 } from "../lib/openzeppelin-contracts/contracts/utils/cryptography/EIP712.sol";
-import { SignatureChecker } from "../lib/openzeppelin-contracts/contracts/utils/cryptography/SignatureChecker.sol";
+import { EIP712 } from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
+import { SignatureChecker } from "@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol";
 
 import {
     PlayerType,
@@ -88,6 +88,15 @@ contract Fullcount is EIP712 {
     // NOTE: Sessions are 1-indexed
     mapping(address => uint256) public ActiveSession;
 
+    struct PlayerRecord {
+        uint256 pitcherPlayed;
+        uint256 pitcherWins;
+        uint256 batterPlayed;
+        uint256 batterWins;
+    }
+
+    mapping(address => PlayerRecord) public PlayerRecords;
+
     uint256 public NumAtBats;
     mapping(uint256 => AtBat) public AtBatState;
     mapping(uint256 => uint256[]) public AtBatSessions;
@@ -134,6 +143,13 @@ contract Fullcount is EIP712 {
         address batterAddress
     );
 
+    event PlayerRecordUpdated(
+        address indexed player,
+        PlayerType indexed role,
+        uint256 wins,
+        uint256 played
+    );
+
     constructor(uint256 secondsPerPhase) EIP712("Fullcount", FullcountVersion) {
         SecondsPerPhase = secondsPerPhase;
         emit FullcountDeployed(FullcountVersion, secondsPerPhase);
@@ -146,6 +162,10 @@ contract Fullcount is EIP712 {
 
     function getAtBat(uint256 atBatID) external view returns (AtBat memory) {
         return AtBatState[atBatID];
+    }
+
+    function getPlayerRecord(address player) external view returns (PlayerRecord memory) {
+        return PlayerRecords[player];
     }
 
     function getNumberOfSessionsInAtBat(uint256 atBatID) external view returns (uint256) {
@@ -382,6 +402,40 @@ contract Fullcount is EIP712 {
             atBat.strikes,
             atBat.pitcher.account,
             atBat.batter.account
+        );
+
+        _recordCompletedAtBat(atBat);
+    }
+
+    function _recordCompletedAtBat(AtBat storage atBat) internal {
+        if (atBat.outcome == AtBatOutcome.InProgress) {
+            return;
+        }
+
+        bool pitcherWon = atBat.outcome == AtBatOutcome.Strikeout || atBat.outcome == AtBatOutcome.InPlayOut;
+
+        PlayerRecord storage pitcherRecord = PlayerRecords[atBat.pitcher.account];
+        pitcherRecord.pitcherPlayed++;
+        if (pitcherWon) {
+            pitcherRecord.pitcherWins++;
+        }
+        emit PlayerRecordUpdated(
+            atBat.pitcher.account,
+            PlayerType.Pitcher,
+            pitcherRecord.pitcherWins,
+            pitcherRecord.pitcherPlayed
+        );
+
+        PlayerRecord storage batterRecord = PlayerRecords[atBat.batter.account];
+        batterRecord.batterPlayed++;
+        if (!pitcherWon) {
+            batterRecord.batterWins++;
+        }
+        emit PlayerRecordUpdated(
+            atBat.batter.account,
+            PlayerType.Batter,
+            batterRecord.batterWins,
+            batterRecord.batterPlayed
         );
     }
 

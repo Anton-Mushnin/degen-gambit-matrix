@@ -5,3 +5,5 @@
 - [x] Simplified `contract/data.sol` and `contract/Fullcount.sol` to use wallet players instead of NFTs.
 - [x] Updated `design/rules.md` to describe wallet players and leaving sessions.
 - [x] Step 3: Created `design/commands.md` with the confirmed player command set.
+- [x] Added Fullcount player records for pitcher/batter games played and wins.
+- [x] Added Fullcount to Hardhat compilation and verified forced Solidity compile.
